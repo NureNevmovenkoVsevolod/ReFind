@@ -1,0 +1,6 @@
+# Ignore node_modules directories
+node_modules
+package-lock.json
+npm-shrinkwrap.json
+*.log
+*.gz

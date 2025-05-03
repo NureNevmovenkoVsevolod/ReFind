@@ -1,0 +1,25 @@
+.heroTitle {
+    font-family: 'Crimson Pro', serif;
+    font-weight: bold;
+    font-size: 96px;
+    color: black;
+}
+
+.section{
+    padding-top: 250px;
+    padding-bottom: 250px;
+}
+
+.img {
+    background: url("../../assets/Hero2.png") no-repeat center center;
+    background-size: cover;
+}
+
+.arrow {
+    filter: brightness(0) invert(1); /* Makes the arrow white */
+    transition: filter 0.3s ease;
+}
+
+.arrowButton:hover .arrow {
+    filter: brightness(0) invert(0); /* Makes the arrow black on hover */
+}
