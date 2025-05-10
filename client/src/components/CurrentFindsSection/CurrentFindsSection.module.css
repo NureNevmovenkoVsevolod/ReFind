@@ -7,6 +7,7 @@
   font-weight: bold;
   font-size: 48px;
   color: black;
+  margin-bottom: 30px;
 }
 
 .categoryFilterWrapper {
@@ -33,7 +34,7 @@
   scroll-behavior: smooth;
   width: 100%;
   padding: 10px 0;
-  margin: 0 40px; /* Додаємо відступи з обох боків для кнопок */
+  margin: 0 40px; 
 }
 
 .scrollButton {
@@ -65,4 +66,33 @@
 
 .scrollButton:hover {
   background-color: #f8f8f8;
+}
+
+.findsGrid {
+  margin-top: 40px;
+}
+
+.cardCol {
+  margin-bottom: 30px;
+}
+
+.showMoreButton {
+  padding: 10px 40px;
+  border-radius: 4px;
+  background-color: transparent;
+  border: 1px solid #0D6EFD;
+  color: #0D6EFD;
+  font-weight: 500;
+  transition: all 0.3s;
+  max-width: 200px;
+}
+
+.showMoreButton:hover {
+  background-color: #0D6EFD;
+  color: white;
+}
+
+.showMoreButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
