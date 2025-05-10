@@ -2,6 +2,8 @@ import "./App.css";
 import NavBar from "./components/NavBar/NavBar";
 import AuthNavBar from "./components/AuthNavBar/AuthNavBar";
 import HeroSection from "./components/HeroSection/HeroSection";
+import CurrentFindsSection from "./components/CurrentFindsSection/CurrentFindsSection";
+
 function App() {
   const isLogin = false;
   return (
@@ -14,6 +16,7 @@ function App() {
           <HeroSection></HeroSection>
         </>
       )}
+      <CurrentFindsSection/>
     </div>
   );
 }
