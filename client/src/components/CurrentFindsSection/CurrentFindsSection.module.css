@@ -1,0 +1,68 @@
+.container {
+  margin-top: 70px;
+}
+
+.title{
+  font-family: 'Crimson Pro', serif;
+  font-weight: bold;
+  font-size: 48px;
+  color: black;
+}
+
+.categoryFilterWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.categoryFilterContainer {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  align-items: center;
+}
+
+.categoryFilterInner {
+  display: flex;
+  align-items: center;
+  overflow-x: hidden;
+  white-space: nowrap;
+  scroll-behavior: smooth;
+  width: 100%;
+  padding: 10px 0;
+  margin: 0 40px; /* Додаємо відступи з обох боків для кнопок */
+}
+
+.scrollButton {
+  position: absolute;
+  z-index: 2;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.scrollButtonRight {
+  right: 0;
+}
+
+.scrollButtonLeft {
+  left: 0;
+}
+
+.arrowLeft {
+  transform: rotate(180deg);
+}
+
+.scrollButton:hover {
+  background-color: #f8f8f8;
+}
