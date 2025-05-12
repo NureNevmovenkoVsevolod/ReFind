@@ -1,0 +1,101 @@
+.cardContainer {
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    transition: transform 0.2s;
+    cursor: pointer;
+  }
+  
+  .cardContainer:hover {
+    transform: translateY(-5px);
+  }
+  
+  .imageContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 180px;
+    background-color: #f5f5f5;
+    overflow: hidden;
+    border-radius: 8px 0 0 8px;
+  }
+  
+  @media (max-width: 767px) {
+    .imageContainer {
+      border-radius: 8px 8px 0 0;
+      height: 200px;
+    }
+  }
+  
+  .image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .dateLabel {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .calendarIcon {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .contentContainer {
+    padding: 15px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .itemName {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  
+  .description {
+    font-size: 14px;
+    color: #555;
+    flex-grow: 1;
+    margin-bottom: 15px;
+  }
+  
+  .infoFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .locationContainer {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .cityName {
+    font-size: 16px;
+    color: #555;
+  }
+  
+  .categoryBadge {
+    background-color: none;
+    border: 1px solid black;
+    padding: 8px 16px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    font-size: 16px;
+  }

@@ -1,0 +1,20 @@
+.showMoreButton {
+    padding: 10px 40px;
+    border-radius: 4px;
+    background-color: transparent;
+    border: 1px solid #0D6EFD;
+    color: #0D6EFD;
+    font-weight: 500;
+    transition: all 0.3s;
+    max-width: 200px;
+  }
+  
+  .showMoreButton:hover {
+    background-color: #0D6EFD;
+    color: white;
+  }
+  
+  .showMoreButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Row, Col } from "react-bootstrap";
 import styles from "./CurrentFindsSection.module.css";
 import { CategoryFilter } from "./CategoryFilter";
 import FindCard from "../FindCard/FindCard";
+import ShowMoreButton from "../ShowMoreButton/ShowMoreButton";
 
 // Приклад даних для карток знахідок
 const allFindItems = [
@@ -187,16 +188,7 @@ function CurrentFindsSection() {
       </Row>
 
       {hasMoreItems && (
-        <Row className="justify-content-center mt-4 mb-5">
-          <Button
-            variant="outline-primary"
-            className={`${styles.showMoreButton}`}
-            onClick={loadMoreItems}
-            disabled={loading}
-          >
-            {loading ? "Loading..." : "Show more"}
-          </Button>
-        </Row>
+        <ShowMoreButton loading={loading} onClick={loadMoreItems} />
       )}
     </Container>
   );
