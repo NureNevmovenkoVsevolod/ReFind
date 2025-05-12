@@ -16,10 +16,10 @@
 }
 
 .arrow {
-    filter: brightness(0) invert(1); /* Makes the arrow white */
+    filter: brightness(0) invert(1); 
     transition: filter 0.3s ease;
 }
 
 .arrowButton:hover .arrow {
-    filter: brightness(0) invert(0); /* Makes the arrow black on hover */
+    filter: brightness(0) invert(0);
 }
