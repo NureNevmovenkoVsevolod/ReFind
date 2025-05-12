@@ -7,7 +7,7 @@ import Image from "react-bootstrap/Image";
 import styles from "./AuthFooter.module.css";
 import logo from "../../assets/logo.png";
 
-function AuthNavBar(props) {
+function AuthFooter(props) {
   return (
     <Navbar bg="primary" data-bs-theme="dark">
       <Container
@@ -50,4 +50,4 @@ function AuthNavBar(props) {
   );
 }
 
-export default AuthNavBar;
+export default AuthFooter;

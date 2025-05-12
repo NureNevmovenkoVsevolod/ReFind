@@ -1,0 +1,58 @@
+.heroTitle {
+    font-family: 'Crimson Pro', serif;
+    font-weight: bold;
+    font-size: 96px;
+    color: black;
+}
+
+.section{
+    padding-top: 250px;
+    padding-bottom: 250px;
+    position: relative;
+}
+
+.img {
+    background: url("../../assets/Hero2.png") no-repeat center center;
+    background-size: cover;
+}
+
+.arrow {
+    filter: brightness(0) invert(1); 
+    transition: filter 0.3s ease;
+}
+
+.arrowButton:hover .arrow {
+    filter: brightness(0) invert(0);
+}
+
+.buttonsGroup {
+    position: absolute;
+    left: 0;
+    margin-top: 370px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.reportButton {
+    margin-top: 15px;
+    width: 260px;
+    border-radius: 4px;
+    font-size: 16px;
+    padding: 8px 0;
+    border-radius: 0;
+    text-align: center;
+}
+
+
+.reportButton:first-child {
+    background-color: rgba(128, 128, 128, 0.8);
+    border: none;
+    color: white;
+}
+
+.reportButton:last-child {
+    background-color: transparent;
+    border: 1px solid #007bff;
+    color: #007bff;
+}
