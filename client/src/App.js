@@ -1,13 +1,11 @@
 import React from 'react';
-import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import {Routes, Route} from 'react-router-dom';
 import "./App.css";
 import MainPage from "./pages/MainPage";
 import Registration from "./pages/Registration";
 import Login from "./pages/Login";
 import AuthNavBar from "./components/AuthNavBar/AuthNavBar";
-import AuthHeroSection from "./components/AuthHeroSection/AuthHeroSection";
 import NavBar from "./components/NavBar/NavBar";
-import HeroSection from "./components/HeroSection/HeroSection";
 import AuthFooter from "./components/AuthFooter/AuthFooter";
 import Footer from "./components/Footer/Footer";
 

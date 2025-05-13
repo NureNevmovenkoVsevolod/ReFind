@@ -9,7 +9,7 @@ import logo from "../../assets/logo.png";
 import {useNavigate} from "react-router-dom";
 
 
-function NavBar(props) {
+function NavBar() {
     const navigate = useNavigate();
     const goToRegistration = () => {
         navigate('/registration');
