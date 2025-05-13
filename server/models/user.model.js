@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../db.js";
+import bcrypt from "bcrypt";
 
 const User = sequelize.define(
   "User",
@@ -9,13 +10,13 @@ const User = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    name: {
+    first_name: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    surname: {
+    last_name: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     user_pfp: {
       type: DataTypes.STRING,
@@ -23,11 +24,11 @@ const User = sequelize.define(
     },
     password: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     login: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     phone_number: {
       type: DataTypes.STRING,
@@ -46,15 +47,39 @@ const User = sequelize.define(
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },
-    auth_method: {
+    auth_provider: {
+      type: DataTypes.ENUM("local", "google", "facebook"),
+      defaultValue: "local",
+    },
+    provider_id: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    is_verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
   {
     tableName: "users",
     timestamps: true,
+    hooks: {
+      beforeCreate: async (user) => {
+        if (user.password) {
+          user.password = await bcrypt.hash(user.password, 5);
+        }
+      },
+      beforeUpdate: async (user) => {
+        if (user.changed("password")) {
+          user.password = await bcrypt.hash(user.password, 5);
+        }
+      },
+    },
   }
 );
+
+User.prototype.comparePassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
 export default User;

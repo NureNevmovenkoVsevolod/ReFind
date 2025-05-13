@@ -1,8 +1,11 @@
 import express from "express";
-import router from "./routes/index.js";
+import session from "express-session";
+import passport from "./config/passport.js";
+import authRouter from "./routes/auth/index.js";
 import sequelize from "./db.js";
 import models from "./models/index.js";
 import dotenv from "dotenv";
+import cors from "cors";
 dotenv.config();
 const PORT = process.env.PORT || 3000;
 
@@ -10,9 +13,31 @@ const app = express();
 
 // Middlewares
 app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:5000",
+    credentials: true,
+  })
+);
 
+// Session configuration
+app.use(
+  session({
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    },
+  })
+);
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 // Routes
-app.use("/", router);
+////Auth
+app.use("/auth", authRouter);
 
 const startServer = async () => {
   try {
