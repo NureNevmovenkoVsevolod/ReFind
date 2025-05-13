@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 
 import styles from './RegisterForm.module.css';
 import FormInput from "../FormInput/FormInput";
@@ -13,8 +13,8 @@ function RegisterForm() {
     const [errors, setErrors] = useState({});
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-        setErrors({ ...errors, [e.target.name]: '' }); // очищаємо помилку при зміні
+        setFormData({...formData, [e.target.name]: e.target.value});
+        setErrors({...errors, [e.target.name]: ''}); // очищаємо помилку при зміні
     };
 
     const validate = () => {
@@ -46,47 +46,49 @@ function RegisterForm() {
     };
 
     return (
-        <div className={styles.register_container}>
-            <h2>Registration</h2>
-            <form onSubmit={handleSubmit}>
-                <FormInput
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="E-mail"
-                    error={errors.email}
-                />
-                <FormInput
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Password"
-                    error={errors.password}
-                />
-                <FormInput
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    placeholder="Confirm password"
-                    error={errors.confirmPassword}
-                />
-                <button type="submit">Register</button>
-            </form>
+        <div className={styles.wrapper}>
+            <div className={styles.container}>
+                <h2>Registration</h2>
+                <form onSubmit={handleSubmit}>
+                    <FormInput
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder="E-mail"
+                        error={errors.email}
+                    />
+                    <FormInput
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        placeholder="Password"
+                        error={errors.password}
+                    />
+                    <FormInput
+                        type="password"
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        placeholder="Confirm password"
+                        error={errors.confirmPassword}
+                    />
+                    <button type="submit">Register</button>
+                </form>
 
-            <div className={styles.social_signin}>
-                <p>Sign in with:</p>
-                <div className={styles.social_icons}>
-                    <img
-                        src='https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_"G"_logo.svg'
-                        alt="Google"
-                    />
-                    <img
-                        src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
-                        alt="Facebook"
-                    />
+                <div className={styles.social_signin}>
+                    <p>Sign in with:</p>
+                    <div className={styles.social_icons}>
+                        <img
+                            src='https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_"G"_logo.svg'
+                            alt="Google"
+                        />
+                        <img
+                            src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
+                            alt="Facebook"
+                        />
+                    </div>
                 </div>
             </div>
         </div>

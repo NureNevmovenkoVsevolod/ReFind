@@ -14,6 +14,9 @@ function NavBar(props) {
     const goToRegistration = () => {
         navigate('/registration');
     };
+    const goToLogin = () => {
+        navigate('/login');
+    };
     const goToMain = () => {
         navigate('/');
     };
@@ -26,7 +29,13 @@ function NavBar(props) {
             >
 
                 <Navbar.Brand onClick={goToMain}
-                    style={{color: "black", fontWeight: "bold", fontSize: "24px", cursor: "pointer"}}
+                              style={{
+                                  color: "black",
+                                  fontWeight: "bold",
+                                  fontSize: "24px",
+                                  cursor: "pointer",
+                                  userSelect: "none"
+                              }}
                 >
                     <Image src={logo} style={{cursor: "pointer"}}></Image>
                     ReFind
@@ -36,7 +45,7 @@ function NavBar(props) {
                     <Button onClick={goToRegistration} className={styles.register} style={{fontSize: "18px"}}>
                         Register
                     </Button>
-                    <Button className={styles.login} style={{fontSize: "18px"}}>
+                    <Button onClick={goToLogin} className={styles.login} style={{fontSize: "18px"}}>
                         Login
                     </Button>
                 </Nav>

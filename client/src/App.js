@@ -3,17 +3,35 @@ import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import "./App.css";
 import MainPage from "./pages/MainPage";
 import Registration from "./pages/Registration";
+import Login from "./pages/Login";
+import AuthNavBar from "./components/AuthNavBar/AuthNavBar";
+import AuthHeroSection from "./components/AuthHeroSection/AuthHeroSection";
+import NavBar from "./components/NavBar/NavBar";
+import HeroSection from "./components/HeroSection/HeroSection";
+import AuthFooter from "./components/AuthFooter/AuthFooter";
+import Footer from "./components/Footer/Footer";
 
 function App() {
     const isLogin = false;
     return (
         <div className="App">
-            <Router>
-                <Routes>
-                    <Route path="/" element={<MainPage isLogin={isLogin}/>}/>
-                    <Route path="/registration" element={<Registration isLogin={isLogin}/>}/>
-                </Routes>
-            </Router>
+            {isLogin ? (
+                <AuthNavBar></AuthNavBar>
+            ) : (
+                <NavBar></NavBar>
+            )}
+            <Routes>
+                <Route path="/" element={<MainPage isLogin={isLogin}/>}/>
+                <Route path="/registration" element={<Registration isLogin={isLogin}/>}/>
+                <Route path="/login" element={<Login isLogin={isLogin}/>}/>
+            </Routes>
+            {isLogin ? (
+                <AuthFooter></AuthFooter>
+            ) : (
+                <>
+                    <Footer></Footer>
+                </>
+            )}
         </div>
         // <div className="App">
         //   <MainPage isLogin={isLogin}></MainPage>

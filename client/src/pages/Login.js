@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import NavBar from "../components/NavBar/NavBar";
 import Footer from "../components/Footer/Footer";
-import RegisterForm from "../components/RegisterForm/RegisterForm";
+import LoginForm from "../components/LoginForm/LoginForm";
 import {useNavigate} from "react-router-dom";
 
 function Registration(props) {
@@ -15,7 +15,7 @@ function Registration(props) {
         <div>
             {isLogin ? goToMain :
                 (
-                    <RegisterForm></RegisterForm>
+                    <LoginForm></LoginForm>
                 )
             }
         </div>
