@@ -18,11 +18,14 @@ function App() {
             ) : (
                 <NavBar></NavBar>
             )}
-            <Routes>
-                <Route path="/" element={<MainPage isLogin={isLogin}/>}/>
-                <Route path="/registration" element={<Registration isLogin={isLogin}/>}/>
-                <Route path="/login" element={<Login isLogin={isLogin}/>}/>
-            </Routes>
+            <div className="PageContent">
+                <Routes>
+                    <Route path="/" element={<MainPage isLogin={isLogin}/>}/>
+                    <Route path="/registration" element={<Registration isLogin={isLogin}/>}/>
+                    <Route path="/login" element={<Login isLogin={isLogin}/>}/>
+                </Routes>
+            </div>
+
             {isLogin ? (
                 <AuthFooter></AuthFooter>
             ) : (
