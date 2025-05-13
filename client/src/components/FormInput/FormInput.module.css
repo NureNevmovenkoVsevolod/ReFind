@@ -1,0 +1,23 @@
+.form_group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form_input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    box-sizing: border-box;
+}
+
+.input_error {
+    border: 2px solid #ff5252;
+}
+
+.error_text {
+    color: #ff5252;
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+}

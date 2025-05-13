@@ -18,7 +18,7 @@ function AuthNavBar(props) {
         <Navbar.Brand href="#" className="pl-2">
           <Image src={logo} />
           <Navbar.Brand
-            style={{ color: "black", fontWeight: "bold", fontSize: "24px" }}
+            style={{ color: "black", fontWeight: "bold", fontSize: "24px" , cursor: "pointer"}}
           >
             ReFind
           </Navbar.Brand>

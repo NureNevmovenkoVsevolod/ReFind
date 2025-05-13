@@ -1,21 +1,19 @@
 .register, .login {
-    color: black ;
+    color: black;
     background-color: #FFE14D;
     border-radius: 4px;
     padding: 0.5rem 1rem !important;
     margin-left: 1rem;
     font-weight: 500;
-  }
-  
-  .login {
-    background-color: #FFE14D;
-  }
-  
-  .register {
-    background-color: #FFE14D;
-  }
+}
 
-  .register:hover, .login:hover {
+
+.register, .login  {
+    background-color: #FFE14D;
+    transition: 0.2s ease-in-out;
+}
+
+.register:hover, .login:hover {
     opacity: 0.9;
     color: white;
-  }
+}

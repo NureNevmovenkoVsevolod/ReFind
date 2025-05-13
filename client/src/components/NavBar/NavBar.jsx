@@ -6,32 +6,43 @@ import Button from "react-bootstrap/Button";
 import Image from "react-bootstrap/Image";
 import styles from "./NavBar.module.css";
 import logo from "../../assets/logo.png";
+import {useNavigate} from "react-router-dom";
+
 
 function NavBar(props) {
-  return (
-    <Navbar bg="primary" data-bs-theme="dark">
-      <Container
-        fluid
-        className="d-flex justify-content-between align-items-center px-5"
-      >
-        <Image src={logo}></Image>
-        <Navbar.Brand
-          style={{ color: "black", fontWeight: "bold", fontSize: "24px" }}
-        >
-          ReFind
-        </Navbar.Brand>
+    const navigate = useNavigate();
+    const goToRegistration = () => {
+        navigate('/registration');
+    };
+    const goToMain = () => {
+        navigate('/');
+    };
 
-        <Nav className="ms-auto d-flex flex-row gap-2">
-          <Button className={styles.register} style={{ fontSize: "18px" }}>
-            Register
-          </Button>
-          <Button className={styles.login} style={{ fontSize: "18px" }}>
-            Login
-          </Button>
-        </Nav>
-      </Container>
-    </Navbar>
-  );
+    return (
+        <Navbar bg="primary" data-bs-theme="dark">
+            <Container
+                fluid
+                className="d-flex justify-content-between align-items-center px-5"
+            >
+
+                <Navbar.Brand onClick={goToMain}
+                    style={{color: "black", fontWeight: "bold", fontSize: "24px", cursor: "pointer"}}
+                >
+                    <Image src={logo} style={{cursor: "pointer"}}></Image>
+                    ReFind
+                </Navbar.Brand>
+
+                <Nav className="ms-auto d-flex flex-row gap-2">
+                    <Button onClick={goToRegistration} className={styles.register} style={{fontSize: "18px"}}>
+                        Register
+                    </Button>
+                    <Button className={styles.login} style={{fontSize: "18px"}}>
+                        Login
+                    </Button>
+                </Nav>
+            </Container>
+        </Navbar>
+    );
 }
 
 export default NavBar;
