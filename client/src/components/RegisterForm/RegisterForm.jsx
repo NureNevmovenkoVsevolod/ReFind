@@ -21,15 +21,15 @@ function RegisterForm() {
         const newErrors = {};
 
         if (!formData.email.includes('@')) {
-            newErrors.email = 'Введіть коректну електронну пошту';
+            newErrors.email = 'Enter a valid email';
         }
 
         if (formData.password.length < 6) {
-            newErrors.password = 'Пароль має містити щонайменше 6 символів';
+            newErrors.password = 'Password must contain at least 6 characters';
         }
 
         if (formData.password !== formData.confirmPassword) {
-            newErrors.confirmPassword = 'Паролі не співпадають';
+            newErrors.confirmPassword = 'Passwords are different';
         }
 
         setErrors(newErrors);
@@ -40,7 +40,7 @@ function RegisterForm() {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (validate()) {
-            console.log('Дані відправлені:', formData);
+            console.log('Data was sent:', formData);
             // відправлення даних або перехід на іншу сторінку
         }
     };
