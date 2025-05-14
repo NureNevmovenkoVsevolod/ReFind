@@ -1,24 +1,25 @@
 .logout {
-    color: black ;
+    color: black;
     background-color: #FFE14D;
     border-radius: 4px;
     padding: 0.5rem 1rem !important;
     margin-left: 1rem;
     font-weight: 500;
-  }
-  
-  .logout {
-    background-color: #FFE14D;
-  }
-  
-
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
 
 .logout:hover {
     opacity: 0.9;
     color: white;
 }
 
-.text{
+.text {
     color: black;
     font-size: 18px;
+    cursor: pointer;
+}
+
+.text:hover {
+    opacity: 0.8;
 }

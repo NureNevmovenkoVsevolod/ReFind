@@ -8,7 +8,7 @@ import styles from "./AuthNavBar.module.css";
 import user from "../../assets/user.png";
 import logo from "../../assets/logo.png";
 
-function AuthNavBar(props) {
+function AuthNavBar({ onLogout }) {
   return (
     <Navbar bg="primary" data-bs-theme="dark">
       <Container
@@ -18,7 +18,12 @@ function AuthNavBar(props) {
         <Navbar.Brand href="#" className="pl-2">
           <Image src={logo} />
           <Navbar.Brand
-            style={{ color: "black", fontWeight: "bold", fontSize: "24px" , cursor: "pointer"}}
+            style={{
+              color: "black",
+              fontWeight: "bold",
+              fontSize: "24px",
+              cursor: "pointer",
+            }}
           >
             ReFind
           </Navbar.Brand>
@@ -47,7 +52,11 @@ function AuthNavBar(props) {
             <Image src={user} />
           </Button>
 
-          <Button className={styles.logout} style={{ fontSize: "18px" }}>
+          <Button
+            className={styles.logout}
+            style={{ fontSize: "18px" }}
+            onClick={onLogout}
+          >
             Logout
           </Button>
         </div>

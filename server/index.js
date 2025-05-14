@@ -6,6 +6,8 @@ import sequelize from "./db.js";
 import models from "./models/index.js";
 import dotenv from "dotenv";
 import cors from "cors";
+import jwt from "jsonwebtoken";
+
 dotenv.config();
 const PORT = process.env.PORT || 3000;
 
@@ -15,10 +17,27 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5000",
+    origin: "http://localhost:3000",
     credentials: true,
   })
 );
+
+// Verify JWT token middleware
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: "No token provided" });
+  }
+
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+};
 
 // Session configuration
 app.use(
@@ -32,12 +51,18 @@ app.use(
     },
   })
 );
+
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
+
 // Routes
-////Auth
 app.use("/auth", authRouter);
+
+// Token verification endpoint
+app.get("/auth/verify", verifyToken, (req, res) => {
+  res.status(200).json({ user: req.user });
+});
 
 const startServer = async () => {
   try {
@@ -49,7 +74,7 @@ const startServer = async () => {
     });
   } catch (error) {
     console.error("Error starting server:", error);
-    console.error("❌ Помилка з’єднання:", err);
+    console.error("❌ Помилка з’єднання:", error);
   }
 };
 

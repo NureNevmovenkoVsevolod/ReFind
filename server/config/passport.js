@@ -24,33 +24,35 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:5000/auth/google/callback", // Повний URL
+      callbackURL: "http://localhost:5000/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        console.log("Google profile:", profile); // Для дебагу
+        // Check if user already exists
         let user = await User.findOne({
-          where: {
-            provider_id: profile.id,
-            auth_provider: "google",
-          },
+          where: { email: profile.emails[0].value },
         });
 
-        if (!user) {
+        if (user) {
+          // Update user if needed
+          await user.update({
+            provider: "google",
+            provider_id: profile.id,
+          });
+        } else {
+          // Create new user
           user = await User.create({
             email: profile.emails[0].value,
             first_name: profile.name.givenName,
             last_name: profile.name.familyName,
-            auth_provider: "google",
+            provider: "google",
             provider_id: profile.id,
-            user_pfp: profile.photos[0].value,
-            is_verified: true,
+            profile_picture: profile.photos[0].value,
           });
         }
 
         return done(null, user);
       } catch (error) {
-        console.error("Google auth error:", error); // Для дебагу
         return done(error, null);
       }
     }
