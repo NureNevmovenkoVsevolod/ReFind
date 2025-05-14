@@ -3,27 +3,37 @@ import { Image } from "react-bootstrap";
 import ButtonFilter from "../ButtonFilter/ButtonFilter";
 import arrow from "../../assets/arrowFilter.png";
 import styles from "./CurrentFindsSection.module.css";
+import axios from "axios";
 
-export const CategoryFilter = () => {
-  const categories = [
-    "All categories",
-    "Documents",
-    "Electronics",
-    "Clothing and accessories",
-    "Pets",
-    "Keys",
-    "Money and bank cards",
-    "Jewelry",
-    "Bags",
-    "Phones",
-    "Toys",
-    "Books",
-    "Other",
-  ];
-
+export const CategoryFilter = ({ onCategoryChange }) => {
+  const [categories, setCategories] = useState([]);
   const [active, setActive] = useState("All categories");
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const scrollContainerRef = useRef(null);
+
+  // Fetch categories from backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/categories"
+        );
+        const dbCategories = response.data.map((cat) => cat.categorie_name);
+        setCategories(["All categories", ...dbCategories]);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const handleCategoryClick = (category) => {
+    setActive(category);
+    if (onCategoryChange) {
+      onCategoryChange(category === "All categories" ? null : category);
+    }
+  };
 
   const scrollRight = () => {
     if (scrollContainerRef.current) {
@@ -77,7 +87,7 @@ export const CategoryFilter = () => {
             <ButtonFilter
               key={category}
               isActive={active === category}
-              onClick={() => setActive(category)}
+              onClick={() => handleCategoryClick(category)}
             >
               {category}
             </ButtonFilter>

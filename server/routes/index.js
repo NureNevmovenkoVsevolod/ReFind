@@ -1,9 +1,9 @@
 import { Router } from "express";
-
+import advertisementRouter from "../routes/advertisement.routes.js";
+import * as categoriesController from "../controllers/categories.controller.js";
 const router = Router();
 
-router.get("/", (req, res) => {
-  res.status(200).json({ message: "Hello World!!" });
-});
+router.get("/advertisement", advertisementRouter);
+router.get("/categories", categoriesController.getAllCategories);
 
 export default router;

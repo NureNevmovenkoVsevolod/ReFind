@@ -1,195 +1,88 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Row, Col } from "react-bootstrap";
-import styles from "./CurrentFindsSection.module.css";
 import { CategoryFilter } from "./CategoryFilter";
 import FindCard from "../FindCard/FindCard";
 import ShowMoreButton from "../ShowMoreButton/ShowMoreButton";
-
-// Приклад даних для карток знахідок
-const allFindItems = [
-  {
-    id: 1,
-    image: "/path-to-plush-toy.jpg", // Заміни на правильний шлях до зображення
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 2,
-    image: "/path-to-glasses.jpg", // Заміни на правильний шлях до зображення
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 3,
-    image: "/path-to-plush-toy.jpg", // Заміни на правильний шлях до зображення
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 4,
-    image: "/path-to-wallet.jpg", // Заміни на правильний шлях до зображення
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 5,
-    image: "/path-to-glasses.jpg", // Заміни на правильний шлях до зображення
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 6,
-    image: "/path-to-wallet.jpg", // Заміни на правильний шлях до зображення
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 7,
-    image: "/path-to-glasses.jpg", // Заміни на правильний шлях до зображення
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 8,
-    image: "/path-to-wallet.jpg", // Заміни на правильний шлях до зображення
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  // Наступні 8 карток, які з'являться після натискання "Show more"
-  {
-    id: 9,
-    image: "/path-to-plush-toy.jpg",
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 10,
-    image: "/path-to-glasses.jpg",
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 11,
-    image: "/path-to-plush-toy.jpg",
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 12,
-    image: "/path-to-wallet.jpg",
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 13,
-    image: "/path-to-glasses.jpg",
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 14,
-    image: "/path-to-wallet.jpg",
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 15,
-    image: "/path-to-glasses.jpg",
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 16,
-    image: "/path-to-plush-toy.jpg",
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 17,
-    image: "/path-to-wallet.jpg",
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 18,
-    image: "/path-to-glasses.jpg",
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-  {
-    id: 19,
-    image: "/path-to-wallet.jpg",
-    date: "01.01.2025",
-    cityName: "City Name",
-    categoryName: "Category name",
-  },
-];
+import styles from "./CurrentFindsSection.module.css";
+import axios from "axios";
 
 function CurrentFindsSection() {
-  // Початково показувати тільки 8 карток
-  const [visibleItems, setVisibleItems] = useState(8);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [finds, setFinds] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-  // Масив елементів, які відображаються зараз
-  const currentItems = allFindItems.slice(0, visibleItems);
+  const fetchFinds = async (pageNum = 1, category = selectedCategory) => {
+    try {
+      setLoading(true);
+      const params = {
+        page: pageNum,
+        limit: 8,
+        ...(category && { category }),
+      };
 
-  // Перевірка, чи є ще елементи для показу
-  const hasMoreItems = visibleItems < allFindItems.length;
-
-  // Функція для завантаження більше елементів
-  const loadMoreItems = () => {
-    // Імітація завантаження (можна замінити на реальний запит до API)
-    setLoading(true);
-
-    setTimeout(() => {
-      setVisibleItems((prevVisible) =>
-        Math.min(prevVisible + 8, allFindItems.length)
+      const response = await axios.get(
+        "http://localhost:5000/api/advertisement/finds",
+        {
+          params,
+        }
       );
+
+      if (pageNum === 1) {
+        setFinds(response.data.items);
+      } else {
+        setFinds((prev) => [...prev, ...response.data.items]);
+      }
+
+      setHasMore(response.data.items.length === 8);
+      setPage(pageNum);
+    } catch (error) {
+      console.error("Error fetching finds:", error);
+    } finally {
       setLoading(false);
-    }, 500); // Невелика затримка для імітації завантаження
+    }
+  };
+
+  useEffect(() => {
+    fetchFinds(1);
+  }, []);
+
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+    fetchFinds(1, category);
+  };
+
+  const handleShowMore = () => {
+    if (!loading && hasMore) {
+      fetchFinds(page + 1);
+    }
   };
 
   return (
     <Container className={styles.container}>
-      <Row className="d-flex justify-content-center">
-        <h2 className={`${styles.title} text-center`}>Current Finds</h2>
-      </Row>
-      <CategoryFilter />
-
+      <h2 className={styles.title}>Found Items</h2>
+      <CategoryFilter onCategoryChange={handleCategoryChange} />
       <Row className={styles.findsGrid}>
-        {currentItems.map((item) => (
-          <Col key={item.id} xs={6} md={4} lg={3} className={styles.cardCol}>
+        {finds.map((find) => (
+          <Col
+            key={find.advertisement_id}
+            xs={12}
+            sm={6}
+            md={4}
+            lg={3}
+            className={styles.cardCol}
+          >
             <FindCard
-              image={item.image}
-              date={item.date}
-              cityName={item.cityName}
-              categoryName={item.categoryName}
+              image={find.images?.[0]?.image_url}
+              date={new Date(find.created_at).toLocaleDateString()}
+              cityName={find.city}
+              categoryName={find.categorie_name}
             />
           </Col>
         ))}
       </Row>
-
-      {hasMoreItems && (
-        <ShowMoreButton loading={loading} onClick={loadMoreItems} />
-      )}
+      {hasMore && <ShowMoreButton loading={loading} onClick={handleShowMore} />}
     </Container>
   );
 }

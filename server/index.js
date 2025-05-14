@@ -2,6 +2,7 @@ import express from "express";
 import session from "express-session";
 import passport from "./config/passport.js";
 import authRouter from "./routes/auth/index.js";
+import indexRouter from "./routes/index.js";
 import sequelize from "./db.js";
 import models from "./models/index.js";
 import dotenv from "dotenv";
@@ -58,6 +59,7 @@ app.use(passport.session());
 
 // Routes
 app.use("/auth", authRouter);
+app.use("/api", indexRouter);
 
 // Token verification endpoint
 app.get("/auth/verify", verifyToken, (req, res) => {

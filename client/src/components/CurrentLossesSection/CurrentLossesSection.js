@@ -1,144 +1,90 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Row, Col } from "react-bootstrap";
-import styles from "../CurrentFindsSection/CurrentFindsSection.module.css";
 import { CategoryFilter } from "../CurrentFindsSection/CategoryFilter";
 import LossCard from "../LossCard/LossCard";
 import ShowMoreButton from "../ShowMoreButton/ShowMoreButton";
-
-// Example data for loss cards
-const allLossItems = [
-  {
-    id: 1,
-    image: "/path-to-plush-toy.jpg",
-    date: "01.01.2025",
-    cityName: "City",
-    categoryName: "Category name",
-    name: "Name",
-    description:
-      "Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-  },
-  {
-    id: 2,
-    image: "/path-to-glasses.jpg",
-    date: "01.01.2025",
-    cityName: "City",
-    categoryName: "Category name",
-    name: "Name",
-    description:
-      "Lorem ipsum is simply dummy text of the printing and typesetting industry.",
-  },
-  {
-    id: 3,
-    image: "/path-to-plush-toy.jpg",
-    date: "01.01.2025",
-    cityName: "City",
-    categoryName: "Category name",
-    name: "Name",
-    description:
-      "Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-  },
-  {
-    id: 4,
-    image: "/path-to-glasses.jpg",
-    date: "01.01.2025",
-    cityName: "City",
-    categoryName: "Category name",
-    name: "Name",
-    description:
-      "Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-  },
-  // Additional items that will appear after "Show more"
-  {
-    id: 5,
-    image: "/path-to-plush-toy.jpg",
-    date: "01.01.2025",
-    cityName: "City",
-    categoryName: "Category name",
-    name: "Name",
-    description:
-      "Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-  },
-  {
-    id: 6,
-    image: "/path-to-glasses.jpg",
-    date: "01.01.2025",
-    cityName: "City",
-    categoryName: "Category name",
-    name: "Name",
-    description:
-      "Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-  },
-  {
-    id: 7,
-    image: "/path-to-plush-toy.jpg",
-    date: "01.01.2025",
-    cityName: "City",
-    categoryName: "Category name",
-    name: "Name",
-    description:
-      "Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-  },
-  {
-    id: 8,
-    image: "/path-to-glasses.jpg",
-    date: "01.01.2025",
-    cityName: "City",
-    categoryName: "Category name",
-    name: "Name",
-    description:
-      "Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-  },
-];
+import styles from "../CurrentFindsSection/CurrentFindsSection.module.css";
+import axios from "axios";
 
 function CurrentLossesSection() {
-  // Initially show only 4 cards
-  const [visibleItems, setVisibleItems] = useState(4);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [losses, setLosses] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-  // Array of items currently displayed
-  const currentItems = allLossItems.slice(0, visibleItems);
+  const fetchLosses = async (pageNum = 1, category = selectedCategory) => {
+    try {
+      setLoading(true);
+      const params = {
+        page: pageNum,
+        limit: 8,
+        ...(category && { category }),
+      };
 
-  // Check if there are more items to show
-  const hasMoreItems = visibleItems < allLossItems.length;
-
-  // Function to load more items
-  const loadMoreItems = () => {
-    // Simulating loading (can be replaced with a real API request)
-    setLoading(true);
-
-    setTimeout(() => {
-      setVisibleItems((prevVisible) =>
-        Math.min(prevVisible + 4, allLossItems.length)
+      const response = await axios.get(
+        "http://localhost:5000/api/advertisement/losses",
+        {
+          params,
+        }
       );
+
+      if (pageNum === 1) {
+        setLosses(response.data.items);
+      } else {
+        setLosses((prev) => [...prev, ...response.data.items]);
+      }
+
+      setHasMore(response.data.items.length === 8);
+      setPage(pageNum);
+    } catch (error) {
+      console.error("Error fetching losses:", error);
+    } finally {
       setLoading(false);
-    }, 500); // Small delay to simulate loading
+    }
+  };
+
+  useEffect(() => {
+    fetchLosses(1);
+  }, []);
+
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+    fetchLosses(1, category);
+  };
+
+  const handleShowMore = () => {
+    if (!loading && hasMore) {
+      fetchLosses(page + 1);
+    }
   };
 
   return (
     <Container className={styles.container}>
-      <Row className="d-flex justify-content-center">
-        <h2 className={`${styles.title} text-center`}>Current Losses</h2>
-      </Row>
-      <CategoryFilter />
-
-      <Row>
-        {currentItems.map((item) => (
-          <Col key={item.id} xs={12} className="mb-4">
+      <h2 className={styles.title}>Lost Items</h2>
+      <CategoryFilter onCategoryChange={handleCategoryChange} />
+      <Row className={styles.findsGrid}>
+        {losses.map((loss) => (
+          <Col
+            key={loss.advertisement_id}
+            xs={12}
+            sm={6}
+            md={4}
+            lg={3}
+            className={styles.cardCol}
+          >
             <LossCard
-              image={item.image}
-              date={item.date}
-              cityName={item.cityName}
-              categoryName={item.categoryName}
-              name={item.name}
-              description={item.description}
+              image={loss.images?.[0]?.image_url}
+              date={new Date(loss.created_at).toLocaleDateString()}
+              cityName={loss.city}
+              categoryName={loss.categorie_name}
+              name={loss.title}
+              description={loss.description}
             />
           </Col>
         ))}
       </Row>
-
-      {hasMoreItems && (
-        <ShowMoreButton loading={loading} onClick={loadMoreItems} />
-      )}
+      {hasMore && <ShowMoreButton loading={loading} onClick={handleShowMore} />}
     </Container>
   );
 }
