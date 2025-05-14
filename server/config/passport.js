@@ -45,9 +45,9 @@ passport.use(
             email: profile.emails[0].value,
             first_name: profile.name.givenName,
             last_name: profile.name.familyName,
-            provider: "google",
+            auth_provider: "google",
             provider_id: profile.id,
-            profile_picture: profile.photos[0].value,
+            user_pfp: profile.photos[0].value,
           });
         }
 
@@ -84,7 +84,6 @@ passport.use(
             auth_provider: "facebook",
             provider_id: profile.id,
             user_pfp: profile.photos[0].value,
-            is_verified: true,
           });
         }
 
