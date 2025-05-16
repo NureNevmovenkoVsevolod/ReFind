@@ -45,6 +45,14 @@ const Advertisement = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     mod_check: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,

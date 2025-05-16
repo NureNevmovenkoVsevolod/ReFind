@@ -21,19 +21,20 @@ const Payment = sequelize.define(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
-    payment_date: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    payment_method: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     status: {
       type: DataTypes.STRING,
       allowNull: false,
+      defaultValue: "pending",
+      validate: {
+        isIn: [["pending", "completed", "failed", "cancelled"]],
+      },
     },
-    transaction_id: {
+    payment_reference: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    payment_url: {
       type: DataTypes.STRING,
       allowNull: false,
     },
