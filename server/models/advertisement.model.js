@@ -51,11 +51,15 @@ const Advertisement = sequelize.define(
     },
     email: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     mod_check: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    incident_date: {
+      type: DataTypes.DATE,
+      allowNull: false,
     },
   },
   {

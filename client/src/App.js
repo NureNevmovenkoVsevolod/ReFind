@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import "./App.css";
 import MainPage from "./pages/MainPage";
 import Registration from "./pages/Registration";
@@ -9,6 +9,8 @@ import NavBar from "./components/NavBar/NavBar";
 import Footer from "./components/Footer/Footer";
 import AuthSuccess from "./components/AuthSuccess/AuthSuccess";
 import axios from "axios";
+import CreateLost from "./pages/CreateLost";
+import CreateFound from "./pages/CreateFound";
 
 function App() {
   const [isLogin, setIsLogin] = useState(false);
@@ -59,6 +61,14 @@ function App() {
           <Route
             path="/auth/success"
             element={<AuthSuccess setIsLogin={setIsLogin} />}
+          />
+          <Route
+            path="/lost/create"
+            element={isLogin ? <CreateLost /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/found/create"
+            element={isLogin ? <CreateFound /> : <Navigate to="/login" />}
           />
         </Routes>
       </div>

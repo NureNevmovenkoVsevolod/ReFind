@@ -1,21 +1,74 @@
-import React from 'react';
-import styles from'./FormInput.module.css';
+import React from "react";
+import styles from "./FormInput.module.css";
 
-function FormInput({ type = 'text', name, value, onChange, placeholder, error }) {
-    return (
-        <div className={styles.form_group}>
+const FormInput = ({
+  label,
+  type,
+  name,
+  value,
+  onChange,
+  required,
+  options,
+  icon,
+  placeholder,
+}) => {
+  const renderInput = () => {
+    switch (type) {
+      case "textarea":
+        return (
+          <textarea
+            name={name}
+            value={value}
+            onChange={onChange}
+            required={required}
+            className={styles.textarea}
+            placeholder={placeholder}
+          />
+        );
+      case "select":
+        return (
+          <div className={styles.selectWrapper}>
+            <select
+              name={name}
+              value={value}
+              onChange={onChange}
+              required={required}
+              className={styles.select}
+            >
+              <option value="">Select category</option>
+              {options?.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <span className={styles.selectArrow}>▼</span>
+          </div>
+        );
+      default:
+        return (
+          <div className={styles.inputWrapper}>
+            {icon && <img src={icon} alt="" className={styles.inputIcon} />}
             <input
-                type={type}
-                name={name}
-                value={value}
-                onChange={onChange}
-                placeholder={placeholder}
-                className={`${styles.form_input} ${error ? styles.input_error : ''}`}
-                required
+              type={type}
+              name={name}
+              value={value}
+              onChange={onChange}
+              required={required}
+              className={`${styles.input} ${icon ? styles.withIcon : ""}`}
+              placeholder={placeholder}
             />
-            {error && <span className="error-text">{error}</span>}
-        </div>
-    );
-}
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className={styles.formGroup}>
+      {label && <label className={styles.label}>{label}</label>}
+      {renderInput()}
+    </div>
+  );
+};
 
 export default FormInput;

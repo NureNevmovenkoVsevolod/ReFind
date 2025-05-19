@@ -1,6 +1,7 @@
 import Advertisement from "../models/advertisement.model.js";
 import Image from "../models/image.model.js";
 import Payment from "../models/payments.model.js";
+import Category from "../models/categories.model.js";
 import { Op } from "sequelize";
 import fs from "fs/promises";
 import path from "path";
@@ -22,8 +23,10 @@ export const createAdvertisement = async (req, res) => {
       type,
       phone,
       email,
-      images = [],
+      incident_date,
     } = req.body;
+
+    console.log("Creating advertisement with files:", req.files); // Debug log
 
     // Create advertisement
     const advertisement = await Advertisement.create({
@@ -39,44 +42,113 @@ export const createAdvertisement = async (req, res) => {
       phone,
       email,
       mod_check: false,
+      incident_date,
     });
 
-    // Save images if any
-    if (images.length > 0) {
-      await Image.bulkCreate(
-        images.map((url) => ({
-          advertisement_id: advertisement.advertisement_id,
-          url,
-        }))
-      );
+    // Handle image uploads if present
+    if (req.files && req.files.length > 0) {
+      console.log(`Processing ${req.files.length} image(s)`); // Debug log
+
+      const imagePromises = req.files.map(async (file) => {
+        try {
+          // Generate the URL for the uploaded image
+          const imageUrl = `/uploads/${file.filename}`;
+          console.log("Creating image record with URL:", imageUrl); // Debug log
+
+          // Create image record in database
+          const image = await Image.create({
+            advertisement_id: advertisement.advertisement_id,
+            image_url: imageUrl,
+          });
+
+          console.log("Created image record:", image); // Debug log
+          return image;
+        } catch (error) {
+          console.error("Error creating image record:", error);
+          throw error; // Re-throw to be caught by Promise.all
+        }
+      });
+
+      await Promise.all(imagePromises);
+      console.log("All image records created successfully"); // Debug log
     }
 
-    res.status(201).json(advertisement);
+    // Fetch the created advertisement with its images
+    const completeAdvertisement = await Advertisement.findOne({
+      where: { advertisement_id: advertisement.advertisement_id },
+      include: [
+        {
+          model: Image,
+          attributes: ["image_url"],
+        },
+      ],
+    });
+
+    console.log("Complete advertisement:", completeAdvertisement); // Debug log
+    res.status(201).json(completeAdvertisement);
   } catch (error) {
     console.error("Error creating advertisement:", error);
-    res.status(500).json({ message: "Failed to create advertisement" });
+    res.status(500).json({
+      message: "Failed to create advertisement",
+      error: error.message,
+    });
   }
 };
 
 // Get all finds
 export const getFinds = async (req, res) => {
   try {
-    const finds = await Advertisement.findAll({
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 8;
+    const offset = (page - 1) * limit;
+    const category = req.query.category;
+
+    console.log("Fetching finds with params:", { page, limit, category });
+
+    // Base query
+    const queryOptions = {
       where: {
         type: "find",
-        mod_check: true,
         status: "active",
       },
       include: [
         {
           model: Image,
-          attributes: ["url"],
+          attributes: ["image_url"],
+        },
+        {
+          model: Category,
+          attributes: ["categorie_id", "categorie_name"],
+          ...(category && {
+            where: { categorie_name: category },
+          }),
         },
       ],
       order: [["createdAt", "DESC"]],
-    });
+      limit,
+      offset,
+      distinct: true, // Important for correct count with includes
+    };
 
-    res.json(finds);
+    const { count, rows } = await Advertisement.findAndCountAll(queryOptions);
+
+    console.log(
+      `Found ${count} total advertisements, returning ${rows.length} items`
+    );
+
+    const response = {
+      items: rows.map((row) => ({
+        ...row.toJSON(),
+        categorie_name: row.Category?.categorie_name,
+      })),
+      total: count,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      hasMore: offset + rows.length < count,
+    };
+
+    console.log("Sending response:", response);
+    res.json(response);
   } catch (error) {
     console.error("Error fetching finds:", error);
     res.status(500).json({ message: "Failed to fetch finds" });
@@ -86,22 +158,51 @@ export const getFinds = async (req, res) => {
 // Get all losses
 export const getLosses = async (req, res) => {
   try {
-    const losses = await Advertisement.findAll({
-      where: {
-        type: "lost",
-        mod_check: true,
-        status: "active",
-      },
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 8;
+    const offset = (page - 1) * limit;
+    const category = req.query.category;
+
+    console.log("Fetching losses with params:", { page, limit, category });
+
+    const whereClause = {
+      type: "lost",
+      status: "active",
+      ...(category && { categorie_id: category }),
+    };
+
+    const { count, rows } = await Advertisement.findAndCountAll({
+      where: whereClause,
       include: [
         {
           model: Image,
-          attributes: ["url"],
+          attributes: ["image_url"],
+        },
+        {
+          model: Category,
+          attributes: ["categorie_id", "categorie_name"],
         },
       ],
       order: [["createdAt", "DESC"]],
+      limit,
+      offset,
     });
 
-    res.json(losses);
+    console.log(`Found ${count} total losses, returning ${rows.length} items`);
+
+    const response = {
+      items: rows.map((row) => ({
+        ...row.toJSON(),
+        categorie_name: row.Category?.categorie_name,
+      })),
+      total: count,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      hasMore: offset + rows.length < count,
+    };
+
+    console.log("Sending response:", response);
+    res.json(response);
   } catch (error) {
     console.error("Error fetching losses:", error);
     res.status(500).json({ message: "Failed to fetch losses" });
@@ -271,5 +372,60 @@ export const deleteAdvertisement = async (req, res) => {
   } catch (error) {
     console.error("Error deleting advertisement:", error);
     res.status(500).json({ message: "Failed to delete advertisement" });
+  }
+};
+
+// Add images to advertisement
+export const addImagesToAdvertisement = async (req, res) => {
+  try {
+    const { advertisement_id } = req.params;
+
+    // Check if advertisement exists and belongs to user
+    const advertisement = await Advertisement.findOne({
+      where: {
+        advertisement_id,
+        user_id: req.user.id,
+      },
+    });
+
+    if (!advertisement) {
+      return res.status(404).json({
+        message: "Advertisement not found or unauthorized",
+      });
+    }
+
+    // Handle file uploads if present
+    if (req.files && req.files.length > 0) {
+      const imagePromises = req.files.map((file) => {
+        // Generate the URL for the uploaded image
+        const imageUrl = `/uploads/${file.filename}`;
+
+        // Create image record in database
+        return Image.create({
+          advertisement_id: advertisement.advertisement_id,
+          image_url: imageUrl,
+        });
+      });
+
+      await Promise.all(imagePromises);
+
+      // Get updated advertisement with images
+      const updatedAdvertisement = await Advertisement.findOne({
+        where: { advertisement_id },
+        include: [
+          {
+            model: Image,
+            attributes: ["image_url"],
+          },
+        ],
+      });
+
+      return res.json(updatedAdvertisement);
+    }
+
+    return res.status(400).json({ message: "No images provided" });
+  } catch (error) {
+    console.error("Error adding images to advertisement:", error);
+    res.status(500).json({ message: "Failed to add images" });
   }
 };

@@ -8,6 +8,7 @@
   font-size: 48px;
   color: black;
   margin-bottom: 30px;
+  text-align: center;
 }
 
 .categoryFilterWrapper {
@@ -69,9 +70,12 @@
 }
 
 .findsGrid {
+  display: flex;
+  flex-wrap: wrap;
   margin-top: 40px;
 }
 
 .cardCol {
-  margin-bottom: 30px;
+  display: flex;
+  margin-bottom: 24px;
 }

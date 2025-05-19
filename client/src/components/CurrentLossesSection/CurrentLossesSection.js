@@ -22,6 +22,8 @@ function CurrentLossesSection() {
         ...(category && { category }),
       };
 
+      console.log("Fetching losses with params:", params);
+
       const response = await axios.get(
         "http://localhost:5000/api/advertisement/losses",
         {
@@ -29,13 +31,15 @@ function CurrentLossesSection() {
         }
       );
 
+      console.log("Received response:", response.data);
+
       if (pageNum === 1) {
-        setLosses(response.data.items);
+        setLosses(response.data.items || []);
       } else {
-        setLosses((prev) => [...prev, ...response.data.items]);
+        setLosses((prev) => [...prev, ...(response.data.items || [])]);
       }
 
-      setHasMore(response.data.items.length === 8);
+      setHasMore(response.data.hasMore);
       setPage(pageNum);
     } catch (error) {
       console.error("Error fetching losses:", error);
@@ -45,44 +49,59 @@ function CurrentLossesSection() {
   };
 
   useEffect(() => {
+    console.log("Initial fetch");
     fetchLosses(1);
   }, []);
 
   const handleCategoryChange = (category) => {
+    console.log("Category changed to:", category);
     setSelectedCategory(category);
+    setPage(1);
     fetchLosses(1, category);
   };
 
   const handleShowMore = () => {
     if (!loading && hasMore) {
+      console.log("Loading more items, current page:", page);
       fetchLosses(page + 1);
     }
   };
 
   return (
     <Container className={styles.container}>
-      <h2 className={styles.title}>Lost Items</h2>
+      <h2 className={styles.title}>Current Losses</h2>
       <CategoryFilter onCategoryChange={handleCategoryChange} />
       <Row className={styles.findsGrid}>
-        {losses.map((loss) => (
-          <Col
-            key={loss.advertisement_id}
-            xs={12}
-            sm={6}
-            md={4}
-            lg={3}
-            className={styles.cardCol}
-          >
-            <LossCard
-              image={loss.images?.[0]?.image_url}
-              date={new Date(loss.created_at).toLocaleDateString()}
-              cityName={loss.city}
-              categoryName={loss.categorie_name}
-              name={loss.title}
-              description={loss.description}
-            />
+        {losses && losses.length > 0 ? (
+          losses.map((loss) => (
+            <Col
+              key={loss.advertisement_id}
+              xs={12}
+              sm={6}
+              md={4}
+              lg={3}
+              className={styles.cardCol}
+            >
+              {" "}
+              <LossCard
+                image={
+                  loss.Images?.[0]?.image_url
+                    ? `http://localhost:5000/static${loss.Images[0].image_url}`
+                    : undefined
+                }
+                date={new Date(loss.incident_date).toLocaleDateString()}
+                title={loss.title}
+                cityName={loss.location_description}
+                categoryName={loss.Category?.categorie_name || "Other"}
+                description={loss.description}
+              />
+            </Col>
+          ))
+        ) : (
+          <Col xs={12}>
+            <p className="text-center">Currently, there are no lost items</p>
           </Col>
-        ))}
+        )}
       </Row>
       {hasMore && <ShowMoreButton loading={loading} onClick={handleShowMore} />}
     </Container>

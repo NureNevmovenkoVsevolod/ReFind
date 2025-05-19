@@ -17,3 +17,16 @@
     opacity: 0.9;
     color: white;
 }
+
+.navLink {
+    color: black !important;
+    font-size: 18px !important;
+    text-decoration: none !important;
+    padding: 8px 16px !important;
+    margin: 0 8px !important;
+}
+
+.navLink:hover {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+    border-radius: 4px;
+}

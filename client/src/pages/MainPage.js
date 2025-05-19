@@ -5,19 +5,18 @@ import CurrentFindsSection from "../components/CurrentFindsSection/CurrentFindsS
 import CurrentLossesSection from "../components/CurrentLossesSection/CurrentLossesSection";
 
 function MainPage(props) {
-    const isLogin = props.isLogin;
-    return (
-        <div>
-            {isLogin ? (
-                <AuthHeroSection></AuthHeroSection>
-            ) : (
-                <HeroSection></HeroSection>
-            )}
-            <CurrentFindsSection/>
-            <CurrentLossesSection/>
-
-        </div>
-    );
+  const isLogin = props.isLogin;
+  return (
+    <div>
+      {isLogin ? (
+        <AuthHeroSection></AuthHeroSection>
+      ) : (
+        <HeroSection></HeroSection>
+      )}
+      <CurrentFindsSection />
+      <CurrentLossesSection />
+    </div>
+  );
 }
 
 export default MainPage;
