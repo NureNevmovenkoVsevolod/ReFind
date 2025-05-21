@@ -25,6 +25,26 @@ const CreateAdvertForm = ({ type }) => {
   const [errors, setErrors] = useState({});
   const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState(null);
+  const [googlePayClient, setGooglePayClient] = useState(null);
+
+  useEffect(() => {
+    const initializeGooglePay = () => {
+      if (window.google && window.google.payments) {
+        const client = new window.google.payments.api.PaymentsClient({
+          environment: 'TEST'
+        });
+        setGooglePayClient(client);
+      }
+    };
+
+    if (window.google && window.google.payments) {
+      initializeGooglePay();
+    } else {
+      window.onGooglePayLoaded = initializeGooglePay;
+    }
+  }, []);
 
   useEffect(() => {
     // Завантаження категорій з БД
@@ -97,11 +117,56 @@ const CreateAdvertForm = ({ type }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const initializePayment = async () => {
+    if (!googlePayClient) {
+      throw new Error('Google Pay не ініціалізовано');
+    }
+
+    try {
+      const paymentDataRequest = {
+        apiVersion: 2,
+        apiVersionMinor: 0,
+        allowedPaymentMethods: [{
+          type: 'CARD',
+          parameters: {
+            allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
+            allowedCardNetworks: ['MASTERCARD', 'VISA']
+          },
+          tokenizationSpecification: {
+            type: 'PAYMENT_GATEWAY',
+            parameters: {
+              gateway: 'example',
+              gatewayMerchantId: 'exampleGatewayMerchantId'
+            }
+          }
+        }],
+        merchantInfo: {
+          merchantId: '12345678901234567890',
+          merchantName: 'ReFind'
+        },
+        transactionInfo: {
+          totalPriceStatus: 'FINAL',
+          totalPriceLabel: 'Total',
+          totalPrice: '50.00',
+          currencyCode: 'UAH',
+          countryCode: 'UA'
+        }
+      };
+
+      const paymentData = await googlePayClient.loadPaymentData(paymentDataRequest);
+      return paymentData;
+    } catch (error) {
+      if (error.statusCode === 'CANCELED') {
+        throw new Error('CANCELED');
+      }
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) {
-      // Прокручуємо до першої помилки
       const firstError = document.querySelector(`[data-error="true"]`);
       if (firstError) {
         firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -109,48 +174,95 @@ const CreateAdvertForm = ({ type }) => {
       return;
     }
 
-    try {
-      const token = localStorage.getItem("token");
-      const formDataToSend = new FormData();
-      
-      // Додаємо всі поля форми
-      Object.keys(formData).forEach((key) => {
-        if (key === "location_coordinates") {
-          formDataToSend.append(key, JSON.stringify(formData[key]));
-        } else if (key !== "images") {
-          formDataToSend.append(key, formData[key]);
-        }
-      });
-      
-      formDataToSend.append("type", type);
+    if (type === 'lost') {
+      try {
+        setShowPaymentModal(true);
+        
+        const paymentData = await initializePayment();
 
-      // Додаємо тільки файли з об'єктів images
-      if (formData.images.length > 0) {
-        formData.images.forEach((imageObj) => {
-          formDataToSend.append("images", imageObj.file);
+        console.log(paymentData);
+
+        const token = localStorage.getItem("token");
+        const formDataToSend = new FormData();
+        
+        Object.keys(formData).forEach((key) => {
+          if (key === "location_coordinates") {
+            formDataToSend.append(key, JSON.stringify(formData[key]));
+          } else if (key !== "images") {
+            formDataToSend.append(key, formData[key]);
+          }
         });
-      }
+        
+        formDataToSend.append("type", type);
 
-      const response = await fetch("http://localhost:5000/api/advertisement", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formDataToSend,
-      });
+        if (formData.images.length > 0) {
+          formData.images.forEach((imageObj) => {
+            formDataToSend.append("images", imageObj.file);
+          });
+        }
 
-      if (response.ok) {
-        const newAdvertisement = await response.json();
-        if (type === 'find') {
+        const response = await fetch("http://localhost:5000/api/advertisement", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formDataToSend,
+        });
+
+        if (response.ok) {
+          setPaymentStatus('success');
+          setShowPaymentModal(false);
           setShowModal(true);
         } else {
-          navigate("/");
+          throw new Error('Failed to create advertisement');
         }
-      } else {
-        console.error("Server error:", response.status, response.statusText);
+      } catch (error) {
+        if (error.message === 'CANCELED') {
+          setPaymentStatus('canceled');
+        } else {
+          setPaymentStatus('error');
+        }
+        setShowPaymentModal(false);
+        setShowModal(true);
       }
-    } catch (error) {
-      console.error("Error creating advertisement:", error);
+    } else {
+      try {
+        const token = localStorage.getItem("token");
+        const formDataToSend = new FormData();
+        
+        Object.keys(formData).forEach((key) => {
+          if (key === "location_coordinates") {
+            formDataToSend.append(key, JSON.stringify(formData[key]));
+          } else if (key !== "images") {
+            formDataToSend.append(key, formData[key]);
+          }
+        });
+        
+        formDataToSend.append("type", type);
+
+        if (formData.images.length > 0) {
+          formData.images.forEach((imageObj) => {
+            formDataToSend.append("images", imageObj.file);
+          });
+        }
+
+        const response = await fetch("http://localhost:5000/api/advertisement", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formDataToSend,
+        });
+
+        if (response.ok) {
+          const newAdvertisement = await response.json();
+          setShowModal(true);
+        } else {
+          console.error("Server error:", response.status, response.statusText);
+        }
+      } catch (error) {
+        console.error("Error creating advertisement:", error);
+      }
     }
   };
 
@@ -256,6 +368,16 @@ const CreateAdvertForm = ({ type }) => {
       location_coordinates: undefined
     }));
   };
+
+  const PaymentModal = () => (
+    <div className={styles.modalOverlay}>
+      <div className={styles.modalContent}>
+        <h2>Оплата через Google Pay</h2>
+        <p>Сума до оплати: 50₴</p>
+        <div id="google-pay-button"></div>
+      </div>
+    </div>
+  );
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
@@ -430,9 +552,9 @@ const CreateAdvertForm = ({ type }) => {
           data-error={!!errors.email}
         />
       </div>
-      {type === "lost" && formData.reward > 0 && (
+      {type === "lost" && (
         <div className={styles.feeSection}>
-          <h3>Комісія 50₴</h3>
+          <h3>Вартість публікації: 50₴</h3>
         </div>
       )}
       <button
@@ -444,7 +566,19 @@ const CreateAdvertForm = ({ type }) => {
         Опублікувати
       </button>
 
-      <SuccessModal show={showModal} handleClose={handleCloseModal} />
+      {showPaymentModal && <PaymentModal />}
+      
+      <SuccessModal 
+        show={showModal} 
+        handleClose={handleCloseModal}
+        message={
+          paymentStatus === 'success' 
+            ? "Оголошення створено успішно!" 
+            : paymentStatus === 'canceled'
+            ? "Оплату скасовано. Оголошення не створене."
+            : "Сталася помилка при створенні оголошення."
+        }
+      />
     </form>
   );
 };
