@@ -96,6 +96,7 @@ export const getFinds = async (req, res) => {
       where: {
         type: "find",
         status: "active",
+        mod_check: true,
       },
       include: [
         {
@@ -152,6 +153,7 @@ export const getLosses = async (req, res) => {
       where: {
         type: "lost",
         status: "active",
+        mod_check: true,
       },
       include: [
         {
