@@ -45,35 +45,25 @@ export const createAdvertisement = async (req, res) => {
       incident_date,
     });
 
-    // Handle image uploads if present
     if (req.files && req.files.length > 0) {
-      console.log(`Processing ${req.files.length} image(s)`); // Debug log
-
       const imagePromises = req.files.map(async (file) => {
         try {
-          // Generate the URL for the uploaded image
           const imageUrl = `/uploads/${file.filename}`;
-          console.log("Creating image record with URL:", imageUrl); // Debug log
 
-          // Create image record in database
           const image = await Image.create({
             advertisement_id: advertisement.advertisement_id,
             image_url: imageUrl,
           });
 
-          console.log("Created image record:", image); // Debug log
           return image;
         } catch (error) {
           console.error("Error creating image record:", error);
-          throw error; // Re-throw to be caught by Promise.all
         }
       });
 
       await Promise.all(imagePromises);
-      console.log("All image records created successfully"); // Debug log
     }
 
-    // Fetch the created advertisement with its images
     const completeAdvertisement = await Advertisement.findOne({
       where: { advertisement_id: advertisement.advertisement_id },
       include: [
@@ -84,7 +74,6 @@ export const createAdvertisement = async (req, res) => {
       ],
     });
 
-    console.log("Complete advertisement:", completeAdvertisement); // Debug log
     res.status(201).json(completeAdvertisement);
   } catch (error) {
     console.error("Error creating advertisement:", error);
@@ -103,9 +92,6 @@ export const getFinds = async (req, res) => {
     const offset = (page - 1) * limit;
     const category = req.query.category;
 
-    console.log("Fetching finds with params:", { page, limit, category });
-
-    // Base query
     const queryOptions = {
       where: {
         type: "find",
@@ -127,7 +113,7 @@ export const getFinds = async (req, res) => {
       order: [["createdAt", "DESC"]],
       limit,
       offset,
-      distinct: true, // Important for correct count with includes
+      distinct: true,
     };
 
     const { count, rows } = await Advertisement.findAndCountAll(queryOptions);
@@ -147,7 +133,6 @@ export const getFinds = async (req, res) => {
       hasMore: offset + rows.length < count,
     };
 
-    console.log("Sending response:", response);
     res.json(response);
   } catch (error) {
     console.error("Error fetching finds:", error);
@@ -163,16 +148,11 @@ export const getLosses = async (req, res) => {
     const offset = (page - 1) * limit;
     const category = req.query.category;
 
-    console.log("Fetching losses with params:", { page, limit, category });
-
-    const whereClause = {
-      type: "lost",
-      status: "active",
-      ...(category && { categorie_id: category }),
-    };
-
-    const { count, rows } = await Advertisement.findAndCountAll({
-      where: whereClause,
+    const queryOptions = {
+      where: {
+        type: "lost",
+        status: "active",
+      },
       include: [
         {
           model: Image,
@@ -181,14 +161,22 @@ export const getLosses = async (req, res) => {
         {
           model: Category,
           attributes: ["categorie_id", "categorie_name"],
+          ...(category && {
+            where: { categorie_name: category },
+          }),
         },
       ],
       order: [["createdAt", "DESC"]],
       limit,
       offset,
-    });
+      distinct: true,
+    };
 
-    console.log(`Found ${count} total losses, returning ${rows.length} items`);
+    const { count, rows } = await Advertisement.findAndCountAll(queryOptions);
+
+    console.log(
+      `Lost ${count} total advertisements, returning ${rows.length} items`
+    );
 
     const response = {
       items: rows.map((row) => ({
@@ -201,7 +189,6 @@ export const getLosses = async (req, res) => {
       hasMore: offset + rows.length < count,
     };
 
-    console.log("Sending response:", response);
     res.json(response);
   } catch (error) {
     console.error("Error fetching losses:", error);

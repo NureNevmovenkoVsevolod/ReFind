@@ -77,9 +77,9 @@ function CurrentLossesSection() {
             <Col
               key={loss.advertisement_id}
               xs={12}
-              sm={6}
-              md={4}
-              lg={3}
+              sm={12}
+              md={12}
+              lg={12}
               className={styles.cardCol}
             >
               {" "}

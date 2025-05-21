@@ -4,17 +4,20 @@ import styles from "./LossCard.module.css";
 import calendar from "../../assets/calendar.png";
 import location from "../../assets/location.png";
 
-function LossCard({ image, date, cityName, categoryName, name, description }) {
+function LossCard({ image, date, cityName, categoryName, title, description }) {
+  const formatLocation = (location) => {
+    if (!location) return "";
+    const parts = location.split(",").map((part) => part.trim());
+    if (parts.length <= 4) return parts.join(", ");
+
+    return parts.slice(1, -2).join(", ");
+  };
   return (
     <div className={styles.cardContainer}>
       <Row>
         <Col xs={12} md={3}>
           <div className={styles.imageContainer}>
-            <Image
-              src="../../assets/bgcard.png"
-              alt="Lost item"
-              className={styles.image}
-            />
+            <Image src={image} alt="Lost item" className={styles.image} />
             {date && (
               <div className={styles.dateLabel}>
                 <Image
@@ -29,12 +32,14 @@ function LossCard({ image, date, cityName, categoryName, name, description }) {
         </Col>
         <Col xs={12} md={9}>
           <div className={styles.contentContainer}>
-            <h3 className={styles.itemName}>{name}</h3>
+            <h3 className={styles.itemName}>{title}</h3>
             <p className={styles.description}>{description}</p>
             <div className={styles.infoFooter}>
               <div className={styles.locationContainer}>
                 <Image src={location} alt="Location_icon" />
-                <span className={styles.cityName}>{cityName}</span>
+                <span className={styles.cityName}>
+                  {formatLocation(cityName)}
+                </span>
               </div>
               <div className={styles.categoryBadge}>
                 <span>{categoryName}</span>

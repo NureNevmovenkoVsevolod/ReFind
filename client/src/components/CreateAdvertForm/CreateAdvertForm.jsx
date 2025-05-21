@@ -20,12 +20,11 @@ const CreateAdvertForm = ({ type }) => {
     phone: "",
     email: "",
     images: [],
-    incident_date: new Date().toISOString().split("T")[0], // Add today as default date
+    incident_date: new Date().toISOString().split("T")[0], 
   });
   const [errors, setErrors] = useState({});
   const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [googlePayClient, setGooglePayClient] = useState(null);
 
@@ -175,9 +174,7 @@ const CreateAdvertForm = ({ type }) => {
     }
 
     if (type === 'lost') {
-      try {
-        setShowPaymentModal(true);
-        
+      try {        
         const paymentData = await initializePayment();
 
         console.log(paymentData);
@@ -211,7 +208,6 @@ const CreateAdvertForm = ({ type }) => {
 
         if (response.ok) {
           setPaymentStatus('success');
-          setShowPaymentModal(false);
           setShowModal(true);
         } else {
           throw new Error('Failed to create advertisement');
@@ -222,7 +218,6 @@ const CreateAdvertForm = ({ type }) => {
         } else {
           setPaymentStatus('error');
         }
-        setShowPaymentModal(false);
         setShowModal(true);
       }
     } else {
@@ -369,15 +364,6 @@ const CreateAdvertForm = ({ type }) => {
     }));
   };
 
-  const PaymentModal = () => (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modalContent}>
-        <h2>Оплата через Google Pay</h2>
-        <p>Сума до оплати: 50₴</p>
-        <div id="google-pay-button"></div>
-      </div>
-    </div>
-  );
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
@@ -566,8 +552,6 @@ const CreateAdvertForm = ({ type }) => {
         Опублікувати
       </button>
 
-      {showPaymentModal && <PaymentModal />}
-      
       <SuccessModal 
         show={showModal} 
         handleClose={handleCloseModal}

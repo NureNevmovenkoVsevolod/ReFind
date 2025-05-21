@@ -10,7 +10,6 @@ function FindCard({ image, date, cityName, categoryName, title, description }) {
     const parts = location.split(",").map((part) => part.trim());
     if (parts.length <= 4) return parts.join(", ");
 
-    // Видаляємо перші 2 та останні 2 частини
     return parts.slice(2, -2).join(", ");
   };
 
