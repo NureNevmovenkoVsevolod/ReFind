@@ -3,4 +3,9 @@
     min-height: 100vh;
     flex-direction: column;
     justify-content: space-between;
+
+}
+a{
+    text-decoration: none;
+    color: inherit;
 }
