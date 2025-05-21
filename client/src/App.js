@@ -14,6 +14,7 @@ import CreateFound from "./pages/CreateFound";
 
 function App() {
   const [isLogin, setIsLogin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,15 +29,20 @@ function App() {
         })
         .then(() => {
           setIsLogin(true);
+          setIsLoading(false);
         })
         .catch(() => {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           setIsLogin(false);
+          setIsLoading(false);
           navigate("/login");
         });
+    } else {
+      setIsLoading(false);
     }
   }, [navigate]);
+
   const handleLogout = () => {
     // Clear auth data
     localStorage.removeItem("token");
@@ -46,6 +52,10 @@ function App() {
     // Redirect to home page (for guest view)
     navigate("/");
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="App">

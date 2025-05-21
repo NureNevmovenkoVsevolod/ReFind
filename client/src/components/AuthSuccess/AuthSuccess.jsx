@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const AuthSuccess = () => {
+const AuthSuccess = ({ setIsLogin }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -10,11 +10,12 @@ const AuthSuccess = () => {
 
     if (token) {
       localStorage.setItem("token", token);
+      setIsLogin(true);
       navigate("/");
     } else {
       navigate("/login");
     }
-  }, [navigate]);
+  }, [navigate, setIsLogin]);
 
   return (
     <div
