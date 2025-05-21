@@ -11,6 +11,7 @@ import AuthSuccess from "./components/AuthSuccess/AuthSuccess";
 import axios from "axios";
 import CreateLost from "./pages/CreateLost";
 import CreateFound from "./pages/CreateFound";
+import ItemCard from "./pages/ItemCard";
 
 function App() {
   const [isLogin, setIsLogin] = useState(false);
@@ -79,6 +80,10 @@ function App() {
           <Route
             path="/found/create"
             element={isLogin ? <CreateFound /> : <Navigate to="/login" />}
+          />
+          <Route
+              path="/advertisement/:id"
+              element={<ItemCard isLogin={isLogin} />}
           />
         </Routes>
       </div>

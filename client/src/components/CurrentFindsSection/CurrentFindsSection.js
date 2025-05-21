@@ -86,6 +86,7 @@ function CurrentFindsSection() {
             >
               {" "}
               <FindCard
+                  advertisement_id={find.advertisement_id}
                 image={
                   find.Images?.[0]?.image_url
                     ? `http://localhost:5000/static${find.Images[0].image_url}`

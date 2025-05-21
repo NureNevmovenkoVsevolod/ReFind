@@ -206,7 +206,7 @@ export const getAdvertisementById = async (req, res) => {
       include: [
         {
           model: Image,
-          attributes: ["url"],
+          attributes: ["image_url"],
         },
       ],
     });
@@ -215,7 +215,8 @@ export const getAdvertisementById = async (req, res) => {
       return res.status(404).json({ message: "Advertisement not found" });
     }
 
-    res.json(advertisement);
+    res.json({...advertisement.toJSON(),
+      location_coordinates: JSON.parse(advertisement.location_coordinates)});
   } catch (error) {
     console.error("Error fetching advertisement:", error);
     res.status(500).json({ message: "Failed to fetch advertisement" });
