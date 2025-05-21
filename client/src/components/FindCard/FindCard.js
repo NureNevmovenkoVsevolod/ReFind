@@ -3,8 +3,10 @@ import { Image } from "react-bootstrap";
 import styles from "./FindCard.module.css";
 import calendar from "../../assets/calendar.png";
 import bgcard from "../../assets/photo.png";
+import {Link, useNavigate} from "react-router-dom";
+import {encodeId} from "../../utils/encodeId";
 
-function FindCard({ image, date, cityName, categoryName, title, description }) {
+function FindCard({ advertisement_id, image, date, cityName, categoryName, title, description }) {
   const formatLocation = (location) => {
     if (!location) return "";
     const parts = location.split(",").map((part) => part.trim());
@@ -13,9 +15,10 @@ function FindCard({ image, date, cityName, categoryName, title, description }) {
     // Видаляємо перші 2 та останні 2 частини
     return parts.slice(2, -2).join(", ");
   };
-
+  const navigate = useNavigate();
   return (
-    <div className={styles.cardContainer}>
+
+    <Link to={`/advertisement/${encodeId(advertisement_id)}`} className={styles.cardContainer} >
       <div className={styles.imageContainer}>
         {" "}
         <Image
@@ -44,7 +47,7 @@ function FindCard({ image, date, cityName, categoryName, title, description }) {
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

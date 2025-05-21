@@ -14,27 +14,25 @@ const defaultIcon = L.icon({
   shadowSize: [41, 41],
 });
 
-const Map = ({ onLocationSelect, onAddressFound }) => {
+const Map = ({ onLocationSelect, onAddressFound, initialCoordinates, readOnly = false }) => {
   const mapRef = useRef(null);
   const markerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleMapClick = useCallback(
-    async (e) => {
-      const { lat, lng } = e.latlng;
-
-      if (markerRef.current) {
-        markerRef.current.setLatLng([lat, lng]);
-      } else {
-        markerRef.current = L.marker([lat, lng], { icon: defaultIcon }).addTo(
+  const addMarkerAt = async (lat, lng) => {
+    if (markerRef.current) {
+      markerRef.current.setLatLng([lat, lng]);
+    } else {
+      markerRef.current = L.marker([lat, lng], { icon: defaultIcon }).addTo(
           mapRef.current
-        );
-      }
+      );
+    }
 
+    if (!readOnly) {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
         );
         const data = await response.json();
         const address = data.display_name;
@@ -50,19 +48,36 @@ const Map = ({ onLocationSelect, onAddressFound }) => {
       } finally {
         setIsLoading(false);
       }
-    },
-    [onLocationSelect, onAddressFound]
+    }
+  };
+
+  const handleMapClick = useCallback(
+      async (e) => {
+        const { lat, lng } = e.latlng;
+        await addMarkerAt(lat, lng);
+      },
+      [onLocationSelect, onAddressFound]
   );
 
   useEffect(() => {
-    const map = L.map("map").setView([50.4501, 30.5234], 13);
+    const map = L.map("map").setView(
+        initialCoordinates ? [initialCoordinates.lat, initialCoordinates.lng] : [50.4501, 30.5234],
+        13
+    );
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap contributors",
     }).addTo(map);
 
-    map.on("click", handleMapClick);
+    if (!readOnly) {
+      map.on("click", handleMapClick);
+    }
+
     mapRef.current = map;
+
+    if (initialCoordinates) {
+      addMarkerAt(initialCoordinates.lat, initialCoordinates.lng);
+    }
 
     return () => {
       if (mapRef.current) {
@@ -74,14 +89,16 @@ const Map = ({ onLocationSelect, onAddressFound }) => {
         markerRef.current = null;
       }
     };
-  }, []); // Пустий масив залежностей
+  }, [initialCoordinates, readOnly]);
 
   return (
-    <div className={styles.mapContainer}>
-      <div id="map" className={styles.map} />
-      {isLoading && <div className={styles.loading}>Loading address...</div>}
-    </div>
+      <div className={styles.mapContainer}>
+        <div id="map" className={styles.map} />
+        {!readOnly && isLoading && <div className={styles.loading}>Loading address...</div>}
+      </div>
   );
 };
+
+
 
 export default Map;
