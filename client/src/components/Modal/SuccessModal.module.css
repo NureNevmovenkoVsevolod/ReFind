@@ -1,0 +1,32 @@
+.modalBody {
+    text-align: center;
+    padding: 40px 20px; /* Збільшимо відступи */
+  }
+  
+  .content {
+    margin-bottom: 30px;
+  }
+  
+  .title {
+    font-size: 1.8rem; /* Збільшимо розмір заголовка */
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .message {
+    font-size: 1.2rem; /* Збільшимо розмір тексту */
+    color: #555;
+  }
+  
+  .closeButton {
+    background-color: #007bff; /* Використовуємо стандартний синій для кнопки */
+    border-color: #007bff;
+    padding: 10px 30px; /* Збільшимо розмір кнопки */
+    font-size: 1.1rem;
+  }
+  
+  .closeButton:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+  }

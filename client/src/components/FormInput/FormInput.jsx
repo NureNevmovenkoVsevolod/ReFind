@@ -36,7 +36,7 @@ const FormInput = ({
               required={required}
               className={styles.select}
             >
-              <option value="">Select category</option>
+              <option value="">{placeholder || "Select category"}</option>
               {options?.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -56,7 +56,7 @@ const FormInput = ({
               value={value}
               onChange={onChange}
               required={required}
-              className={`${styles.input} ${icon ? styles.withIcon : ""} ${error ? styles.inputError : ''}`}
+              className={styles.input}
               placeholder={placeholder}
             />
           </div>

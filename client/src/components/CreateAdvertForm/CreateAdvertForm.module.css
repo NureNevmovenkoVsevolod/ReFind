@@ -156,3 +156,74 @@
 .outlineButton:hover {
   background-color: rgba(33, 150, 243, 0.1);
 }
+
+.label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.imageActions {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.7);
+  padding: 8px;
+  display: flex;
+  justify-content: space-around;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.imageContainer:hover .imageActions {
+  opacity: 1;
+}
+
+.replaceButton,
+.removeButton {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.replaceButton:hover,
+.removeButton:hover {
+  color: #007bff;
+}
+
+.removeButton {
+  color: #dc3545;
+}
+
+.removeButton:hover {
+  color: #ff6b6b;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.uploadArea.error {
+  border-color: #dc3545;
+}
+
+.inputGroup input[data-error="true"],
+.inputGroup textarea[data-error="true"],
+.inputGroup select[data-error="true"] {
+  border-color: #dc3545;
+}
+
+.inputGroup input[data-error="true"]:focus,
+.inputGroup textarea[data-error="true"]:focus,
+.inputGroup select[data-error="true"]:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
