@@ -92,3 +92,26 @@
   color: #6c757d;
   font-size: 0.8rem;
 }
+
+.inputWrapper {
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.inputError {
+  border-color: #dc3545;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 5px;
+}

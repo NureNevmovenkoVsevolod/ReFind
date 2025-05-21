@@ -16,56 +16,59 @@ function RegisterForm() {
   });
   const [errors, setErrors] = useState({});
 
-  // Validation schema
   const validationSchema = Yup.object().shape({
     first_name: Yup.string()
-      .required("First name is required")
-      .min(2, "First name must be at least 2 characters")
-      .matches(/^[A-Za-z\s]+$/, "First name can only contain letters"),
+      .required("Ім'я обов'язкове")
+      .min(2, "Ім'я має містити мінімум 2 символи"),
     last_name: Yup.string()
-      .required("Last name is required")
-      .min(2, "Last name must be at least 2 characters")
-      .matches(/^[A-Za-z\s]+$/, "Last name can only contain letters"),
+      .required("Прізвище обов'язкове")
+      .min(2, "Прізвище має містити мінімум 2 символи"),
     email: Yup.string()
-      .required("Email is required")
-      .email("Enter a valid email"),
+      .required("Email обов'язковий")
+      .email("Введіть коректний email"),
     password: Yup.string()
-      .required("Password is required")
-      .min(6, "Password must contain at least 6 characters")
+      .required("Пароль обов'язковий")
+      .min(6, "Пароль має містити мінімум 6 символів")
       .matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+        /^(?=.*[\S])(?=.*[\S])(?=.*\d)/,
+        "Пароль має містити хоча б одну велику літеру, одну малу літеру та одну цифру"
       ),
     confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password"), null], "Passwords must match")
-      .required("Confirm Password is required"),
+      .oneOf([Yup.ref("password"), null], "Паролі не співпадають")
+      .required("Підтвердження паролю обов'язкове"),
   });
+
+  const validateField = async (name, value) => {
+    try {
+      await validationSchema.validateAt(name, { [name]: value });
+      setErrors(prev => ({ ...prev, [name]: "" }));
+    } catch (error) {
+      setErrors(prev => ({ ...prev, [name]: error.message }));
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
-    // Clear error when user types
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
+    validateField(name, value);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({}); // Очищаємо всі помилки
+
     try {
-      // Validate form data
+      // Валідуємо всі поля
       await validationSchema.validate(formData, { abortEarly: false });
 
       const response = await axios.post(
         "http://localhost:5000/auth/register",
         formData
       );
+
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
@@ -73,16 +76,26 @@ function RegisterForm() {
       }
     } catch (error) {
       if (error instanceof Yup.ValidationError) {
-        // Handle validation errors
+        // Обробка помилок валідації
         const newErrors = {};
         error.inner.forEach((err) => {
           newErrors[err.path] = err.message;
         });
         setErrors(newErrors);
+      } else if (error.response) {
+        // Обробка помилок від сервера
+        if (error.response.status === 400) {
+          setErrors({
+            submit: "Користувач з таким email вже існує"
+          });
+        } else {
+          setErrors({
+            submit: error.response.data.message || "Помилка реєстрації"
+          });
+        }
       } else {
-        // Handle API errors
         setErrors({
-          submit: error.response?.data?.message || "Registration failed",
+          submit: "Помилка сервера"
         });
       }
     }
@@ -99,38 +112,17 @@ function RegisterForm() {
   return (
     <div className={styles.wrapper}>
       <div className={styles.container}>
-        <h2>Registration</h2>
+        <h2>Реєстрація</h2>
+        {errors.submit && (
+          <div className={styles.error}>{errors.submit}</div>
+        )}
         <form onSubmit={handleSubmit}>
-          <FormInput
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="E-mail"
-            error={errors.email}
-          />
-          <FormInput
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Password"
-            error={errors.password}
-          />
-          <FormInput
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            placeholder="Confirm password"
-            error={errors.confirmPassword}
-          />
           <FormInput
             type="text"
             name="first_name"
             value={formData.first_name}
             onChange={handleChange}
-            placeholder="First Name"
+            placeholder="Ім'я"
             error={errors.first_name}
           />
           <FormInput
@@ -138,15 +130,38 @@ function RegisterForm() {
             name="last_name"
             value={formData.last_name}
             onChange={handleChange}
-            placeholder="Last Name"
+            placeholder="Прізвище"
             error={errors.last_name}
           />
-          <button type="submit">Register</button>
-          {errors.submit && <p className={styles.error}>{errors.submit}</p>}
+          <FormInput
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Email"
+            error={errors.email}
+          />
+          <FormInput
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Пароль"
+            error={errors.password}
+          />
+          <FormInput
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            placeholder="Підтвердження паролю"
+            error={errors.confirmPassword}
+          />
+          <button type="submit">Зареєструватися</button>
         </form>
 
         <div className={styles.social_signin}>
-          <p>Sign in with:</p>
+          <p>Увійти через:</p>
           <div className={styles.social_icons}>
             <img
               src='https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_"G"_logo.svg'

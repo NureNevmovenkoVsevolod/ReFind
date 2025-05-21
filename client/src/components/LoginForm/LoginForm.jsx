@@ -16,11 +16,11 @@ function LoginForm() {
   // Validation schema
   const validationSchema = Yup.object().shape({
     email: Yup.string()
-      .required("Email is required")
-      .email("Enter a valid email"),
+      .required("Email обов'язковий")
+      .email("Введіть коректний email"),
     password: Yup.string()
-      .required("Password is required")
-      .min(6, "Password must contain at least 6 characters"),
+      .required("Пароль обов'язковий")
+      .min(6, "Пароль має містити мінімум 6 символів"),
   });
 
   const handleChange = (e) => {
@@ -29,11 +29,17 @@ function LoginForm() {
       ...prev,
       [name]: value,
     }));
-    // Clear error when user types
+    // Очищаємо помилки при зміні полів
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
         [name]: "",
+      }));
+    }
+    if (errors.submit) {
+      setErrors((prev) => ({
+        ...prev,
+        submit: "",
       }));
     }
   };
@@ -41,13 +47,14 @@ function LoginForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Validate form data
+      // Валідація форми
       await validationSchema.validate(formData, { abortEarly: false });
 
       const response = await axios.post(
         "http://localhost:5000/auth/login",
         formData
       );
+      
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
@@ -55,16 +62,30 @@ function LoginForm() {
       }
     } catch (error) {
       if (error instanceof Yup.ValidationError) {
-        // Handle validation errors
+        // Обробка помилок валідації
         const newErrors = {};
         error.inner.forEach((err) => {
           newErrors[err.path] = err.message;
         });
         setErrors(newErrors);
+      } else if (error.response) {
+        // Обробка помилок від сервера
+        if (error.response.status === 404) {
+          setErrors({
+            submit: "Користувача з такою поштою не існує"
+          });
+        } else if (error.response.status === 401) {
+          setErrors({
+            submit: "Невірний пароль або пошта"
+          });
+        } else {
+          setErrors({
+            submit: error.response.data.message || "Помилка входу"
+          });
+        }
       } else {
-        // Handle API errors
         setErrors({
-          submit: error.response?.data?.message || "Login failed",
+          submit: "Помилка сервера"
         });
       }
     }
@@ -80,15 +101,17 @@ function LoginForm() {
 
   return (
     <div className={styles.container}>
-      <h2>Login</h2>
-      {errors.submit && <div className={styles.error}>{errors.submit}</div>}
+      <h2>Вхід</h2>
+      {errors.submit && (
+        <div className={styles.error}>{errors.submit}</div>
+      )}
       <form onSubmit={handleSubmit}>
         <FormInput
           type="email"
           name="email"
           value={formData.email}
           onChange={handleChange}
-          placeholder="E-mail"
+          placeholder="Email"
           error={errors.email}
         />
         <FormInput
@@ -96,14 +119,14 @@ function LoginForm() {
           name="password"
           value={formData.password}
           onChange={handleChange}
-          placeholder="Password"
+          placeholder="Пароль"
           error={errors.password}
         />
-        <button type="submit">Login</button>
+        <button type="submit">Увійти</button>
       </form>
 
       <div className={styles.social_signin}>
-        <p>Log in with:</p>
+        <p>Увійти через:</p>
         <div className={styles.social_icons}>
           <img
             src='https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_"G"_logo.svg'

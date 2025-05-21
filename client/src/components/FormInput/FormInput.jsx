@@ -11,6 +11,7 @@ const FormInput = ({
   options,
   icon,
   placeholder,
+  error,
 }) => {
   const renderInput = () => {
     switch (type) {
@@ -55,7 +56,7 @@ const FormInput = ({
               value={value}
               onChange={onChange}
               required={required}
-              className={`${styles.input} ${icon ? styles.withIcon : ""}`}
+              className={`${styles.input} ${icon ? styles.withIcon : ""} ${error ? styles.inputError : ''}`}
               placeholder={placeholder}
             />
           </div>
@@ -67,6 +68,7 @@ const FormInput = ({
     <div className={styles.formGroup}>
       {label && <label className={styles.label}>{label}</label>}
       {renderInput()}
+      {error && <div className={styles.error}>{error}</div>}
     </div>
   );
 };
