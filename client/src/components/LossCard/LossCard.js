@@ -3,8 +3,10 @@ import { Image, Row, Col } from "react-bootstrap";
 import styles from "./LossCard.module.css";
 import calendar from "../../assets/calendar.png";
 import location from "../../assets/location.png";
+import {Link} from "react-router-dom";
+import {encodeId} from "../../utils/encodeId";
 
-function LossCard({ image, date, cityName, categoryName, title, description }) {
+function LossCard({ advertisement_id, image, date, cityName, categoryName, title, description }) {
   const formatLocation = (location) => {
     if (!location) return "";
     const parts = location.split(",").map((part) => part.trim());
@@ -13,7 +15,7 @@ function LossCard({ image, date, cityName, categoryName, title, description }) {
     return parts.slice(1, -2).join(", ");
   };
   return (
-    <div className={styles.cardContainer}>
+    <Link to={`/advertisement/${encodeId(advertisement_id)}`} className={styles.cardContainer}>
       <Row>
         <Col xs={12} md={3}>
           <div className={styles.imageContainer}>
@@ -48,7 +50,7 @@ function LossCard({ image, date, cityName, categoryName, title, description }) {
           </div>
         </Col>
       </Row>
-    </div>
+    </Link>
   );
 }
 

@@ -54,13 +54,17 @@ function ItemCard(props) {
         updatedAt,
         user_id
     } = ad;
-    const location_coordinates = JSON.parse(ad.location_coordinates);
+    let location_coordinates;
+    try {location_coordinates = JSON.parse(ad.location_coordinates);}
+    catch {
+        location_coordinates = ad.location_coordinates;
+    }
     return (
         <div className={styles.container}>
             <div className={styles.breadcrumb}>Home / Card description</div>
 
             <div className={styles.main}>
-                <ImageGallery images={Images?.map(img => `http://localhost:5000/static${img.image_url}`)} />
+                <ImageGallery images={Images?.map(img => `http://localhost:5000/static${img.image_url}`)}/>
 
                 <div className={styles.contentSection}>
                     <h1>{title}</h1>
@@ -82,7 +86,7 @@ function ItemCard(props) {
                 </div>
 
                 <div className={styles.mapWrapper}>
-                    <h3>Location</h3>{location_coordinates?.lat}
+                    <h3>Location</h3>
                     <Map
                         initialCoordinates={{lat: location_coordinates?.lat || 0, lng: location_coordinates?.lng || 0}}
                         readOnly={true}
@@ -92,7 +96,7 @@ function ItemCard(props) {
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
                         <Marker
-                            position={[ location_coordinates?.lat || 0, location_coordinates?.lng || 0]}>
+                            position={[location_coordinates?.lat || 0, location_coordinates?.lng || 0]}>
                             <Popup>{title}</Popup>
                         </Marker>
                     </Map>

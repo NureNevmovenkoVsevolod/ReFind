@@ -84,6 +84,7 @@ function CurrentLossesSection() {
             >
               {" "}
               <LossCard
+                  advertisement_id={loss.advertisement_id}
                 image={
                   loss.Images?.[0]?.image_url
                     ? `http://localhost:5000/static${loss.Images[0].image_url}`
