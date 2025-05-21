@@ -35,8 +35,6 @@ function ItemCard(props) {
     if (loading) return <p>Loading...</p>;
     if (!ad) return <p className={styles.message}>Advertisement was not found. PS: {error}</p>;
 
-
-    console.log(ad);
     const {
         Images,
         categorie_id,

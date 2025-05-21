@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
+.wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(#0d0d0d, #000000);
+    color: #fff;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.bg {
+    position: absolute;
+    width: 150%;
+    height: 150%;
+    background: url('https://www.transparenttextures.com/patterns/dark-mosaic.png');
+    animation: rotate 60s linear infinite;
+    opacity: 0.05;
+    z-index: 1;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg) scale(1);
+    }
+    to {
+        transform: rotate(360deg) scale(1.2);
+    }
+}
+
+.glitchWrapper {
+    position: relative;
+    text-align: center;
+    z-index: 10;
+}
+
+.glitch {
+    font-size: 10rem;
+    position: relative;
+    color: #0ff;
+    animation: flicker 2s infinite alternate;
+}
+
+.glitch::before,
+.glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    color: #f0f;
+    z-index: -1;
+    animation: glitch 1s infinite linear alternate-reverse;
+}
+
+.glitch::after {
+    color: #0ff;
+    animation-delay: 0.2s;
+}
+
+@keyframes glitch {
+    0% {
+        clip-path: inset(0 0 90% 0);
+        transform: translate(-2px, -2px);
+    }
+    20% {
+        clip-path: inset(0 0 20% 0);
+        transform: translate(2px, 2px);
+    }
+    40% {
+        clip-path: inset(0 0 40% 0);
+        transform: translate(-1px, 2px);
+    }
+    60% {
+        clip-path: inset(0 0 60% 0);
+        transform: translate(1px, -1px);
+    }
+    80% {
+        clip-path: inset(0 0 30% 0);
+        transform: translate(-2px, 1px);
+    }
+    100% {
+        clip-path: inset(0 0 100% 0);
+        transform: translate(2px, -2px);
+    }
+}
+
+@keyframes flicker {
+    0% {
+        opacity: 0.95;
+    }
+    50% {
+        opacity: 0.4;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.message {
+    font-size: 1.5rem;
+    margin: 1rem 0 2rem;
+    color: #ccc;
+    text-shadow: 0 0 10px #0ff;
+}
+
+.button {
+    background: none;
+    border: 2px solid #0ff;
+    color: #0ff;
+    padding: 0.8rem 1.6rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: 0.3s ease;
+    box-shadow: 0 0 10px #0ff;
+}
+
+.button:hover {
+    background: #0ff;
+    color: #000;
+    box-shadow: 0 0 20px #0ff;
+}

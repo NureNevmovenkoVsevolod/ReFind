@@ -12,6 +12,7 @@ import axios from "axios";
 import CreateLost from "./pages/CreateLost";
 import CreateFound from "./pages/CreateFound";
 import ItemCard from "./pages/ItemCard";
+import NotFound from "./pages/NotFound";
 
 function App() {
   const [isLogin, setIsLogin] = useState(false);
@@ -85,6 +86,11 @@ function App() {
               path="/advertisement/:id"
               element={<ItemCard isLogin={isLogin} />}
           />
+
+
+
+
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
       <Footer />
