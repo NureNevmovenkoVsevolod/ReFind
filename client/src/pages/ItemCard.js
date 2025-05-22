@@ -1,16 +1,20 @@
 import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {decodeId} from "../utils/encodeId";
 import styles from "./ItemCard.module.css";
 import {Marker, Popup, TileLayer} from "react-leaflet";
 import Map from "../components/Map/Map"
 import ImageGallery from "../components/ImageGallery/ImageGallery";
+import SuccessModal from "../components/Modal/SuccessModal";
+import NotFound from "./NotFound";
+import Loader from "../components/Loader/Loader";
 
 function ItemCard(props) {
     const {id: encodedId} = useParams();
     const [ad, setAd] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showModal, setShowModal] = useState(true);
     useEffect(() => {
         let decodedId;
         try {
@@ -23,7 +27,7 @@ function ItemCard(props) {
         fetch(`http://localhost:5000/api/advertisement/${decodedId}`)
             .then(async (res) => {
                 if (!res.ok) {
-                    const msg = (await res.json()).message || "Loading error.";
+                    const msg = (await res.json()).message || setError("Loading error.");
                     throw new Error(msg);
                 }
                 return res.json();
@@ -32,9 +36,19 @@ function ItemCard(props) {
             .catch((err) => setError(err.message))
             .finally(() => setLoading(false));
     }, [encodedId]);
-    if (loading) return <p>Loading...</p>;
-    if (!ad) return <p className={styles.message}>Advertisement was not found. PS: {error}</p>;
-
+    const navigate = useNavigate();
+    const handleCloseModal = () => {
+        setShowModal(false);
+    };
+    if (error) return <><SuccessModal
+        show={showModal}
+        handleClose={handleCloseModal}
+        message={
+            "Advertisement was not found.\n" +
+            `Reason: ${error}`
+        }
+    ></SuccessModal><NotFound/></>;
+    if (loading) return <Loader/>;
     const {
         Images,
         categorie_id,
@@ -53,8 +67,9 @@ function ItemCard(props) {
         user_id
     } = ad;
     let location_coordinates;
-    try {location_coordinates = JSON.parse(ad.location_coordinates);}
-    catch {
+    try {
+        location_coordinates = JSON.parse(ad.location_coordinates);
+    } catch {
         location_coordinates = ad.location_coordinates;
     }
     return (

@@ -1,6 +1,7 @@
 import React from "react";
 import { Button, Row } from "react-bootstrap";
 import styles from "./ShowMoreButton.module.css";
+import Loader from "../Loader/Loader";
 
 function ShowMoreButton({ loading, onClick }) {
   return (
@@ -11,7 +12,7 @@ function ShowMoreButton({ loading, onClick }) {
         onClick={onClick}
         disabled={loading}
       >
-        {loading ? "Loading..." : "Show more"}
+        {loading ? <Loader/> : "Show more"}
       </Button>
     </Row>
   );

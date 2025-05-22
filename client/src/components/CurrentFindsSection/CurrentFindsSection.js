@@ -5,6 +5,8 @@ import FindCard from "../FindCard/FindCard";
 import ShowMoreButton from "../ShowMoreButton/ShowMoreButton";
 import styles from "./CurrentFindsSection.module.css";
 import axios from "axios";
+import loader from "../Loader/Loader";
+import Loader from "../Loader/Loader";
 
 function CurrentFindsSection() {
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -68,7 +70,6 @@ function CurrentFindsSection() {
       fetchFinds(page + 1);
     }
   };
-
   return (
     <Container className={styles.container}>
       <h2 className={styles.title}>Current Finds</h2>
