@@ -96,6 +96,7 @@ function ItemCard({ isLogin }) {
           <div className={styles.info}>
             <p>📅 {new Date(incident_date).toLocaleDateString()}</p>
             <p>📍 {location_description}</p>
+            {Number.parseFloat(reward) === 0.0 ? "" : <p>💰 Reward: {reward}₴</p>}
           </div>
           <p className={styles.shortDesc}>{description}</p>
         </div>
