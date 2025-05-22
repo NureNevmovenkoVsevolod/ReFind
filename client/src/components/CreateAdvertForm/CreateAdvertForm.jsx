@@ -177,8 +177,6 @@ const CreateAdvertForm = ({ type }) => {
       try {        
         const paymentData = await initializePayment();
 
-        console.log(paymentData);
-
         const token = localStorage.getItem("token");
         const formDataToSend = new FormData();
         
@@ -198,6 +196,7 @@ const CreateAdvertForm = ({ type }) => {
           });
         }
 
+        // Спочатку створюємо оголошення
         const response = await fetch("http://localhost:5000/api/advertisement", {
           method: "POST",
           headers: {
@@ -206,12 +205,31 @@ const CreateAdvertForm = ({ type }) => {
           body: formDataToSend,
         });
 
-        if (response.ok) {
-          setPaymentStatus('success');
-          setShowModal(true);
-        } else {
+        if (!response.ok) {
           throw new Error('Failed to create advertisement');
         }
+
+        const newAdvertisement = await response.json();
+
+        // Після створення оголошення, зберігаємо дані про платіж
+        const paymentResponse = await fetch("http://localhost:5000/api/payment/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            advertisement_id: newAdvertisement.advertisement_id,
+            payment_data: paymentData
+          }),
+        });
+
+        if (!paymentResponse.ok) {
+          throw new Error('Failed to save payment data');
+        }
+
+        setPaymentStatus('success');
+        setShowModal(true);
       } catch (error) {
         if (error.message === 'CANCELED') {
           setPaymentStatus('canceled');
