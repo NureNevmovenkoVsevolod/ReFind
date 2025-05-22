@@ -83,12 +83,9 @@ function App() {
             element={isLogin ? <CreateFound /> : <Navigate to="/login" />}
           />
           <Route
-              path="/advertisement/:id"
-              element={<ItemCard isLogin={isLogin} />}
+            path="/advertisement/:id"
+            element={<ItemCard isLogin={isLogin} />}
           />
-
-
-
 
           <Route path="*" element={<NotFound />} />
         </Routes>
