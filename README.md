@@ -64,20 +64,17 @@ git clone https://github.com/your-org/refind.git
 cd refind
 ````
 
-2. **Frontend**
+2. **Start**
 
 ```bash
-cd client
-npm i
-npm run dev
+npm run install-all
+npm run build
+npm start
 ```
 
-3. **Backend**
-
+3. **Nodemon**
 ```bash
-cd server
-npm i
-npm run dev
+nodemon start
 ```
 
 ---
