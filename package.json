@@ -6,7 +6,7 @@
   "scripts": {
     "install-all": "npm install --prefix client && npm install --prefix server",
     "i-all": "npm install --prefix client && npm install --prefix server",
-    "build": "npm run build --prefix client",
+    "build": "npm run i-all && npm run build --prefix client",
     "start": "node server/index.js",
     "dev": "nodemon index.js"
   },
