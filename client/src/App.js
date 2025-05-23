@@ -14,13 +14,16 @@ import CreateFound from "./pages/CreateFound";
 import ItemCard from "./pages/ItemCard";
 import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
+import BoardFound from "./pages/BoardFound";
+import BoardLost from "./pages/BoardLost";
 
 function App() {
   const [isLogin, setIsLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  const isAdmin = isLogin && 
+  const isAdmin =
+    isLogin &&
     localStorage.getItem("user") &&
     JSON.parse(localStorage.getItem("user")).role === "admin";
 
@@ -68,7 +71,11 @@ function App() {
 
   return (
     <div className="App">
-      {isAdmin ? null : (isLogin ? <AuthNavBar onLogout={handleLogout} /> : <NavBar />)}
+      {isAdmin ? null : isLogin ? (
+        <AuthNavBar onLogout={handleLogout} />
+      ) : (
+        <NavBar />
+      )}
       <div className="PageContent">
         <Routes>
           <Route path="/" element={<MainPage isLogin={isLogin} />} />
@@ -76,7 +83,10 @@ function App() {
             path="/registration"
             element={<Registration isLogin={isLogin} />}
           />
-          <Route path="/login" element={<Login isLogin={isLogin} setIsLogin={setIsLogin} />} />
+          <Route
+            path="/login"
+            element={<Login isLogin={isLogin} setIsLogin={setIsLogin} />}
+          />
           <Route
             path="/auth/success"
             element={<AuthSuccess setIsLogin={setIsLogin} />}
@@ -104,6 +114,11 @@ function App() {
                 <Navigate to="/login" />
               )
             }
+          />
+          <Route path="/boardlost" element={<BoardLost isLogin={isLogin} />} />
+          <Route
+            path="/boardfound"
+            element={<BoardFound isLogin={isLogin} />}
           />
           <Route path="*" element={<NotFound />} />
         </Routes>

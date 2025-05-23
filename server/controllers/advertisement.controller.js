@@ -118,22 +118,36 @@ export const getFinds = async (req, res) => {
 
     const { count, rows } = await Advertisement.findAndCountAll(queryOptions);
 
-    console.log(
-      `Found ${count} total advertisements, returning ${rows.length} items`
-    );
+    // Universal response for both main and board pages
+    const items = rows.map((row) => {
+      const ad = row.toJSON();
+      return {
+        advertisement_id: ad.advertisement_id,
+        title: ad.title,
+        description: ad.description,
+        categorie_id: ad.categorie_id,
+        categorie_name: ad.Category?.categorie_name,
+        location_description: ad.location_description,
+        location_coordinates: ad.location_coordinates,
+        reward: ad.reward,
+        type: ad.type,
+        status: ad.status,
+        phone: ad.phone,
+        email: ad.email,
+        incident_date: ad.incident_date,
+        createdAt: ad.createdAt,
+        updatedAt: ad.updatedAt,
+        Images: ad.Images || [],
+      };
+    });
 
-    const response = {
-      items: rows.map((row) => ({
-        ...row.toJSON(),
-        categorie_name: row.Category?.categorie_name,
-      })),
+    res.json({
+      items,
       total: count,
       currentPage: page,
       totalPages: Math.ceil(count / limit),
       hasMore: offset + rows.length < count,
-    };
-
-    res.json(response);
+    });
   } catch (error) {
     console.error("Error fetching finds:", error);
     res.status(500).json({ message: "Failed to fetch finds" });
@@ -175,22 +189,36 @@ export const getLosses = async (req, res) => {
 
     const { count, rows } = await Advertisement.findAndCountAll(queryOptions);
 
-    console.log(
-      `Lost ${count} total advertisements, returning ${rows.length} items`
-    );
+    // Universal response for both main and board pages
+    const items = rows.map((row) => {
+      const ad = row.toJSON();
+      return {
+        advertisement_id: ad.advertisement_id,
+        title: ad.title,
+        description: ad.description,
+        categorie_id: ad.categorie_id,
+        categorie_name: ad.Category?.categorie_name,
+        location_description: ad.location_description,
+        location_coordinates: ad.location_coordinates,
+        reward: ad.reward,
+        type: ad.type,
+        status: ad.status,
+        phone: ad.phone,
+        email: ad.email,
+        incident_date: ad.incident_date,
+        createdAt: ad.createdAt,
+        updatedAt: ad.updatedAt,
+        Images: ad.Images || [],
+      };
+    });
 
-    const response = {
-      items: rows.map((row) => ({
-        ...row.toJSON(),
-        categorie_name: row.Category?.categorie_name,
-      })),
+    res.json({
+      items,
       total: count,
       currentPage: page,
       totalPages: Math.ceil(count / limit),
       hasMore: offset + rows.length < count,
-    };
-
-    res.json(response);
+    });
   } catch (error) {
     console.error("Error fetching losses:", error);
     res.status(500).json({ message: "Failed to fetch losses" });

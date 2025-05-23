@@ -93,7 +93,7 @@ function CurrentFindsSection() {
                     ? `http://localhost:5000/static${find.Images[0].image_url}`
                     : undefined
                 }
-                date={new Date(find.incident_date).toLocaleDateString()}
+                date={new Date(find.incident_date).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                 title={find.title}
                 cityName={find.location_description}
                 categoryName={find.Category?.categorie_name || "Інше"}
