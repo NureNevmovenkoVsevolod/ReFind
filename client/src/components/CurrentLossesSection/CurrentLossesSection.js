@@ -90,7 +90,7 @@ function CurrentLossesSection() {
                     ? `http://localhost:5000/static${loss.Images[0].image_url}`
                     : undefined
                 }
-                date={new Date(loss.incident_date).toLocaleDateString()}
+                date={new Date(loss.incident_date).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                 title={loss.title}
                 cityName={loss.location_description}
                 categoryName={loss.Category?.categorie_name || "Other"}

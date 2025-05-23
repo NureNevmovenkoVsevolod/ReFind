@@ -13,6 +13,8 @@ import CreateLost from "./pages/CreateLost";
 import CreateFound from "./pages/CreateFound";
 import ItemCard from "./pages/ItemCard";
 import NotFound from "./pages/NotFound";
+import BoardFound from "./pages/BoardFound";
+import BoardLost from "./pages/BoardLost";
 
 function App() {
   const [isLogin, setIsLogin] = useState(false);
@@ -85,6 +87,14 @@ function App() {
           <Route
             path="/advertisement/:id"
             element={<ItemCard isLogin={isLogin} />}
+          />
+          <Route
+            path="/boardlost"
+            element={<BoardLost isLogin={isLogin} />}
+          />
+          <Route
+            path="/boardfound"
+            element={<BoardFound isLogin={isLogin} />}
           />
 
           <Route path="*" element={<NotFound />} />

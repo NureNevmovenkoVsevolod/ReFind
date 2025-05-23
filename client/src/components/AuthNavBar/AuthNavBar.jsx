@@ -17,7 +17,12 @@ function AuthNavBar({ onLogout }) {
   const goToCreateLost = () => {
     navigate("/lost/create");
   };
-
+  const goToBoardFound = () => {
+    navigate("/boardfound");
+  };
+  const goToBoardLost = () => {
+    navigate("/boardlost");
+  };
   const goToCreateFound = () => {
     navigate("/found/create");
   };
@@ -49,10 +54,10 @@ function AuthNavBar({ onLogout }) {
           <Button onClick={goToCreateLost} className={styles.text}>
             I Lost
           </Button>
-          <Button href="#boardfound" className={styles.text}>
+          <Button onClick={goToBoardFound} className={styles.text}>
             Board Found
           </Button>
-          <Button href="#boardlost" className={styles.text}>
+          <Button onClick={goToBoardLost} className={styles.text}>
             Board Lost
           </Button>
           <Button href="#chat" className={styles.text}>
