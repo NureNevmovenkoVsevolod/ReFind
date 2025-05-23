@@ -26,7 +26,6 @@ export const createAdvertisement = async (req, res) => {
       incident_date,
     } = req.body;
 
-    console.log("Creating advertisement with files:", req.files); // Debug log
 
     // Create advertisement
     const advertisement = await Advertisement.create({
@@ -231,7 +230,7 @@ export const getUserAdvertisements = async (req, res) => {
       include: [
         {
           model: Image,
-          attributes: ["url"],
+          attributes: ["image_url"],
         },
       ],
       order: [["createdAt", "DESC"]],

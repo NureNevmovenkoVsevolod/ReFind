@@ -30,8 +30,8 @@ export const createPayment = async (req, res) => {
       advertisement_id: advertisement_id,
       amount: 50,
       status: "completed",
-      payment_reference: payment_data.paymentMethodData.tokenizationData.token,
-      payment_url: payment_data.paymentMethodData.tokenizationData.type,
+      payment_reference: `payment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      payment_url: payment_data.paymentMethodData?.type || 'CARD',
     });
 
     console.log(

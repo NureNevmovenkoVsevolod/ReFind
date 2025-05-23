@@ -12,6 +12,7 @@ import Subscription from "./subscriptions.model.js";
 
 // Зв'язки між таблицями
 
+
 // 1. User - Advertisement
 // Один користувач може створювати кілька оголошень
 User.hasMany(Advertisement, { foreignKey: "user_id" });

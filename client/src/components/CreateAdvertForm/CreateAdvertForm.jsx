@@ -205,11 +205,16 @@ const CreateAdvertForm = ({ type }) => {
           body: formDataToSend,
         });
 
+        console.log("Advertisement creation response:", response.status, response.statusText);
+
         if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Server error details:", errorData);
           throw new Error('Failed to create advertisement');
         }
 
         const newAdvertisement = await response.json();
+        console.log("Created advertisement:", newAdvertisement);
 
         // Після створення оголошення, зберігаємо дані про платіж
         const paymentResponse = await fetch("http://localhost:5000/api/payment/create", {
@@ -224,13 +229,18 @@ const CreateAdvertForm = ({ type }) => {
           }),
         });
 
+        console.log("Payment creation response:", paymentResponse.status, paymentResponse.statusText);
+
         if (!paymentResponse.ok) {
+          const errorData = await paymentResponse.json().catch(() => ({}));
+          console.error("Payment error details:", errorData);
           throw new Error('Failed to save payment data');
         }
 
         setPaymentStatus('success');
         setShowModal(true);
       } catch (error) {
+        console.error("Error in advertisement creation:", error);
         if (error.message === 'CANCELED') {
           setPaymentStatus('canceled');
         } else {
@@ -267,14 +277,23 @@ const CreateAdvertForm = ({ type }) => {
           body: formDataToSend,
         });
 
-        if (response.ok) {
-          const newAdvertisement = await response.json();
-          setShowModal(true);
-        } else {
-          console.error("Server error:", response.status, response.statusText);
+        console.log("Advertisement creation response:", response.status, response.statusText);
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Server error details:", errorData);
+          throw new Error('Failed to create advertisement');
         }
+
+        const newAdvertisement = await response.json();
+        console.log("Created advertisement:", newAdvertisement);
+
+        setPaymentStatus('success');
+        setShowModal(true);
       } catch (error) {
         console.error("Error creating advertisement:", error);
+        setPaymentStatus('error');
+        setShowModal(true);
       }
     }
   };

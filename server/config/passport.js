@@ -64,7 +64,7 @@ passport.use(
     {
       clientID: process.env.FACEBOOK_APP_ID,
       clientSecret: process.env.FACEBOOK_APP_SECRET,
-      callbackURL: "/auth/facebook/callback",
+      callbackURL: "http://localhost:5000/auth/facebook/callback",
       profileFields: ["id", "emails", "name", "picture"],
     },
     async (accessToken, refreshToken, profile, done) => {

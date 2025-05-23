@@ -78,6 +78,7 @@ const startServer = async () => {
     await sequelize.authenticate();
     await sequelize.sync({ alter: true });
     console.log("✅ З’єднання з Railway встановлено!");
+    
     app.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}`);
     });

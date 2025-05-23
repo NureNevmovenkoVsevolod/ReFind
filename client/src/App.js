@@ -13,16 +13,26 @@ import CreateLost from "./pages/CreateLost";
 import CreateFound from "./pages/CreateFound";
 import ItemCard from "./pages/ItemCard";
 import NotFound from "./pages/NotFound";
+import AdminPanel from "./pages/AdminPanel";
 
 function App() {
   const [isLogin, setIsLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
+  const isAdmin = isLogin && 
+    localStorage.getItem("user") &&
+    JSON.parse(localStorage.getItem("user")).role === "admin";
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      // Verify token with backend
+      if (token === "admin-token") {
+        setIsLogin(true);
+        setIsLoading(false);
+        return;
+      }
+
       axios
         .get("http://localhost:5000/auth/verify", {
           headers: {
@@ -33,7 +43,7 @@ function App() {
           setIsLogin(true);
           setIsLoading(false);
         })
-        .catch(() => {
+        .catch((error) => {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           setIsLogin(false);
@@ -46,12 +56,9 @@ function App() {
   }, [navigate]);
 
   const handleLogout = () => {
-    // Clear auth data
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setIsLogin(false);
-
-    // Redirect to home page (for guest view)
     navigate("/");
   };
 
@@ -61,7 +68,7 @@ function App() {
 
   return (
     <div className="App">
-      {isLogin ? <AuthNavBar onLogout={handleLogout} /> : <NavBar />}
+      {isAdmin ? null : (isLogin ? <AuthNavBar onLogout={handleLogout} /> : <NavBar />)}
       <div className="PageContent">
         <Routes>
           <Route path="/" element={<MainPage isLogin={isLogin} />} />
@@ -69,7 +76,7 @@ function App() {
             path="/registration"
             element={<Registration isLogin={isLogin} />}
           />
-          <Route path="/login" element={<Login isLogin={isLogin} />} />
+          <Route path="/login" element={<Login isLogin={isLogin} setIsLogin={setIsLogin} />} />
           <Route
             path="/auth/success"
             element={<AuthSuccess setIsLogin={setIsLogin} />}
@@ -86,11 +93,22 @@ function App() {
             path="/advertisement/:id"
             element={<ItemCard isLogin={isLogin} />}
           />
-
+          <Route
+            path="/admin"
+            element={
+              isAdmin ? (
+                <AdminPanel />
+              ) : isLogin ? (
+                <Navigate to="/" />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
-      <Footer />
+      {isAdmin ? null : <Footer />}
     </div>
   );
 }

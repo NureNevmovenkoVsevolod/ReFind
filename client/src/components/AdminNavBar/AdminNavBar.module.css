@@ -1,0 +1,25 @@
+.navButton {
+  font-size: 16px;
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+}
+
+.navButton:hover {
+  background-color: #fff;
+  color: #000;
+}
+
+.logout {
+  font-size: 16px;
+  padding: 8px 20px;
+  transition: all 0.3s ease;
+}
+
+.logout:hover {
+  background-color: #dc3545;
+  color: #fff;
+} 
+
+.logo{
+    filter: brightness(0) invert(1); 
+}

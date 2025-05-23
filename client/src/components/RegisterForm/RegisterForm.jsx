@@ -58,10 +58,9 @@ function RegisterForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrors({}); // Очищаємо всі помилки
+    setErrors({});
 
     try {
-      // Валідуємо всі поля
       await validationSchema.validate(formData, { abortEarly: false });
 
       const response = await axios.post(
@@ -76,14 +75,12 @@ function RegisterForm() {
       }
     } catch (error) {
       if (error instanceof Yup.ValidationError) {
-        // Обробка помилок валідації
         const newErrors = {};
         error.inner.forEach((err) => {
           newErrors[err.path] = err.message;
         });
         setErrors(newErrors);
       } else if (error.response) {
-        // Обробка помилок від сервера
         if (error.response.status === 400) {
           setErrors({
             submit: "Користувач з таким email вже існує"
