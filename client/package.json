@@ -24,6 +24,7 @@
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.6.0",
     "react-scripts": "^5.0.1",
+    "refind": "file:..",
     "web-vitals": "^2.1.4",
     "yup": "^1.6.1"
   },

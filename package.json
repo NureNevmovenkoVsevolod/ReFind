@@ -1,0 +1,16 @@
+{
+  "name": "refind",
+  "version": "0.0.6",
+  "description": "**ReFind** — це веб-платформа та мобільний застосунок, створені для того, щоб допомагати людям знаходити загублені речі, повертати знайдене, а також боротися з бюрократією та хаосом у традиційних бюро знахідок.",
+  "main": "server/index.js",
+  "scripts": {
+    "install-all": "npm install --prefix client && npm install --prefix server",
+    "i-all": "npm install --prefix client && npm install --prefix server",
+    "build": "npm run build --prefix client",
+    "start": "node server/index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "type": "module"
+}

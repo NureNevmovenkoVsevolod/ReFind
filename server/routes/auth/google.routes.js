@@ -15,16 +15,16 @@ router.get(
 router.get(
   "/callback",
   passport.authenticate("google", {
-    failureRedirect: "http://localhost:3000/login?error=google_auth_failed",
+    failureRedirect: "http://localhost:5000/login?error=google_auth_failed",
     session: false,
   }),
   (req, res) => {
     try {
       const token = generateToken(req.user);
-      res.redirect(`http://localhost:3000/auth/success?token=${token}`);
+      res.redirect(`http://localhost:5000/auth/success?token=${token}`);
     } catch (error) {
       console.error("Token generation error:", error);
-      res.redirect("http://localhost:3000/login?error=google_auth_failed");
+      res.redirect("http://localhost:5000/login?error=google_auth_failed");
     }
   }
 );

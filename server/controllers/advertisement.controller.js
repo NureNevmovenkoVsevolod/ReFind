@@ -47,7 +47,7 @@ export const createAdvertisement = async (req, res) => {
     if (req.files && req.files.length > 0) {
       const imagePromises = req.files.map(async (file) => {
         try {
-          const imageUrl = `/uploads/${file.filename}`;
+          const imageUrl = `/server/uploads/${file.filename}`;
 
           const image = await Image.create({
             advertisement_id: advertisement.advertisement_id,
@@ -415,7 +415,7 @@ export const addImagesToAdvertisement = async (req, res) => {
     if (req.files && req.files.length > 0) {
       const imagePromises = req.files.map((file) => {
         // Generate the URL for the uploaded image
-        const imageUrl = `/uploads/${file.filename}`;
+        const imageUrl = `/server/uploads/${file.filename}`;
 
         // Create image record in database
         return Image.create({

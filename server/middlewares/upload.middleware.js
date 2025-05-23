@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 // Configure multer for file upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(process.cwd(), "static", "uploads"));
+    cb(null, path.join(process.cwd(), "server/static", "uploads"));
   },
   filename: (req, file, cb) => {
     // Create unique filename

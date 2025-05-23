@@ -34,6 +34,7 @@ app.use(
 
 // Static file serving
 app.use("/static", express.static(path.join(__dirname, "static")));
+app.use(express.static(path.join(__dirname, '../client/build')));
 
 // Import verifyToken middleware
 import verifyToken from "./middlewares/auth.middleware.js";
@@ -56,6 +57,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Routes
+
 app.use("/auth", authRouter);
 app.use("/api", indexRouter);
 app.use("/api/advertisement", advertisementRouter);
@@ -63,6 +65,7 @@ app.use("/api/upload", uploadRouter);
 app.use("/api/payment", paymentRouter);
 
 // Token verification endpoint
+
 app.get("/auth/verify", verifyToken, (req, res) => {
   res.status(200).json({ user: req.user });
 });
@@ -71,6 +74,9 @@ app.get("/auth/verify", verifyToken, (req, res) => {
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: "Something went wrong!" });
+});
+app.get('/*path', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
 });
 
 const startServer = async () => {

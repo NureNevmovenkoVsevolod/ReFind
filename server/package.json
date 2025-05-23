@@ -25,6 +25,7 @@
     "passport-google-oauth20": "^2.0.0",
     "pg": "^8.15.6",
     "pg-hstore": "^2.3.4",
+    "refind": "file:..",
     "sequelize": "^6.37.7",
     "socket.io": "^4.8.1",
     "uuid": "^11.1.0"
