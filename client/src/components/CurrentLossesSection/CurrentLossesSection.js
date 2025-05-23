@@ -93,7 +93,7 @@ function CurrentLossesSection() {
                 date={new Date(loss.incident_date).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                 title={loss.title}
                 cityName={loss.location_description}
-                categoryName={loss.Category?.categorie_name || "Other"}
+                categoryName={loss.categorie_name || "Other"}
                 description={loss.description}
               />
             </Col>

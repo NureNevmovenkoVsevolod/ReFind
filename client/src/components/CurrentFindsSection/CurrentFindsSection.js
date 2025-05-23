@@ -5,8 +5,6 @@ import FindCard from "../FindCard/FindCard";
 import ShowMoreButton from "../ShowMoreButton/ShowMoreButton";
 import styles from "./CurrentFindsSection.module.css";
 import axios from "axios";
-import loader from "../Loader/Loader";
-import Loader from "../Loader/Loader";
 
 function CurrentFindsSection() {
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -96,7 +94,7 @@ function CurrentFindsSection() {
                 date={new Date(find.incident_date).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                 title={find.title}
                 cityName={find.location_description}
-                categoryName={find.Category?.categorie_name || "Інше"}
+                categoryName={find.categorie_name || "Other"}
                 description={find.description}
               />
             </Col>
