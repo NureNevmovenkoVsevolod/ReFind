@@ -64,7 +64,7 @@ function RegisterForm() {
       await validationSchema.validate(formData, { abortEarly: false });
 
       const response = await axios.post(
-        "http://localhost:5000/auth/register",
+          process.env.REACT_APP_SERVER_URL+"/auth/register",
         formData
       );
 
@@ -99,11 +99,11 @@ function RegisterForm() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:5000/auth/google";
+    window.location.href = process.env.REACT_APP_SERVER_URL+"/auth/google";
   };
 
   const handleFacebookLogin = () => {
-    window.location.href = "http://localhost:5000/auth/facebook";
+    window.location.href = process.env.REACT_APP_SERVER_URL+"/auth/facebook";
   };
 
   return (

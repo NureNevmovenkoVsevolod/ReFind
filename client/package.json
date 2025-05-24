@@ -12,6 +12,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.9.0",
     "bootstrap": "^5.3.5",
+    "cross-env": "^7.0.3",
     "formik": "^2.4.6",
     "hashids": "^2.3.0",
     "leaflet": "^1.9.4",
@@ -29,7 +30,8 @@
     "yup": "^1.6.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "copy-env": "copy .env client\\.env",
+    "start": "npm run copy-env && npm start --prefix client",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

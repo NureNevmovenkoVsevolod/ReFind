@@ -37,7 +37,7 @@ function App() {
       }
 
       axios
-        .get("http://localhost:5000/auth/verify", {
+        .get(process.env.REACT_APP_SERVER_URL+"/auth/verify", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
