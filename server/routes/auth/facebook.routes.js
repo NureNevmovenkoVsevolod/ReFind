@@ -8,7 +8,7 @@ router.get("/", passport.authenticate("facebook", { scope: ["email"] }));
 
 router.get(
   "/callback",
-  passport.authenticate("facebook", { failureRedirect: process.env.REACT_APP_SERVER_URL+"server/login" }),
+  passport.authenticate("facebook", { failureRedirect: process.env.REACT_APP_CLIENT_URL+"server/login" }),
   (req, res) => {
     try {
       const token = generateToken(req.user);
