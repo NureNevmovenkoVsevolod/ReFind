@@ -25,7 +25,7 @@ function CurrentLossesSection() {
       console.log("Fetching losses with params:", params);
 
       const response = await axios.get(
-        "http://localhost:5000/api/advertisement/losses",
+        process.env.REACT_APP_SERVER_URL+"/api/advertisement/losses",
         {
           params,
         }
@@ -87,7 +87,7 @@ function CurrentLossesSection() {
                   advertisement_id={loss.advertisement_id}
                 image={
                   loss.Images?.[0]?.image_url
-                    ? `http://localhost:5000/static${loss.Images[0].image_url}`
+                    ? `${process.env.REACT_APP_SERVER_URL}/static${loss.Images[0].image_url}`
                     : undefined
                 }
                 date={new Date(loss.incident_date).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })}

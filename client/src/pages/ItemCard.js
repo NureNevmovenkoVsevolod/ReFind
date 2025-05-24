@@ -24,7 +24,7 @@ function ItemCard({ isLogin }) {
       return;
     }
 
-    fetch(`http://localhost:5000/api/advertisement/${decodedId}`)
+    fetch(`${process.env.REACT_APP_SERVER_URL}/api/advertisement/${decodedId}`)
       .then(async (res) => {
         if (!res.ok) {
           const msg = (await res.json()).message || setError("Loading error.");
@@ -82,7 +82,7 @@ function ItemCard({ isLogin }) {
       <div className={styles.main}>
         <ImageGallery
           images={Images?.map(
-            (img) => `http://localhost:5000/static${img.image_url}`
+            (img) => `${process.env.REACT_APP_SERVER_URL}/static${img.image_url}`
           )}
         />
 

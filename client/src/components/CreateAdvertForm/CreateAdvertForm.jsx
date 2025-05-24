@@ -49,7 +49,7 @@ const CreateAdvertForm = ({ type }) => {
     // Завантаження категорій з БД
     const fetchCategories = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/categories");
+        const response = await fetch(process.env.REACT_APP_SERVER_URL+"/api/categories");
         const data = await response.json();
         const formattedCategories = data.map((cat) => ({
           value: cat.categorie_id.toString(),
@@ -197,7 +197,7 @@ const CreateAdvertForm = ({ type }) => {
         }
 
         // Спочатку створюємо оголошення
-        const response = await fetch("http://localhost:5000/api/advertisement", {
+        const response = await fetch(process.env.REACT_APP_SERVER_URL+"/api/advertisement", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -217,7 +217,7 @@ const CreateAdvertForm = ({ type }) => {
         console.log("Created advertisement:", newAdvertisement);
 
         // Після створення оголошення, зберігаємо дані про платіж
-        const paymentResponse = await fetch("http://localhost:5000/api/payment/create", {
+        const paymentResponse = await fetch(process.env.REACT_APP_SERVER_URL+"/api/payment/create", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -269,7 +269,7 @@ const CreateAdvertForm = ({ type }) => {
           });
         }
 
-        const response = await fetch("http://localhost:5000/api/advertisement", {
+        const response = await fetch(process.env.REACT_APP_SERVER_URL+"/api/advertisement", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,

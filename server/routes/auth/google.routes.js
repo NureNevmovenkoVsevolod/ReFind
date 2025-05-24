@@ -16,43 +16,48 @@ router.get(
 router.get(
   "/callback",
   passport.authenticate("google", {
-    failureRedirect: "http://localhost:3000/login?error=google_auth_failed",
-    session: false, 
+    failureRedirect:
+      process.env.REACT_APP_SERVER_URL + "/login?error=google_auth_failed",
+    session: false,
   }),
   (req, res) => {
     try {
-
       if (!req.user) {
-        return res.redirect("http://localhost:3000/login?error=no_user_data");
+        return res.redirect(
+          process.env.REACT_APP_SERVER_URL + "/login?error=no_user_data"
+        );
       }
 
       const token = generateToken(req.user);
-      console.log("Token generated:", !!token);
 
       const userData = {
         id: req.user.user_id,
         email: req.user.email,
         first_name: req.user.first_name,
         last_name: req.user.last_name,
-        role: 'user',
+        role: "user",
         auth_provider: req.user.auth_provider,
-        user_pfp: req.user.user_pfp
+        user_pfp: req.user.user_pfp,
       };
-      
+
       const authData = {
         token,
-        user: userData
+        user: userData,
       };
 
       const encodedData = encodeURIComponent(JSON.stringify(authData));
 
-      const redirectUrl = `http://localhost:3000/auth/success?data=${encodedData}`;
-      
+      const redirectUrl =
+        process.env.REACT_APP_SERVER_URL + `/auth/success?data=${encodedData}`;
+
       res.redirect(redirectUrl);
     } catch (error) {
       console.error("Google auth callback error:", error);
       console.error("Error stack:", error.stack);
-      res.redirect("http://localhost:3000/login?error=token_generation_failed");
+      res.redirect(
+        process.env.REACT_APP_SERVER_URL +
+          "/login?error=token_generation_failed"
+      );
     }
   }
 );

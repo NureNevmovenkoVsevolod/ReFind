@@ -25,7 +25,7 @@ const BoardLost = () => {
           page: 1,
           limit: 100,
         };
-        const response = await axios.get('http://localhost:5000/api/advertisement/losses', { params });
+        const response = await axios.get(process.env.REACT_APP_SERVER_URL+"/api/advertisement/losses", { params });
         const advertisements = Array.isArray(response.data.items)
           ? response.data.items
           : response.data.advertisements || [];
@@ -44,7 +44,7 @@ const BoardLost = () => {
     // Fetch categories from backend
     const fetchCategories = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/categories');
+        const res = await axios.get(process.env.REACT_APP_SERVER_URL+"/api/categories");
         const cats = res.data.map(cat => ({ value: String(cat.categorie_id), label: cat.categorie_name }));
         setCategories([{ value: 'all', label: 'All categories' }, ...cats]);
       } catch (e) {
@@ -155,7 +155,7 @@ const BoardLost = () => {
               <LossCard
                 key={item.advertisement_id}
                 advertisement_id={item.advertisement_id}
-                image={item.Images?.[0]?.image_url ? `http://localhost:5000/static${item.Images[0].image_url}` : undefined}
+                image={item.Images?.[0]?.image_url ? `${process.env.REACT_APP_SERVER_URL}/static${item.Images[0].image_url}` : undefined}
                 date={item.incident_date ? new Date(item.incident_date).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}
                 title={item.title}
                 description={item.description}

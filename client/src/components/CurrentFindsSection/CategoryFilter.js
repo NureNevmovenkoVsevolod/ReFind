@@ -16,7 +16,7 @@ export const CategoryFilter = ({ onCategoryChange }) => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/categories"
+          process.env.REACT_APP_SERVER_URL+"/api/categories"
         );
         const dbCategories = response.data.map((cat) => cat.categorie_name);
         setCategories(["All categories", ...dbCategories]);
