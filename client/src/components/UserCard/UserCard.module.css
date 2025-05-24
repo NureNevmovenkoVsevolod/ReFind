@@ -1,0 +1,191 @@
+.userCard {
+  width: 100%;
+  margin-bottom: 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  padding: 1.5rem;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.userCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.userInfoTop {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.avatarContainer {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.avatarIcon {
+    font-size: 2rem;
+    color: #6c757d;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.initialsAvatar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #343a40; /* Або інший відповідний колір */
+}
+
+.mainDetails {
+  flex-grow: 1;
+}
+
+.userName {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.userHandle {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 0.25em 0.5em;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  border-radius: 0.35rem;
+}
+
+.statusBadge.active {
+  background-color: #28a745;
+}
+
+.statusBadge.blocked {
+  background-color: #dc3545;
+}
+
+/* Add other status colors if needed, e.g., .statusBadge.inactive */
+
+.contactDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #343a40;
+}
+
+.contactItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.contactIcon {
+    font-size: 1rem;
+    color: #007bff; /* Or a neutral color */
+}
+
+.contactIconImage {
+  width: 16px;
+  height: 16px;
+  margin-right: 5px; /* Додаємо невеликий відступ */
+}
+
+.actionsRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.button {
+    padding: 0.5rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.viewButton {
+    flex-grow: 1;
+    border-color: #007bff;
+    background-color: transparent;
+    color: #007bff;
+}
+
+.viewButton:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.actionButtons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.editButton {
+    border-color: #ffc107;
+    background-color: transparent;
+    color: #ffc107;
+    padding: 0.5rem;
+}
+
+.editButton:hover {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.deleteButton {
+    border-color: #dc3545;
+    background-color: transparent;
+    color: #dc3545;
+    padding: 0.5rem;
+}
+
+.deleteButton:hover {
+    background-color: #dc3545;
+    color: #fff;
+} 

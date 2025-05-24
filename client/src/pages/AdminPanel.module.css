@@ -29,11 +29,13 @@
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
 }
 
 .card:hover {
   transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .card h3 {
@@ -44,4 +46,12 @@
 .card p {
   color: #6c757d;
   margin: 0;
+}
+
+.card .btn {
+  transition: all 0.3s ease;
+}
+
+.card .btn:hover {
+  transform: scale(1.05);
 } 

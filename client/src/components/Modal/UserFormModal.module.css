@@ -1,0 +1,50 @@
+.modal {
+  background-color: #fff;
+  border-radius: 8px;
+}
+
+.modalHeader {
+  border-bottom: 1px solid #e9ecef;
+  padding: 1rem;
+}
+
+.modalBody {
+  padding: 1.5rem;
+}
+
+.modalFooter {
+  border-top: 1px solid #e9ecef;
+  padding: 1rem;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formLabel {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.formControl {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+}
+
+.formControl:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.formCheck {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.formCheck input {
+  margin: 0;
+} 
