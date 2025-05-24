@@ -12,10 +12,10 @@ router.get(
   (req, res) => {
     try {
       const token = generateToken(req.user);
-      res.redirect(`${process.env.REACT_APP_SERVER_URL}/auth/success?token=${token}`);
+      res.redirect(`${process.env.REACT_APP_CLIENT_URL}/auth/success?token=${token}`);
     } catch (error) {
       console.error("Token generation error:", error);
-      res.redirect(process.env.REACT_APP_SERVER_URL+"/login?error=authentication_failed");
+      res.redirect(process.env.REACT_APP_CLIENT_URL+"/login?error=authentication_failed");
     }
   }
 );
