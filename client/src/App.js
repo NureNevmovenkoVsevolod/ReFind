@@ -69,13 +69,21 @@ function App() {
     return <div>Loading...</div>;
   }
 
+  if (isAdmin) {
+    return (
+      <div className="App">
+        <Routes>
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/" element={<Navigate to="/admin" />} />
+          <Route path="*" element={<Navigate to="/admin" />} />
+        </Routes>
+      </div>
+    );
+  }
+
   return (
     <div className="App">
-      {isAdmin ? null : isLogin ? (
-        <AuthNavBar onLogout={handleLogout} />
-      ) : (
-        <NavBar />
-      )}
+      {isLogin ? <AuthNavBar onLogout={handleLogout} /> : <NavBar />}
       <div className="PageContent">
         <Routes>
           <Route path="/" element={<MainPage isLogin={isLogin} />} />
@@ -103,27 +111,21 @@ function App() {
             path="/advertisement/:id"
             element={<ItemCard isLogin={isLogin} />}
           />
-          <Route
-            path="/admin"
-            element={
-              isAdmin ? (
-                <AdminPanel />
-              ) : isLogin ? (
-                <Navigate to="/" />
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
           <Route path="/boardlost" element={<BoardLost isLogin={isLogin} />} />
           <Route
             path="/boardfound"
             element={<BoardFound isLogin={isLogin} />}
           />
+          <Route
+            path="/admin"
+            element={
+              isLogin ? <Navigate to="/" /> : <Navigate to="/login" />
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
-      {isAdmin ? null : <Footer />}
+      <Footer />
     </div>
   );
 }

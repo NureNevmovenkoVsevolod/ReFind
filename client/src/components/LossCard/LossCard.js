@@ -3,6 +3,7 @@ import { Image, Row, Col } from "react-bootstrap";
 import styles from "./LossCard.module.css";
 import calendar from "../../assets/calendar.png";
 import location from "../../assets/location.png";
+import bgcard from "../../assets/photo.png";
 import {Link} from "react-router-dom";
 import {encodeId} from "../../utils/encodeId";
 
@@ -19,7 +20,7 @@ function LossCard({ advertisement_id, image, date, cityName, categoryName, title
       <Row>
         <Col xs={12} md={3}>
           <div className={styles.imageContainer}>
-            <Image src={image} alt="Lost item" className={styles.image} />
+            <Image src={image || bgcard} alt="Lost item" className={styles.image} />
             {date && (
               <div className={styles.dateLabel}>
                 <Image

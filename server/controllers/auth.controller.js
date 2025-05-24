@@ -32,7 +32,7 @@ export const register = async (req, res) => {
       password,
       first_name,
       last_name,
-      provider: "local",
+      auth_provider: "local",
     });
 
     const token = generateToken(user);

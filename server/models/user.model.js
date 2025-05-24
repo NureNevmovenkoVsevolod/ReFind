@@ -35,13 +35,17 @@ const User = sequelize.define(
       allowNull: false,
       unique: true,
     },
-    user_status: {
-      type: DataTypes.STRING,
+    is_blocked: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    blocked_at: {
+      type: DataTypes.DATE,
       allowNull: true,
     },
-    ban_count: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
+    blocked_until: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
     auth_provider: {
       type: DataTypes.ENUM("local", "google", "facebook"),
@@ -64,6 +68,9 @@ const User = sequelize.define(
       beforeUpdate: async (user) => {
         if (user.changed("password")) {
           user.password = await bcrypt.hash(user.password, 5);
+        }
+        if (user.changed("is_blocked") && user.is_blocked) {
+          user.blocked_at = new Date();
         }
       },
     },

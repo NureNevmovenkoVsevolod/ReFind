@@ -12,7 +12,7 @@ function AdminNavBar({ onLogout }) {
   const navigate = useNavigate();
   
   const goToMain = () => {
-    navigate("/");
+    navigate("/admin");
   };
 
   return (
