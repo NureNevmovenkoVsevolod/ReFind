@@ -23,7 +23,7 @@ function CurrentFindsSection() {
       };
 
       console.log("Fetching finds with params:", params);
-      console.log("server url: "+process.env.REACT_APP_SERVER_URL);
+
       const response = await axios.get(
         process.env.REACT_APP_SERVER_URL+"/api/advertisement/finds",
         {
@@ -88,7 +88,7 @@ function CurrentFindsSection() {
                   advertisement_id={find.advertisement_id}
                 image={
                   find.Images?.[0]?.image_url
-                    ? `${process.env.REACT_APP_SERVER_URL}/static${find.Images[0].image_url}`
+                    ? `${find.Images[0].image_url}`
                     : undefined
                 }
                 date={new Date(find.incident_date).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })}

@@ -155,7 +155,7 @@ const BoardLost = () => {
               <LossCard
                 key={item.advertisement_id}
                 advertisement_id={item.advertisement_id}
-                image={item.Images?.[0]?.image_url ? `${process.env.REACT_APP_SERVER_URL}/static${item.Images[0].image_url}` : undefined}
+                image={item.Images?.[0]?.image_url ? `${item.Images[0].image_url}` : undefined}
                 date={item.incident_date ? new Date(item.incident_date).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}
                 title={item.title}
                 description={item.description}

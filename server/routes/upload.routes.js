@@ -17,7 +17,7 @@ router.post(
 
       // Create URLs for uploaded files
       const imageUrls = req.files.map(
-        (file) => `/server/static/uploads/${file.filename}`
+        (file) => file.path
       );
 
       res.json({ imageUrls });
