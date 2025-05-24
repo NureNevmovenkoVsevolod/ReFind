@@ -1,6 +1,7 @@
 import express from "express";
 import * as advertisementController from "../controllers/advertisement.controller.js";
 import verifyToken from "../middlewares/auth.middleware.js";
+import checkBlocked from "../middlewares/checkBlocked.middleware.js";
 import { upload } from "../middlewares/upload.middleware.js";
 
 const router = express.Router();
@@ -12,6 +13,7 @@ router.get("/:id", advertisementController.getAdvertisementById);
 
 // Protected routes (require authentication)
 router.use(verifyToken);
+router.use(checkBlocked);
 router.post(
   "/",
   upload.array("images", 5),

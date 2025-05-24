@@ -30,12 +30,6 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      if (token === "admin-token") {
-        setIsLogin(true);
-        setIsLoading(false);
-        return;
-      }
-
       axios
         .get(process.env.REACT_APP_SERVER_URL+"/auth/verify", {
           headers: {

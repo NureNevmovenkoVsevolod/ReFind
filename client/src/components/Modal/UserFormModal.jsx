@@ -12,6 +12,88 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
     is_blocked: false,
     blocked_until: ''
   });
+  const [errors, setErrors] = useState({});
+
+  const validateField = (name, value, isEdit) => {
+    let error = '';
+
+    switch (name) {
+      case 'first_name':
+        if (!value.trim()) {
+          error = "Ім'я обов'язкове";
+        } else if (value.trim().length < 2) {
+          error = "Ім'я має містити мінімум 2 символи";
+        }
+        break;
+
+      case 'last_name':
+        if (!value.trim()) {
+          error = "Прізвище обов'язкове";
+        } else if (value.trim().length < 2) {
+          error = "Прізвище має містити мінімум 2 символи";
+        }
+        break;
+
+      case 'email':
+        if (!value.trim()) {
+          error = "Email обов'язковий";
+        } else {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(value)) {
+            error = "Введіть коректний email";
+          }
+        }
+        break;
+
+      case 'password':
+        if (!isEdit) {
+          if (!value) {
+            error = "Пароль обов'язковий";
+          } else if (value.length < 6) {
+            error = "Пароль має містити мінімум 6 символів";
+          } else if (!/[A-Za-z]/.test(value) || !/\d/.test(value)) {
+            error = "Пароль має містити хоча б одну літеру та одну цифру";
+          }
+        }
+        break;
+
+      case 'phone_number':
+        if (value) {
+          const digitsOnly = value.replace(/\D/g, '');
+          if (digitsOnly.length < 10 || digitsOnly.length > 13) {
+            error = "Номер телефону має містити від 10 до 13 цифр";
+          }
+        }
+        break;
+
+      case 'blocked_until':
+        if (formData.is_blocked && !value) {
+          error = "Вкажіть дату блокування";
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    return error;
+  };
+
+  const validateForm = (data, isEdit) => {
+    const newErrors = {};
+    let isValid = true;
+
+    Object.keys(data).forEach(key => {
+      const error = validateField(key, data[key], isEdit);
+      if (error) {
+        newErrors[key] = error;
+        isValid = false;
+      }
+    });
+
+    setErrors(newErrors);
+    return isValid;
+  };
 
   useEffect(() => {
     if (user) {
@@ -35,30 +117,46 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
         blocked_until: ''
       });
     }
+    setErrors({});
   }, [user]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    const newValue = type === 'checkbox' ? checked : value;
+    
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: newValue
+    }));
+
+    const error = validateField(name, newValue, !!user);
+    setErrors(prev => ({
+      ...prev,
+      [name]: error
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const submitData = { ...formData };
-
-    if (submitData.is_blocked) {
-      submitData.blocked_at = new Date().toISOString();
-    } else {
-      submitData.blocked_at = null;
-      submitData.blocked_until = null;
-    }
-
-    submitData.auth_provider = 'local';
     
-    onSubmit(submitData, user?.user_id);
+    if (validateForm(formData, !!user)) {
+      const submitData = { ...formData };
+
+      if (user && !submitData.password) {
+        delete submitData.password;
+      }
+
+      if (submitData.is_blocked) {
+        submitData.blocked_at = new Date().toISOString();
+      } else {
+        submitData.blocked_at = null;
+        submitData.blocked_until = null;
+      }
+
+      submitData.auth_provider = 'local';
+      
+      onSubmit(submitData, user?.user_id);
+    }
   };
 
   return (
@@ -67,7 +165,7 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
         <Modal.Title>{user ? 'Редагувати користувача' : 'Створити користувача'}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit} noValidate>
           <Form.Group className="mb-3">
             <Form.Label>Ім'я</Form.Label>
             <Form.Control
@@ -75,8 +173,11 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
               name="first_name"
               value={formData.first_name}
               onChange={handleChange}
-              required
+              isInvalid={!!errors.first_name}
             />
+            <Form.Control.Feedback type="invalid">
+              {errors.first_name}
+            </Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-3">
@@ -86,8 +187,11 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
               name="last_name"
               value={formData.last_name}
               onChange={handleChange}
-              required
+              isInvalid={!!errors.last_name}
             />
+            <Form.Control.Feedback type="invalid">
+              {errors.last_name}
+            </Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-3">
@@ -97,8 +201,11 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              required
+              isInvalid={!!errors.email}
             />
+            <Form.Control.Feedback type="invalid">
+              {errors.email}
+            </Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-3">
@@ -108,7 +215,11 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
               name="phone_number"
               value={formData.phone_number}
               onChange={handleChange}
+              isInvalid={!!errors.phone_number}
             />
+            <Form.Control.Feedback type="invalid">
+              {errors.phone_number}
+            </Form.Control.Feedback>
           </Form.Group>
 
           {!user && (
@@ -119,8 +230,11 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                required
+                isInvalid={!!errors.password}
               />
+              <Form.Control.Feedback type="invalid">
+                {errors.password}
+              </Form.Control.Feedback>
             </Form.Group>
           )}
 
@@ -144,8 +258,11 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
                     name="blocked_until"
                     value={formData.blocked_until}
                     onChange={handleChange}
-                    required={formData.is_blocked}
+                    isInvalid={!!errors.blocked_until}
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.blocked_until}
+                  </Form.Control.Feedback>
                 </Form.Group>
               )}
             </>

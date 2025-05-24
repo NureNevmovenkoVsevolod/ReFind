@@ -13,6 +13,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import jwt from "jsonwebtoken";
+import verifyToken from "./middlewares/auth.middleware.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,9 +36,6 @@ app.use(
 // Static file serving
 app.use("/static", express.static(path.join(__dirname, "static")));
 app.use(express.static(path.join(__dirname, '../client/build')));
-
-// Import verifyToken middleware
-import verifyToken from "./middlewares/auth.middleware.js";
 
 // Session configuration
 app.use(

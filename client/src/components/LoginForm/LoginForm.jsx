@@ -45,33 +45,21 @@ function LoginForm({ setIsLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Валідація форми
       await validationSchema.validate(formData, { abortEarly: false });
 
-      // Перевірка на адміна
-      if (formData.email === "admin@admin.com" && formData.password === "g5/FX8BqD>IDt8vP") {
-        console.log("Вхід адміністратора");
-        localStorage.setItem("token", "admin-token");
-        localStorage.setItem("user", JSON.stringify({ role: "admin" }));
-        console.log("Токен та роль встановлено");
-        setIsLogin(true);
-        console.log("isLogin встановлено в true");
-        navigate("/admin");
-        console.log("Перенаправлення на /admin");
-        return;
-      }
+      const response = await axios.post(`${process.env.REACT_APP_SERVER_URL}/auth/login`, formData);
 
-      const response = await axios.post(
-          process.env.REACT_APP_SERVER_URL+"/auth/login",
-        formData
-      );
-      
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-        setIsLogin(true);
+    if (response.data.token) {
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      setIsLogin(true);
+
+      if (response.data.user.role === 'admin') {
+        navigate("/admin");
+      } else {
         navigate("/");
       }
+    }
     } catch (error) {
       if (error instanceof Yup.ValidationError) {
         // Обробка помилок валідації

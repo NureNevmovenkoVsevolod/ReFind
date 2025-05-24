@@ -3,15 +3,14 @@ import AdminNavBar from '../components/AdminNavBar/AdminNavBar';
 import AdminFooter from '../components/AdminFooter/AdminFooter';
 import axios from 'axios';
 import styles from './AdminPanel.module.css';
-import { useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import { Row, Col, Button } from 'react-bootstrap';
 import UserCard from '../components/UserCard/UserCard';
 import Loader from '../components/Loader/Loader';
 import UserDetailsModal from '../components/Modal/UserDetailsModal';
 import UserFormModal from '../components/Modal/UserFormModal';
 
 
-axios.defaults.baseURL = 'http://localhost:5000';
+axios.defaults.baseURL = process.env.REACT_APP_SERVER_URL;
 
 function AdminPanel() {
   const [users, setUsers] = useState([]);
@@ -100,14 +99,12 @@ function AdminPanel() {
     setIsLoading(true);
     try {
       if (userId) {
-        // Редагування існуючого користувача
         await axios.put(`/api/user/${userId}`, values, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
       } else {
-        // Створення нового користувача
         await axios.post('/api/user', values, {
           headers: {
             Authorization: `Bearer ${token}`,

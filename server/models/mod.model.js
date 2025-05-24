@@ -1,5 +1,7 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../db.js";
+import bcrypt from "bcrypt";
+
 
 const Mod = sequelize.define(
   "Mod",
