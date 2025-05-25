@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import AdminPanel from "./pages/AdminPanel";
 import BoardFound from "./pages/BoardFound";
 import BoardLost from "./pages/BoardLost";
+import AdminModers from "./pages/AdminModers";
 
 function App() {
   const [isLogin, setIsLogin] = useState(false);
@@ -68,6 +69,7 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin/mods" element={<AdminModers />} />
           <Route path="/" element={<Navigate to="/admin" />} />
           <Route path="*" element={<Navigate to="/admin" />} />
         </Routes>
@@ -109,12 +111,6 @@ function App() {
           <Route
             path="/boardfound"
             element={<BoardFound isLogin={isLogin} />}
-          />
-          <Route
-            path="/admin"
-            element={
-              isLogin ? <Navigate to="/" /> : <Navigate to="/login" />
-            }
           />
           <Route path="*" element={<NotFound />} />
         </Routes>

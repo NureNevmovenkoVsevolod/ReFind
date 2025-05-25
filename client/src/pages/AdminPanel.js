@@ -114,10 +114,12 @@ function AdminPanel() {
       handleCloseFormModal();
       fetchUsers(token);
     } catch (err) {
-      console.error('Помилка при збереженні користувача:', err);
-      if (err.response) {
-        console.error('Дані помилки:', err.response.data);
-      }
+      console.error('Помилка при збереженні модератора:', err);
+            if (err.response) {
+                alert(err.response.data.message || 'Помилка при збереженні модератора');
+            } else {
+                alert('Помилка при збереженні модератора');
+            }
     } finally {
       setIsLoading(false);
     }

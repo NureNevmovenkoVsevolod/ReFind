@@ -14,6 +14,9 @@ function AdminNavBar({ onLogout }) {
   const goToMain = () => {
     navigate("/admin");
   };
+  const goToMods = () => {
+    navigate("/admin/mods");
+  }
 
   return (
     <Navbar bg="dark" data-bs-theme="dark">
@@ -33,10 +36,10 @@ function AdminNavBar({ onLogout }) {
         </Navbar.Brand>
 
         <Nav className="mx-auto gap-4">
-          <Button variant="outline-light" className={styles.navButton}>
+          <Button variant="outline-light" onClick={goToMain} className={styles.navButton}>
             CRUD над користувачами
           </Button>
-          <Button variant="outline-light" className={styles.navButton}>
+          <Button variant="outline-light" onClick={goToMods} className={styles.navButton}>
           CRUD над модерацією
           </Button>
         </Nav>

@@ -54,4 +54,39 @@
 
 .card .btn:hover {
   transform: scale(1.05);
+}
+
+.modCard {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.modCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.modInfo {
+  margin-bottom: 15px;
+}
+
+.modInfo h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.modActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.modActions button {
+  flex: 1;
+  max-width: 120px;
 } 

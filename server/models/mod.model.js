@@ -11,9 +11,10 @@ const Mod = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    mod_login: {
+    mod_email: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
     mod_password: {
       type: DataTypes.STRING,
@@ -25,24 +26,22 @@ const Mod = sequelize.define(
     timestamps: false,
     hooks: {
       beforeCreate: async (mod) => {
-        if (mod.password) {
-          mod.password = await bcrypt.hash(mod.password, 5);
+        if (mod.mod_password) {
+          mod.mod_password = await bcrypt.hash(mod.mod_password, 5);
         }
       },
       beforeUpdate: async (mod) => {
-        if (mod.changed("password")) {
-          mod.password = await bcrypt.hash(mod.password, 5);
+        if (mod.changed("mod_password")) {
+          mod.mod_password = await bcrypt.hash(mod.mod_password, 5);
         }
-        if (mod.changed("is_blocked") && mod.is_blocked) {
-          mod.blocked_at = new Date();
-        }
+ 
       },
     },
   }
 );
 
 Mod.prototype.comparePassword = async function (candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
+  return await bcrypt.compare(candidatePassword, this.mod_password);
 };
 
 export default Mod;
