@@ -82,7 +82,7 @@ function ItemCard({ isLogin }) {
       <div className={styles.main}>
         <ImageGallery
           images={Images?.map(
-            (img) => `${process.env.REACT_APP_SERVER_URL}/static${img.image_url}`
+            (img) => `${img.image_url}`
           )}
         />
 

@@ -6,6 +6,7 @@ import { Op } from "sequelize";
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+import { v2 as cloudinary } from "cloudinary";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,11 +48,20 @@ export const createAdvertisement = async (req, res) => {
     if (req.files && req.files.length > 0) {
       const imagePromises = req.files.map(async (file) => {
         try {
-          const imageUrl = `/server/uploads/${file.filename}`;
+          const result = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+                {folder: "advertisements"},
+                (error, result) => {
+                  if (error) reject(error);
+                  else resolve(result);
+                }
+            );
+            stream.end(file.buffer);
+          })
 
           const image = await Image.create({
             advertisement_id: advertisement.advertisement_id,
-            image_url: imageUrl,
+            image_url: result.secure_url,
           });
 
           return image;
@@ -413,14 +423,22 @@ export const addImagesToAdvertisement = async (req, res) => {
 
     // Handle file uploads if present
     if (req.files && req.files.length > 0) {
-      const imagePromises = req.files.map((file) => {
-        // Generate the URL for the uploaded image
-        const imageUrl = `/server/uploads/${file.filename}`;
+      const imagePromises = req.files.map(async (file) => {
+        const result = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+              {folder: "advertisements"},
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
+          );
+          stream.end(file.buffer);
+        });
 
         // Create image record in database
         return Image.create({
           advertisement_id: advertisement.advertisement_id,
-          image_url: imageUrl,
+          image_url: result.secure_url,
         });
       });
 

@@ -17,14 +17,14 @@ router.get(
   "/callback",
   passport.authenticate("google", {
     failureRedirect:
-      process.env.REACT_APP_SERVER_URL + "/login?error=google_auth_failed",
+      process.env.REACT_APP_CLIENT_URL + "/login?error=google_auth_failed",
     session: false,
   }),
   (req, res) => {
     try {
       if (!req.user) {
         return res.redirect(
-          process.env.REACT_APP_SERVER_URL + "/login?error=no_user_data"
+          process.env.REACT_APP_CLIENT_URL + "/login?error=no_user_data"
         );
       }
 
@@ -48,14 +48,14 @@ router.get(
       const encodedData = encodeURIComponent(JSON.stringify(authData));
 
       const redirectUrl =
-        process.env.REACT_APP_SERVER_URL + `/auth/success?data=${encodedData}`;
+        process.env.REACT_APP_CLIENT_URL + `/auth/success?data=${encodedData}`;
 
       res.redirect(redirectUrl);
     } catch (error) {
       console.error("Google auth callback error:", error);
       console.error("Error stack:", error.stack);
       res.redirect(
-        process.env.REACT_APP_SERVER_URL +
+        process.env.REACT_APP_CLIENT_URL +
           "/login?error=token_generation_failed"
       );
     }

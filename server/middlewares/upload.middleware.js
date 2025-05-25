@@ -1,35 +1,29 @@
 import multer from "multer";
 import path from "path";
+import { v2 as cloudinary } from "cloudinary";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configure multer for file upload
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(process.cwd(), "server/static", "uploads"));
-  },
-  filename: (req, file, cb) => {
-    // Create unique filename
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  },
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// File filter to allow only images
+// Configure multer for file upload
+const storage = multer.memoryStorage();
+
 const fileFilter = (req, file, cb) => {
-  // Accept images only
-  if (!file.mimetype.startsWith('image/')) {
-    return cb(new Error("Only image files are allowed!"), false);
+  if (!file.mimetype.startsWith("image/")) {
+    return cb(new Error("Тільки зображення дозволені!"), false);
   }
   cb(null, true);
 };
 
 export const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB max file size
-  },
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });
