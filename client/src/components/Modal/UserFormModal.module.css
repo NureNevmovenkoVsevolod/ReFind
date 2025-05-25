@@ -47,4 +47,25 @@
 
 .formCheck input {
   margin: 0;
+}
+
+.avatarUpload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.avatarPreview {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ddd;
+}
+
+.uploading {
+  color: #666;
+  font-style: italic;
+  margin-top: 0.5rem;
 } 

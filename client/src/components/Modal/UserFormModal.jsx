@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import styles from './UserFormModal.module.css';
+import axios from 'axios';
 
 const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -10,9 +11,11 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
     phone_number: '',
     password: '',
     is_blocked: false,
-    blocked_until: ''
+    blocked_until: '',
+    user_pfp: ''
   });
   const [errors, setErrors] = useState({});
+  const [uploading, setUploading] = useState(false);
 
   const validateField = (name, value, isEdit) => {
     let error = '';
@@ -95,6 +98,37 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
     return isValid;
   };
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    setUploading(true);
+    try {
+      const response = await axios.post('/api/upload/avatar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      setFormData(prev => ({
+        ...prev,
+        user_pfp: response.data.avatarUrl
+      }));
+    } catch (error) {
+      console.error('Помилка завантаження аватара:', error);
+      setErrors(prev => ({
+        ...prev,
+        avatar: 'Помилка завантаження аватара'
+      }));
+    } finally {
+      setUploading(false);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       setFormData({
@@ -104,7 +138,8 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
         phone_number: user.phone_number || '',
         password: '',
         is_blocked: user.is_blocked || false,
-        blocked_until: user.blocked_until ? new Date(user.blocked_until).toISOString().slice(0, 16) : ''
+        blocked_until: user.blocked_until ? new Date(user.blocked_until).toISOString().slice(0, 16) : '',
+        user_pfp: user.user_pfp || ''
       });
     } else {
       setFormData({
@@ -114,7 +149,8 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
         phone_number: '',
         password: '',
         is_blocked: false,
-        blocked_until: ''
+        blocked_until: '',
+        user_pfp: ''
       });
     }
     setErrors({});
@@ -166,6 +202,29 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
       </Modal.Header>
       <Modal.Body>
         <Form onSubmit={handleSubmit} noValidate>
+          <Form.Group className="mb-3">
+            <Form.Label>Аватар</Form.Label>
+            <div className={styles.avatarUpload}>
+              {formData.user_pfp && (
+                <img 
+                  src={formData.user_pfp} 
+                  alt="Avatar preview" 
+                  className={styles.avatarPreview} 
+                />
+              )}
+              <Form.Control
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                disabled={uploading}
+              />
+              {uploading && <div className={styles.uploading}>Завантаження...</div>}
+              {errors.avatar && (
+                <div className="text-danger">{errors.avatar}</div>
+              )}
+            </div>
+          </Form.Group>
+
           <Form.Group className="mb-3">
             <Form.Label>Ім'я</Form.Label>
             <Form.Control
@@ -273,7 +332,7 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
         <Button variant="secondary" onClick={handleClose}>
           Скасувати
         </Button>
-        <Button variant="primary" onClick={handleSubmit}>
+        <Button variant="primary" onClick={handleSubmit} disabled={uploading}>
           {user ? 'Зберегти' : 'Створити'}
         </Button>
       </Modal.Footer>

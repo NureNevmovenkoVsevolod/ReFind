@@ -2,7 +2,9 @@ import User from "../models/user.model.js";
 
 export const getAllUsers = async (req, res) => {
     try {
-        const users = await User.findAll();
+        const users = await User.findAll({
+            attributes: { exclude: ['password'] }
+        });
         res.json(users);
     } catch (error) {
         console.error("Error fetching users:", error);
@@ -13,7 +15,9 @@ export const getAllUsers = async (req, res) => {
 export const getUserById = async (req, res) => {
     try {
         const { id } = req.params;
-        const user = await User.findByPk(id);
+        const user = await User.findByPk(id, {
+            attributes: { exclude: ['password'] }
+        });
         if (user) {
             res.json(user);
         } else {
@@ -27,8 +31,30 @@ export const getUserById = async (req, res) => {
 
 export const createUser = async (req, res) => {
     try {
-        const newUser = await User.create(req.body);
-        res.status(201).json(newUser);
+        const { first_name, last_name, email, password, user_pfp, phone_number, is_blocked, blocked_until } = req.body;
+
+        // Перевірка чи існує користувач з таким email
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ message: 'Користувач з таким email вже існує' });
+        }
+
+        // Створення нового користувача
+        const user = await User.create({
+            first_name,
+            last_name,
+            email,
+            password: password,
+            user_pfp,
+            phone_number,
+            is_blocked: is_blocked || false,
+            blocked_until,
+            auth_provider: 'local'
+        });
+
+        // Повертаємо користувача без пароля
+        const { password: _, ...userWithoutPassword } = user.toJSON();
+        res.status(201).json(userWithoutPassword);
     } catch (error) {
         console.error("Error creating user:", error);
         if (error.name === 'SequelizeValidationError') {
@@ -41,15 +67,28 @@ export const createUser = async (req, res) => {
 export const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const [updatedRowsCount, updatedUsers] = await User.update(req.body, {
-            where: { user_id: id },
-            returning: true,
-        });
-        if (updatedRowsCount > 0) {
-            res.json(updatedUsers[0]);
-        } else {
-            res.status(404).json({ message: "User not found or no changes made" });
+        const { first_name, last_name, email, password, user_pfp, phone_number, is_blocked, blocked_until } = req.body;
+
+        const user = await User.findByPk(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
         }
+
+        // Оновлення даних користувача
+        const updateData = {
+            first_name,
+            last_name,
+            email,
+            user_pfp,
+            phone_number,
+            is_blocked,
+            blocked_until
+        };
+
+        await user.update(updateData);
+
+        const { password: _, ...userWithoutPassword } = user.toJSON();
+        res.json(userWithoutPassword);
     } catch (error) {
         console.error("Error updating user:", error);
         if (error.name === 'SequelizeValidationError') {

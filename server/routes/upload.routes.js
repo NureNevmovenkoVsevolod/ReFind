@@ -1,6 +1,7 @@
 import express from "express";
 import verifyToken from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/upload.middleware.js";
+import { uploadAvatar, uploadImages } from "../controllers/upload.controller.js";
 
 const router = express.Router();
 
@@ -9,23 +10,15 @@ router.post(
   "/images",
   verifyToken,
   upload.array("images", 5),
-  async (req, res) => {
-    try {
-      if (!req.files || req.files.length === 0) {
-        return res.status(400).json({ message: "No files uploaded" });
-      }
+  uploadImages
+);
 
-      // Create URLs for uploaded files
-      const imageUrls = req.files.map(
-        (file) => file.path
-      );
-
-      res.json({ imageUrls });
-    } catch (error) {
-      console.error("Error uploading files:", error);
-      res.status(500).json({ message: "Failed to upload files" });
-    }
-  }
+// Завантаження аватара
+router.post(
+  "/avatar",
+  verifyToken,
+  upload.single("avatar"),
+  uploadAvatar
 );
 
 export default router;
