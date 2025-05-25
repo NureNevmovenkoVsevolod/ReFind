@@ -56,6 +56,8 @@ function LoginForm({ setIsLogin }) {
 
       if (response.data.user.role === 'admin') {
         navigate("/admin");
+      } else if(response.data.user.role === 'moder'){
+        navigate("/moder/advertisments");
       } else {
         navigate("/");
       }

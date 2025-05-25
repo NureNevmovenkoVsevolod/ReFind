@@ -5,10 +5,10 @@ import Mod from "../models/mod.model.js";
 
 export const generateToken = (user) => {
   return jwt.sign(
-    { 
-      id: user.user_id, 
+    {
+      id: user.user_id,
       email: user.email,
-      role: 'user'
+      role: "user",
     },
     process.env.JWT_SECRET,
     { expiresIn: "24h" }
@@ -47,9 +47,10 @@ export const register = async (req, res) => {
       user: {
         id: user.user_id,
         email: user.email,
+        user_pfp: user.user_pfp || null,
         first_name: user.first_name,
         last_name: user.last_name,
-        role: 'user'
+        role: "user",
       },
     });
   } catch (error) {
@@ -62,22 +63,25 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+    if (
+      email === process.env.ADMIN_EMAIL &&
+      password === process.env.ADMIN_PASSWORD
+    ) {
       const token = jwt.sign(
-        { 
+        {
           email: process.env.ADMIN_EMAIL,
-          role: 'admin'
+          role: "admin",
         },
         process.env.JWT_SECRET,
         { expiresIn: "24h" }
       );
-      
+
       return res.json({
         token,
         user: {
           email: process.env.ADMIN_EMAIL,
-          role: 'admin'
-        }
+          role: "admin",
+        },
       });
     }
 
@@ -89,10 +93,10 @@ export const login = async (req, res) => {
       }
 
       const token = jwt.sign(
-        { 
+        {
           id: moderator.mod_id,
           email: moderator.mod_email,
-          role: 'moder'
+          role: "moder",
         },
         process.env.JWT_SECRET,
         { expiresIn: "24h" }
@@ -102,8 +106,8 @@ export const login = async (req, res) => {
         token,
         user: {
           email: moderator.mod_email,
-          role: 'moder'
-        }
+          role: "moder",
+        },
       });
     }
 
@@ -123,9 +127,10 @@ export const login = async (req, res) => {
       user: {
         id: user.user_id,
         email: user.email,
+        user_pfp: user.user_pfp || null,
         first_name: user.first_name,
         last_name: user.last_name,
-        role: 'user'
+        role: "user",
       },
     });
   } catch (error) {

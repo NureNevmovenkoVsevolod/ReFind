@@ -17,6 +17,8 @@ import AdminPanel from "./pages/AdminPanel";
 import BoardFound from "./pages/BoardFound";
 import BoardLost from "./pages/BoardLost";
 import AdminModers from "./pages/AdminModers";
+import ModerNavBar from "./components/ModerNavBar/ModerNavBar";
+import ModerAdvert from "./pages/Moder/ModerAdvert";
 
 function App() {
   const [isLogin, setIsLogin] = useState(false);
@@ -28,11 +30,16 @@ function App() {
     localStorage.getItem("user") &&
     JSON.parse(localStorage.getItem("user")).role === "admin";
 
+  const isModerator =
+    isLogin &&
+    localStorage.getItem("user") &&
+    JSON.parse(localStorage.getItem("user")).role === "moder";
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       axios
-        .get(process.env.REACT_APP_SERVER_URL+"/auth/verify", {
+        .get(process.env.REACT_APP_SERVER_URL + "/auth/verify", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -72,6 +79,22 @@ function App() {
           <Route path="/admin/mods" element={<AdminModers />} />
           <Route path="/" element={<Navigate to="/admin" />} />
           <Route path="*" element={<Navigate to="/admin" />} />
+        </Routes>
+      </div>
+    );
+  }
+
+  if (isModerator) {
+    return (
+      <div className="App">
+        <ModerNavBar onLogout={handleLogout} />
+        <Routes>
+          <Route path="/moder/stats" />
+          <Route path="/moder/advertisments" element={<ModerAdvert />}/>
+          <Route path="/moder/complaints" />
+          <Route path="/moder/stats" />
+          <Route path="/" element={<Navigate to="/moder/advertisments" />} />
+          <Route path="*" element={<Navigate to="/moder/advertisments" />} />
         </Routes>
       </div>
     );
