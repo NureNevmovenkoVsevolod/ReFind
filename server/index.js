@@ -15,7 +15,7 @@ import { fileURLToPath } from "url";
 import jwt from "jsonwebtoken";
 import verifyToken from "./middlewares/auth.middleware.js";
 
-const CLIENT_LINK = "http://localhost:5001"
+const CLIENT_LINK = process.env.REACT_APP_CLIENT_URL;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -36,7 +36,7 @@ app.use(
 
 // Static file serving
 app.use("/static", express.static(path.join(__dirname, "static")));
-app.use(express.static(path.join(__dirname, '../client/build')));
+app.use(express.static(path.join(__dirname, "../client/build")));
 
 // Session configuration
 app.use(
@@ -74,8 +74,8 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: "Something went wrong!" });
 });
-app.get('/*path', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+app.get("/*path", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/build", "index.html"));
 });
 
 const startServer = async () => {
@@ -83,7 +83,7 @@ const startServer = async () => {
     await sequelize.authenticate();
     await sequelize.sync({ alter: true });
     console.log("✅ З’єднання з Railway встановлено!");
-    
+
     app.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}`);
     });
