@@ -11,7 +11,52 @@ import { v2 as cloudinary } from "cloudinary";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Create new advertisement
+// палка не стріляє мінімум 364 дні
+
+const mapAdWithCategory = (row) => {
+  const ad = row.toJSON();
+  return {
+    advertisement_id: ad.advertisement_id,
+    title: ad.title,
+    description: ad.description,
+    categorie_id: ad.categorie_id,
+    categorie_name: ad.Category?.categorie_name,
+    location_description: ad.location_description,
+    location_coordinates: ad.location_coordinates,
+    reward: ad.reward,
+    type: ad.type,
+    status: ad.status,
+    phone: ad.phone,
+    email: ad.email,
+    incident_date: ad.incident_date,
+    createdAt: ad.createdAt,
+    updatedAt: ad.updatedAt,
+    Images: ad.Images || [],
+  };
+};
+
+const buildQueryOptions = ({ type, category, limit, offset }) => ({
+  where: {
+    type,
+    status: "active",
+    mod_check: true,
+  },
+  include: [
+    { model: Image, attributes: ["image_url"] },
+    {
+      model: Category,
+      attributes: ["categorie_id", "categorie_name"],
+      ...(category && { where: { categorie_name: category } }),
+    },
+  ],
+  order: [["createdAt", "DESC"]],
+  limit,
+  offset,
+  distinct: true,
+});
+
+// створення оголошення
+
 export const createAdvertisement = async (req, res) => {
   try {
     const {
@@ -27,8 +72,6 @@ export const createAdvertisement = async (req, res) => {
       incident_date,
     } = req.body;
 
-
-    // Create advertisement
     const advertisement = await Advertisement.create({
       title,
       description,
@@ -45,111 +88,58 @@ export const createAdvertisement = async (req, res) => {
       incident_date,
     });
 
-    if (req.files && req.files.length > 0) {
-      const imagePromises = req.files.map(async (file) => {
-        try {
-          const result = await new Promise((resolve, reject) => {
-            const stream = cloudinary.uploader.upload_stream(
-                {folder: "advertisements"},
-                (error, result) => {
-                  if (error) reject(error);
-                  else resolve(result);
-                }
-            );
-            stream.end(file.buffer);
-          })
+    if (req.files?.length) {
+      await Promise.all(
+        req.files.map(async (file) => {
+          try {
+            const result = await new Promise((resolve, reject) => {
+              const stream = cloudinary.uploader.upload_stream(
+                { folder: "advertisements" },
+                (error, result) => (error ? reject(error) : resolve(result))
+              );
+              stream.end(file.buffer);
+            });
 
-          const image = await Image.create({
-            advertisement_id: advertisement.advertisement_id,
-            image_url: result.secure_url,
-          });
-
-          return image;
-        } catch (error) {
-          console.error("Error creating image record:", error);
-        }
-      });
-
-      await Promise.all(imagePromises);
+            await Image.create({
+              advertisement_id: advertisement.advertisement_id,
+              image_url: result.secure_url,
+            });
+          } catch (error) {
+            console.error("Error creating image record:", error);
+          }
+        })
+      );
     }
 
-    const completeAdvertisement = await Advertisement.findOne({
+    const completeAd = await Advertisement.findOne({
       where: { advertisement_id: advertisement.advertisement_id },
-      include: [
-        {
-          model: Image,
-          attributes: ["image_url"],
-        },
-      ],
+      include: [{ model: Image, attributes: ["image_url"] }],
     });
 
-    res.status(201).json(completeAdvertisement);
+    res.status(201).json(completeAd);
   } catch (error) {
     console.error("Error creating advertisement:", error);
-    res.status(500).json({
-      message: "Failed to create advertisement",
-      error: error.message,
-    });
+    res.status(500).json({ message: "Failed to create advertisement", error: error.message });
   }
 };
 
-// Get all finds
-export const getFinds = async (req, res) => {
+// отримання загублених та знайдених оголошень
+
+export const getFinds = async (req, res) => getAdsByType("find", req, res);
+export const getLosses = async (req, res) => getAdsByType("lost", req, res);
+
+const getAdsByType = async (type, req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 8;
     const offset = (page - 1) * limit;
     const category = req.query.category;
 
-    const queryOptions = {
-      where: {
-        type: "find",
-        status: "active",
-        mod_check: true,
-      },
-      include: [
-        {
-          model: Image,
-          attributes: ["image_url"],
-        },
-        {
-          model: Category,
-          attributes: ["categorie_id", "categorie_name"],
-          ...(category && {
-            where: { categorie_name: category },
-          }),
-        },
-      ],
-      order: [["createdAt", "DESC"]],
-      limit,
-      offset,
-      distinct: true,
-    };
+    const { count, rows } = await Advertisement.findAndCountAll(
+      buildQueryOptions({ type, category, limit, offset })
+    );
 
-    const { count, rows } = await Advertisement.findAndCountAll(queryOptions);
-
-    // Universal response for both main and board pages
-    const items = rows.map((row) => {
-      const ad = row.toJSON();
-      return {
-        advertisement_id: ad.advertisement_id,
-        title: ad.title,
-        description: ad.description,
-        categorie_id: ad.categorie_id,
-        categorie_name: ad.Category?.categorie_name,
-        location_description: ad.location_description,
-        location_coordinates: ad.location_coordinates,
-        reward: ad.reward,
-        type: ad.type,
-        status: ad.status,
-        phone: ad.phone,
-        email: ad.email,
-        incident_date: ad.incident_date,
-        createdAt: ad.createdAt,
-        updatedAt: ad.updatedAt,
-        Images: ad.Images || [],
-      };
-    });
+    const items = rows.map(mapAdWithCategory);
 
     res.json({
       items,
@@ -159,143 +149,58 @@ export const getFinds = async (req, res) => {
       hasMore: offset + rows.length < count,
     });
   } catch (error) {
-    console.error("Error fetching finds:", error);
-    res.status(500).json({ message: "Failed to fetch finds" });
+    console.error(`Error fetching ${type}s:`, error);
+    res.status(500).json({ message: `Failed to fetch ${type}s` });
   }
 };
 
-// Get all losses
-export const getLosses = async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 8;
-    const offset = (page - 1) * limit;
-    const category = req.query.category;
+// id пошук
 
-    const queryOptions = {
-      where: {
-        type: "lost",
-        status: "active",
-        mod_check: true,
-      },
-      include: [
-        {
-          model: Image,
-          attributes: ["image_url"],
-        },
-        {
-          model: Category,
-          attributes: ["categorie_id", "categorie_name"],
-          ...(category && {
-            where: { categorie_name: category },
-          }),
-        },
-      ],
-      order: [["createdAt", "DESC"]],
-      limit,
-      offset,
-      distinct: true,
-    };
-
-    const { count, rows } = await Advertisement.findAndCountAll(queryOptions);
-
-    // Universal response for both main and board pages
-    const items = rows.map((row) => {
-      const ad = row.toJSON();
-      return {
-        advertisement_id: ad.advertisement_id,
-        title: ad.title,
-        description: ad.description,
-        categorie_id: ad.categorie_id,
-        categorie_name: ad.Category?.categorie_name,
-        location_description: ad.location_description,
-        location_coordinates: ad.location_coordinates,
-        reward: ad.reward,
-        type: ad.type,
-        status: ad.status,
-        phone: ad.phone,
-        email: ad.email,
-        incident_date: ad.incident_date,
-        createdAt: ad.createdAt,
-        updatedAt: ad.updatedAt,
-        Images: ad.Images || [],
-      };
-    });
-
-    res.json({
-      items,
-      total: count,
-      currentPage: page,
-      totalPages: Math.ceil(count / limit),
-      hasMore: offset + rows.length < count,
-    });
-  } catch (error) {
-    console.error("Error fetching losses:", error);
-    res.status(500).json({ message: "Failed to fetch losses" });
-  }
-};
-
-// Get advertisement by ID
 export const getAdvertisementById = async (req, res) => {
   try {
-    const advertisement = await Advertisement.findOne({
+    const ad = await Advertisement.findOne({
       where: { advertisement_id: req.params.id },
-      include: [
-        {
-          model: Image,
-          attributes: ["image_url"],
-        },
-      ],
+      include: [{ model: Image, attributes: ["image_url"] }],
     });
 
-    if (!advertisement) {
-      return res.status(404).json({ message: "Advertisement not found" });
-    }
+    if (!ad) return res.status(404).json({ message: "Advertisement not found" });
 
-    res.json({...advertisement.toJSON(),
-      location_coordinates: JSON.parse(advertisement.location_coordinates)});
+    res.json({
+      ...ad.toJSON(),
+      location_coordinates: JSON.parse(ad.location_coordinates),
+    });
   } catch (error) {
     console.error("Error fetching advertisement:", error);
     res.status(500).json({ message: "Failed to fetch advertisement" });
   }
 };
 
-// Get user's advertisements
+// показування оголошень користувачу
+
 export const getUserAdvertisements = async (req, res) => {
   try {
-    const advertisements = await Advertisement.findAll({
+    const ads = await Advertisement.findAll({
       where: { user_id: req.user.id },
-      include: [
-        {
-          model: Image,
-          attributes: ["image_url"],
-        },
-      ],
+      include: [{ model: Image, attributes: ["image_url"] }],
       order: [["createdAt", "DESC"]],
     });
 
-    res.json(advertisements);
+    res.json(ads);
   } catch (error) {
     console.error("Error fetching user advertisements:", error);
     res.status(500).json({ message: "Failed to fetch user advertisements" });
   }
 };
 
-// Update advertisement
+// оновлення
+
 export const updateAdvertisement = async (req, res) => {
   try {
-    const advertisement = await Advertisement.findOne({
-      where: {
-        advertisement_id: req.params.id,
-        user_id: req.user.id,
-      },
+    const ad = await Advertisement.findOne({
+      where: { advertisement_id: req.params.id, user_id: req.user.id },
     });
 
-    if (!advertisement) {
-      return res
-        .status(404)
-        .json({ message: "Advertisement not found or unauthorized" });
-    }
+    if (!ad) return res.status(404).json({ message: "Advertisement not found or unauthorized" });
 
     const {
       title,
@@ -309,8 +214,7 @@ export const updateAdvertisement = async (req, res) => {
       images = [],
     } = req.body;
 
-    // Update advertisement details
-    await advertisement.update({
+    await ad.update({
       title,
       description,
       categorie_id,
@@ -321,78 +225,47 @@ export const updateAdvertisement = async (req, res) => {
       email,
     });
 
-    // Update images
     if (images.length > 0) {
-      // Delete old images
-      await Image.destroy({
-        where: { advertisement_id: advertisement.advertisement_id },
-      });
-
-      // Add new images
+      await Image.destroy({ where: { advertisement_id: ad.advertisement_id } });
       await Image.bulkCreate(
         images.map((url) => ({
-          advertisement_id: advertisement.advertisement_id,
-          url,
+          advertisement_id: ad.advertisement_id,
+          image_url: url,
         }))
       );
     }
 
-    res.json(advertisement);
+    res.json(ad);
   } catch (error) {
     console.error("Error updating advertisement:", error);
     res.status(500).json({ message: "Failed to update advertisement" });
   }
 };
 
-// Delete advertisement
+// видалення
+
 export const deleteAdvertisement = async (req, res) => {
   try {
-    const advertisement = await Advertisement.findOne({
-      where: {
-        advertisement_id: req.params.id,
-        user_id: req.user.id,
-      },
-      include: [
-        {
-          model: Image,
-          attributes: ["url"],
-        },
-      ],
+    const ad = await Advertisement.findOne({
+      where: { advertisement_id: req.params.id, user_id: req.user.id },
+      include: [{ model: Image, attributes: ["image_url"] }],
     });
 
-    if (!advertisement) {
-      return res
-        .status(404)
-        .json({ message: "Advertisement not found or unauthorized" });
-    }
+    if (!ad) return res.status(404).json({ message: "Advertisement not found or unauthorized" });
 
-    // Delete physical image files
-    for (const image of advertisement.Images) {
+    for (const image of ad.Images) {
       try {
-        const imagePath = path.join(
-          process.cwd(),
-          "static",
-          new URL(image.url).pathname
-        );
+        const imagePath = path.join(process.cwd(), "static", new URL(image.image_url).pathname);
         await fs.unlink(imagePath);
       } catch (err) {
         console.error("Error deleting image file:", err);
       }
     }
 
-    // Delete database records
     await Promise.all([
-      // Delete images from database
-      Image.destroy({
-        where: { advertisement_id: advertisement.advertisement_id },
-      }),
-      // Update related payments as cancelled
-      Payment.update(
-        { status: "cancelled" },
-        { where: { advertisement_id: advertisement.advertisement_id } }
-      ),
-      // Delete the advertisement
-      advertisement.destroy(),
+      Image.destroy({ where: { advertisement_id: ad.advertisement_id } }),
+      Payment.update({ status: "cancelled" }, { where: { advertisement_id: ad.advertisement_id } }),
+      ad.destroy(),
     ]);
 
     res.json({ message: "Advertisement deleted successfully" });
@@ -402,65 +275,47 @@ export const deleteAdvertisement = async (req, res) => {
   }
 };
 
-// Add images to advertisement
+// додавання зображень
+
 export const addImagesToAdvertisement = async (req, res) => {
   try {
     const { advertisement_id } = req.params;
 
-    // Check if advertisement exists and belongs to user
-    const advertisement = await Advertisement.findOne({
-      where: {
-        advertisement_id,
-        user_id: req.user.id,
-      },
+    const ad = await Advertisement.findOne({
+      where: { advertisement_id, user_id: req.user.id },
     });
 
-    if (!advertisement) {
-      return res.status(404).json({
-        message: "Advertisement not found or unauthorized",
-      });
-    }
+    if (!ad) return res.status(404).json({ message: "Advertisement not found or unauthorized" });
 
-    // Handle file uploads if present
-    if (req.files && req.files.length > 0) {
-      const imagePromises = req.files.map(async (file) => {
-        const result = await new Promise((resolve, reject) => {
-          const stream = cloudinary.uploader.upload_stream(
-              {folder: "advertisements"},
-              (error, result) => {
-                if (error) reject(error);
-                else resolve(result);
-              }
-          );
-          stream.end(file.buffer);
-        });
+    if (req.files?.length) {
+      await Promise.all(
+        req.files.map(async (file) => {
+          const result = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+              { folder: "advertisements" },
+              (error, result) => (error ? reject(error) : resolve(result))
+            );
+            stream.end(file.buffer);
+          });
 
-        // Create image record in database
-        return Image.create({
-          advertisement_id: advertisement.advertisement_id,
-          image_url: result.secure_url,
-        });
-      });
+          await Image.create({
+            advertisement_id: ad.advertisement_id,
+            image_url: result.secure_url,
+          });
+        })
+      );
 
-      await Promise.all(imagePromises);
-
-      // Get updated advertisement with images
-      const updatedAdvertisement = await Advertisement.findOne({
+      const updatedAd = await Advertisement.findOne({
         where: { advertisement_id },
-        include: [
-          {
-            model: Image,
-            attributes: ["image_url"],
-          },
-        ],
+        include: [{ model: Image, attributes: ["image_url"] }],
       });
 
-      return res.json(updatedAdvertisement);
+      return res.json(updatedAd);
     }
 
-    return res.status(400).json({ message: "No images provided" });
+    res.status(400).json({ message: "No images provided" });
   } catch (error) {
-    console.error("Error adding images to advertisement:", error);
+    console.error("Error adding images:", error);
     res.status(500).json({ message: "Failed to add images" });
   }
 };

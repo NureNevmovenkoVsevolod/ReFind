@@ -1,5 +1,35 @@
 import User from "../models/user.model.js";
 
+// Common error responses
+const ERROR_MESSAGES = {
+    USER_NOT_FOUND: "User not found",
+    USER_EXISTS: "User with this email already exists",
+    FETCH_ERROR: "Failed to fetch user(s)",
+    CREATE_ERROR: "Failed to create user",
+    UPDATE_ERROR: "Failed to update user",
+    DELETE_ERROR: "Failed to delete user"
+};
+
+// Utility function to handle controller errors
+const handleControllerError = (error, res, customMessage) => {
+    console.error(`Error: ${customMessage}:`, error);
+    
+    if (error.name === 'SequelizeValidationError') {
+        return res.status(400).json({ 
+            message: error.errors.map(e => e.message).join(', ') 
+        });
+    }
+    
+    res.status(500).json({ message: customMessage });
+};
+
+// Utility function to exclude password from user data
+const excludePassword = (user) => {
+    if (!user) return null;
+    const { password, ...userWithoutPassword } = user.toJSON();
+    return userWithoutPassword;
+};
+
 export const getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll({
@@ -7,10 +37,9 @@ export const getAllUsers = async (req, res) => {
         });
         res.json(users);
     } catch (error) {
-        console.error("Error fetching users:", error);
-        res.status(500).json({ message: "Failed to fetch users" });
+        handleControllerError(error, res, ERROR_MESSAGES.FETCH_ERROR);
     }
-}
+};
 
 export const getUserById = async (req, res) => {
     try {
@@ -18,33 +47,41 @@ export const getUserById = async (req, res) => {
         const user = await User.findByPk(id, {
             attributes: { exclude: ['password'] }
         });
-        if (user) {
-            res.json(user);
-        } else {
-            res.status(404).json({ message: "User not found" });
+        
+        if (!user) {
+            return res.status(404).json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
         }
+        
+        res.json(user);
     } catch (error) {
-        console.error("Error fetching user by ID:", error);
-        res.status(500).json({ message: "Failed to fetch user" });
+        handleControllerError(error, res, ERROR_MESSAGES.FETCH_ERROR);
     }
-}
+};
 
 export const createUser = async (req, res) => {
     try {
-        const { first_name, last_name, email, password, user_pfp, phone_number, is_blocked, blocked_until } = req.body;
+        const { 
+            first_name, 
+            last_name, 
+            email, 
+            password, 
+            user_pfp, 
+            phone_number, 
+            is_blocked, 
+            blocked_until 
+        } = req.body;
 
-        // Перевірка чи існує користувач з таким email
+        // Check for existing user
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
-            return res.status(400).json({ message: 'Користувач з таким email вже існує' });
+            return res.status(400).json({ message: ERROR_MESSAGES.USER_EXISTS });
         }
 
-        // Створення нового користувача
         const user = await User.create({
             first_name,
             last_name,
             email,
-            password: password,
+            password,
             user_pfp,
             phone_number,
             is_blocked: is_blocked || false,
@@ -52,67 +89,52 @@ export const createUser = async (req, res) => {
             auth_provider: 'local'
         });
 
-        // Повертаємо користувача без пароля
-        const { password: _, ...userWithoutPassword } = user.toJSON();
-        res.status(201).json(userWithoutPassword);
+        res.status(201).json(excludePassword(user));
     } catch (error) {
-        console.error("Error creating user:", error);
-        if (error.name === 'SequelizeValidationError') {
-            return res.status(400).json({ message: error.errors.map(e => e.message).join(', ') });
-        }
-        res.status(500).json({ message: "Failed to create user" });
+        handleControllerError(error, res, ERROR_MESSAGES.CREATE_ERROR);
     }
-}
+};
 
 export const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { first_name, last_name, email, password, user_pfp, phone_number, is_blocked, blocked_until } = req.body;
+        const updateData = {
+            first_name: req.body.first_name,
+            last_name: req.body.last_name,
+            email: req.body.email,
+            user_pfp: req.body.user_pfp,
+            phone_number: req.body.phone_number,
+            is_blocked: req.body.is_blocked,
+            blocked_until: req.body.blocked_until
+        };
 
         const user = await User.findByPk(id);
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
         }
-
-        // Оновлення даних користувача
-        const updateData = {
-            first_name,
-            last_name,
-            email,
-            user_pfp,
-            phone_number,
-            is_blocked,
-            blocked_until
-        };
 
         await user.update(updateData);
-
-        const { password: _, ...userWithoutPassword } = user.toJSON();
-        res.json(userWithoutPassword);
+        res.json(excludePassword(user));
     } catch (error) {
-        console.error("Error updating user:", error);
-        if (error.name === 'SequelizeValidationError') {
-            return res.status(400).json({ message: error.errors.map(e => e.message).join(', ') });
-        }
-        res.status(500).json({ message: "Failed to update user" });
+        handleControllerError(error, res, ERROR_MESSAGES.UPDATE_ERROR);
     }
-}
+};
 
 export const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const deletedRowsCount = await User.destroy({
-            where: { user_id: id },
+        const deletedCount = await User.destroy({
+            where: { user_id: id }
         });
-        if (deletedRowsCount > 0) {
-            res.status(204).send();
-        } else {
-            res.status(404).json({ message: "User not found" });
+
+        if (deletedCount === 0) {
+            return res.status(404).json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
         }
+
+        res.status(204).send();
     } catch (error) {
-        console.error("Error deleting user:", error);
-        res.status(500).json({ message: "Failed to delete user" });
+        handleControllerError(error, res, ERROR_MESSAGES.DELETE_ERROR);
     }
-}
+};
 
 
