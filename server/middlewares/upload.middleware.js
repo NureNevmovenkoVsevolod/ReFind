@@ -1,7 +1,6 @@
 import multer from "multer";
 import path from "path";
 import { v2 as cloudinary } from "cloudinary";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,18 +13,8 @@ cloudinary.config({
 });
 
 // Configure multer for file upload
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: async (req, file) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    return {
-      folder: "refind_uploads",
-      public_id: uniqueSuffix,
-      format: file.mimetype.split("/")[1],
-    };
-  },
-});
-// File filter to allow only images
+const storage = multer.memoryStorage();
+
 const fileFilter = (req, file, cb) => {
   if (!file.mimetype.startsWith("image/")) {
     return cb(new Error("Тільки зображення дозволені!"), false);
@@ -36,7 +25,5 @@ const fileFilter = (req, file, cb) => {
 export const upload = multer({
   storage,
   fileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
-  },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });

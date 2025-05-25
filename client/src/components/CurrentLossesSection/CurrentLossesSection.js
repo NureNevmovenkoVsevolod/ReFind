@@ -87,7 +87,7 @@ function CurrentLossesSection() {
                   advertisement_id={loss.advertisement_id}
                 image={
                   loss.Images?.[0]?.image_url
-                    ? `${process.env.REACT_APP_SERVER_URL}/static${loss.Images[0].image_url}`
+                    ? `${loss.Images[0].image_url}`
                     : undefined
                 }
                 date={new Date(loss.incident_date).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' })}
