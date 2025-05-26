@@ -67,8 +67,7 @@ export const getCountFoundAds = async (req, res) => {
 export const getAdsGraphData = async (req, res) => {
     try {
         const { period = 'week', type = 'all' } = req.query;
-        
-        // Визначаємо інтервал дат залежно від періоду
+
         const now = new Date();
         let startDate;
         let dateFormat;
@@ -99,20 +98,17 @@ export const getAdsGraphData = async (req, res) => {
                 startDate.setDate(now.getDate() - 7);
                 dateFormat = 'YYYY-MM-DD';
         }
-        
-        // Базовий запит
+
         let whereCondition = {
             createdAt: {
                 [Op.gte]: startDate
             }
         };
-        
-        // Додаємо фільтр за типом
+   
         if (type !== 'all') {
             whereCondition.type = type === 'lost' ? 'lost' : 'find';
         }
-        
-        // Запит для отримання даних з групуванням за періодом
+
         const graphData = await Advertisement.findAll({
             attributes: [
                 [Sequelize.fn('to_char', Sequelize.col('createdAt'), dateFormat), 'period'],
@@ -127,8 +123,7 @@ export const getAdsGraphData = async (req, res) => {
             order: [[Sequelize.fn('to_char', Sequelize.col('createdAt'), dateFormat), 'ASC']],
             raw: true
         });
-        
-        // Форматуємо дані для графіка
+
         const formattedData = graphData.map(item => {
             const baseData = {
                 period: item.period,
@@ -146,8 +141,6 @@ export const getAdsGraphData = async (req, res) => {
             return baseData;
         });
 
-        console.log('Formatted data:', formattedData);
-
         res.json({
             data: formattedData,
             period,
@@ -164,7 +157,6 @@ export const getAdsGraphData = async (req, res) => {
 
 export const getCategoriesStats = async (req, res) => {
     try {
-        // Отримуємо статистику за категоріями з використанням зв'язків моделей
         const categoriesStats = await Advertisement.findAll({
             attributes: [
                 [Sequelize.fn('COUNT', Sequelize.col('advertisement_id')), 'count']
@@ -183,13 +175,10 @@ export const getCategoriesStats = async (req, res) => {
             raw: true
         });
 
-        // Форматуємо дані для відповіді
         const formattedData = categoriesStats.map(item => ({
             category: item['Category.categorie_name'] || 'Без категорії',
             count: parseInt(item.count) || 0
         }));
-
-        console.log('Categories stats:', formattedData);
 
         res.json({
             data: formattedData

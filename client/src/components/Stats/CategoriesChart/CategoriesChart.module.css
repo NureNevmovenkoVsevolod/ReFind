@@ -8,6 +8,8 @@
 }
 
 .chartWrapper {
+    display: flex;
+    justify-content: center;
     position: relative;
     margin: 0 auto;
     height: 400px;

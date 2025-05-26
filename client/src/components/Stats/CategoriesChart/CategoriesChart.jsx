@@ -23,7 +23,6 @@ const CategoriesChart = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // Масив кольорів для категорій
     const backgroundColors = [
         '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
         '#FF9F40', '#8AC249', '#EA526F', '#23B5D3', '#279AF1'
@@ -52,10 +51,8 @@ const CategoriesChart = () => {
                     throw new Error('Некоректний формат даних від сервера');
                 }
 
-                // Підраховуємо загальну кількість оголошень
                 const total = result.data.reduce((sum, item) => sum + item.count, 0);
 
-                // Форматуємо дані для графіка
                 const chartData = {
                     labels: result.data.map(item => 
                         `${item.category} (${((item.count / total) * 100).toFixed(1)}%)`
