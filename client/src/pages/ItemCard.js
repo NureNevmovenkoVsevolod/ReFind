@@ -111,7 +111,13 @@ function ItemCard({ isLogin, isModerator }) {
 
   return (
     <div className={styles.container}>
-      <div className={styles.breadcrumb}>Home / Card description</div>
+              <button 
+          className={styles.backBtn} 
+          onClick={() => navigate(-1)}
+          aria-label="Go back"
+        >
+          <span>←</span> Back
+        </button>
 
       <div className={styles.main}>
         <ImageGallery images={Images?.map((img) => `${img.image_url}`)} />

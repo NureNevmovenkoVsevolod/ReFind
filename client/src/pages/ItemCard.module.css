@@ -176,3 +176,15 @@
     text-align: center;
     font-weight: 500;
 }
+
+.backBtn {
+    background: none;
+    border: none;
+    color: #222;
+    font-size: 18px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
