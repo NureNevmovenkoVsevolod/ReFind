@@ -125,3 +125,49 @@
     font-size: 42px;
     color: black;
 }
+
+.moderationButtons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modButton {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.modButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.approveButton {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.approveButton:hover:not(:disabled) {
+    background-color: #45a049;
+}
+
+.rejectButton {
+    background-color: #f44336;
+    color: white;
+}
+
+.rejectButton:hover:not(:disabled) {
+    background-color: #da190b;
+}
+
+.moderationStatus {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: 500;
+}

@@ -2,11 +2,11 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 2rem;
+    padding: 2rem 0;
     max-width: 1200px;
     margin: 0 auto;
     width: 100%;
-    height: calc(100vh - 180px); /* Віднімаємо висоту хедера та навігації */
+    height: calc(100vh - 180px); 
     overflow-y: auto;
     background-color: #F8FAFC;
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -18,4 +18,80 @@
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+    margin-bottom: 2rem;
+    text-align: center;
+    color: #333;
+}
+
+.advertisementsGrid {
+    margin-bottom: 2rem;
+}
+
+.cardCol {
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+.cardCol:hover {
+    transform: translateY(-5px);
+}
+
+.moderationButtons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+    padding: 0 1rem;
+}
+
+.approveButton, .rejectButton {
+    width: 48%;
+}
+
+.loading {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #666;
+    margin: 2rem 0;
+}
+
+.noAdvertisements {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #666;
+    margin: 2rem 0;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.paginationButton {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.paginationButton:hover:not(:disabled) {
+    background-color: #f0f0f0;
+}
+
+.paginationButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pageInfo {
+    font-size: 1.1rem;
+    color: #666;
 }

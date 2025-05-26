@@ -27,7 +27,6 @@ export const createAdvertisement = async (req, res) => {
       incident_date,
     } = req.body;
 
-
     // Create advertisement
     const advertisement = await Advertisement.create({
       title,
@@ -50,14 +49,14 @@ export const createAdvertisement = async (req, res) => {
         try {
           const result = await new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
-                {folder: "advertisements"},
-                (error, result) => {
-                  if (error) reject(error);
-                  else resolve(result);
-                }
+              { folder: "advertisements" },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
             );
             stream.end(file.buffer);
-          })
+          });
 
           const image = await Image.create({
             advertisement_id: advertisement.advertisement_id,
@@ -252,8 +251,10 @@ export const getAdvertisementById = async (req, res) => {
       return res.status(404).json({ message: "Advertisement not found" });
     }
 
-    res.json({...advertisement.toJSON(),
-      location_coordinates: JSON.parse(advertisement.location_coordinates)});
+    res.json({
+      ...advertisement.toJSON(),
+      location_coordinates: JSON.parse(advertisement.location_coordinates),
+    });
   } catch (error) {
     console.error("Error fetching advertisement:", error);
     res.status(500).json({ message: "Failed to fetch advertisement" });
@@ -426,11 +427,11 @@ export const addImagesToAdvertisement = async (req, res) => {
       const imagePromises = req.files.map(async (file) => {
         const result = await new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
-              {folder: "advertisements"},
-              (error, result) => {
-                if (error) reject(error);
-                else resolve(result);
-              }
+            { folder: "advertisements" },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
           );
           stream.end(file.buffer);
         });
@@ -462,5 +463,104 @@ export const addImagesToAdvertisement = async (req, res) => {
   } catch (error) {
     console.error("Error adding images to advertisement:", error);
     res.status(500).json({ message: "Failed to add images" });
+  }
+};
+
+// Get advertisements for moderation
+export const getAdvertisementsForModeration = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 8;
+    const offset = (page - 1) * limit;
+
+    const queryOptions = {
+      where: {
+        mod_check: false,
+        status: "active",
+      },
+      include: [
+        {
+          model: Image,
+          attributes: ["image_url"],
+        },
+        {
+          model: Category,
+          attributes: ["categorie_id", "categorie_name"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+      limit,
+      offset,
+      distinct: true,
+    };
+
+    const { count, rows } = await Advertisement.findAndCountAll(queryOptions);
+
+    const items = rows.map((row) => {
+      const ad = row.toJSON();
+      return {
+        advertisement_id: ad.advertisement_id,
+        title: ad.title,
+        description: ad.description,
+        categorie_id: ad.categorie_id,
+        categorie_name: ad.Category?.categorie_name,
+        location_description: ad.location_description,
+        location_coordinates: ad.location_coordinates,
+        reward: ad.reward,
+        type: ad.type,
+        status: ad.status,
+        phone: ad.phone,
+        email: ad.email,
+        incident_date: ad.incident_date,
+        createdAt: ad.createdAt,
+        updatedAt: ad.updatedAt,
+        Images: ad.Images || [],
+      };
+    });
+
+    res.json({
+      items,
+      total: count,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      hasMore: offset + rows.length < count,
+    });
+  } catch (error) {
+    console.error("Error fetching advertisements for moderation:", error);
+    res.status(500).json({
+      message: "Failed to fetch advertisements for moderation",
+      error: error.message,
+    });
+  }
+};
+
+// Moderate advertisement
+export const moderateAdvertisement = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { approved } = req.body;
+
+    const advertisement = await Advertisement.findOne({
+      where: { advertisement_id: id },
+    });
+
+    if (!advertisement) {
+      return res.status(404).json({ message: "Оголошення не знайдено" });
+    }
+
+    if (approved) {
+      await advertisement.update({
+        mod_check: true,
+      });
+      res.json({ message: "Оголошення схвалено" });
+    } else {
+      await advertisement.update({
+        status: "rejected",
+      });
+      res.json({ message: "Оголошення відхилено" });
+    }
+  } catch (error) {
+    console.error("Помилка при модерації оголошення:", error);
+    res.status(500).json({ message: "Помилка при модерації оголошення" });
   }
 };

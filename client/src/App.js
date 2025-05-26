@@ -89,10 +89,13 @@ function App() {
       <div className="App">
         <ModerNavBar onLogout={handleLogout} />
         <Routes>
+          <Route
+            path="/advertisement/:id"
+            element={<ItemCard isLogin={isLogin} isModerator={isModerator} />}
+          />
           <Route path="/moder/stats" />
-          <Route path="/moder/advertisments" element={<ModerAdvert />}/>
+          <Route path="/moder/advertisments" element={<ModerAdvert />} />
           <Route path="/moder/complaints" />
-          <Route path="/moder/stats" />
           <Route path="/" element={<Navigate to="/moder/advertisments" />} />
           <Route path="*" element={<Navigate to="/moder/advertisments" />} />
         </Routes>
@@ -128,7 +131,7 @@ function App() {
           />
           <Route
             path="/advertisement/:id"
-            element={<ItemCard isLogin={isLogin} />}
+            element={<ItemCard isLogin={isLogin} isModerator={isModerator} />}
           />
           <Route path="/boardlost" element={<BoardLost isLogin={isLogin} />} />
           <Route
