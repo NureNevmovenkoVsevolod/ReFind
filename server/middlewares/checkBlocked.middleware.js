@@ -8,8 +8,15 @@ const checkBlocked = async (req, res, next) => {
       return res.status(404).json({ message: "Користувача не знайдено" });
     }
 
-    if (user.is_blocked && user.blocked_until) {
+    if (user.is_blocked) {
       const now = new Date();
+
+      if (!user.blocked_until) {
+        return res.status(403).json({ 
+          message: "Ваш акаунт заблоковано на невизначений термін"
+        });
+      }
+
       const blockedUntil = new Date(user.blocked_until);
 
       if (now > blockedUntil) {
@@ -19,9 +26,21 @@ const checkBlocked = async (req, res, next) => {
           blocked_at: null
         });
       } else {
+        
+        const timeUntilUnblock = blockedUntil - now;
+        const hours = Math.floor(timeUntilUnblock / (1000 * 60 * 60));
+        const minutes = Math.floor((timeUntilUnblock % (1000 * 60 * 60)) / (1000 * 60));
+
         return res.status(403).json({ 
           message: "Ваш акаунт заблоковано",
-          blocked_until: user.blocked_until
+          blocked_until: user.blocked_until,
+          time_remaining: {
+            hours,
+            minutes,
+            formatted: hours > 0 
+              ? `${hours} годин ${minutes} хвилин`
+              : `${minutes} хвилин`
+          }
         });
       }
     }

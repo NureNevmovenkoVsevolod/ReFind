@@ -119,7 +119,12 @@ export const createAdvertisement = async (req, res) => {
     res.status(201).json(completeAd);
   } catch (error) {
     console.error("Error creating advertisement:", error);
-    res.status(500).json({ message: "Failed to create advertisement", error: error.message });
+    res
+      .status(500)
+      .json({
+        message: "Failed to create advertisement",
+        error: error.message,
+      });
   }
 };
 
@@ -163,7 +168,8 @@ export const getAdvertisementById = async (req, res) => {
       include: [{ model: Image, attributes: ["image_url"] }],
     });
 
-    if (!ad) return res.status(404).json({ message: "Advertisement not found" });
+    if (!ad)
+      return res.status(404).json({ message: "Advertisement not found" });
 
     res.json({
       ...ad.toJSON(),
@@ -200,7 +206,10 @@ export const updateAdvertisement = async (req, res) => {
       where: { advertisement_id: req.params.id, user_id: req.user.id },
     });
 
-    if (!ad) return res.status(404).json({ message: "Advertisement not found or unauthorized" });
+    if (!ad)
+      return res
+        .status(404)
+        .json({ message: "Advertisement not found or unauthorized" });
 
     const {
       title,
@@ -251,11 +260,18 @@ export const deleteAdvertisement = async (req, res) => {
       include: [{ model: Image, attributes: ["image_url"] }],
     });
 
-    if (!ad) return res.status(404).json({ message: "Advertisement not found or unauthorized" });
+    if (!ad)
+      return res
+        .status(404)
+        .json({ message: "Advertisement not found or unauthorized" });
 
     for (const image of ad.Images) {
       try {
-        const imagePath = path.join(process.cwd(), "static", new URL(image.image_url).pathname);
+        const imagePath = path.join(
+          process.cwd(),
+          "static",
+          new URL(image.image_url).pathname
+        );
         await fs.unlink(imagePath);
       } catch (err) {
         console.error("Error deleting image file:", err);
@@ -264,7 +280,10 @@ export const deleteAdvertisement = async (req, res) => {
 
     await Promise.all([
       Image.destroy({ where: { advertisement_id: ad.advertisement_id } }),
-      Payment.update({ status: "cancelled" }, { where: { advertisement_id: ad.advertisement_id } }),
+      Payment.update(
+        { status: "cancelled" },
+        { where: { advertisement_id: ad.advertisement_id } }
+      ),
       ad.destroy(),
     ]);
 
@@ -285,7 +304,10 @@ export const addImagesToAdvertisement = async (req, res) => {
       where: { advertisement_id, user_id: req.user.id },
     });
 
-    if (!ad) return res.status(404).json({ message: "Advertisement not found or unauthorized" });
+    if (!ad)
+      return res
+        .status(404)
+        .json({ message: "Advertisement not found or unauthorized" });
 
     if (req.files?.length) {
       await Promise.all(
@@ -317,5 +339,104 @@ export const addImagesToAdvertisement = async (req, res) => {
   } catch (error) {
     console.error("Error adding images:", error);
     res.status(500).json({ message: "Failed to add images" });
+  }
+};
+
+// Get advertisements for moderation
+export const getAdvertisementsForModeration = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 8;
+    const offset = (page - 1) * limit;
+
+    const queryOptions = {
+      where: {
+        mod_check: false,
+        status: "active",
+      },
+      include: [
+        {
+          model: Image,
+          attributes: ["image_url"],
+        },
+        {
+          model: Category,
+          attributes: ["categorie_id", "categorie_name"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+      limit,
+      offset,
+      distinct: true,
+    };
+
+    const { count, rows } = await Advertisement.findAndCountAll(queryOptions);
+
+    const items = rows.map((row) => {
+      const ad = row.toJSON();
+      return {
+        advertisement_id: ad.advertisement_id,
+        title: ad.title,
+        description: ad.description,
+        categorie_id: ad.categorie_id,
+        categorie_name: ad.Category?.categorie_name,
+        location_description: ad.location_description,
+        location_coordinates: ad.location_coordinates,
+        reward: ad.reward,
+        type: ad.type,
+        status: ad.status,
+        phone: ad.phone,
+        email: ad.email,
+        incident_date: ad.incident_date,
+        createdAt: ad.createdAt,
+        updatedAt: ad.updatedAt,
+        Images: ad.Images || [],
+      };
+    });
+
+    res.json({
+      items,
+      total: count,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      hasMore: offset + rows.length < count,
+    });
+  } catch (error) {
+    console.error("Error fetching advertisements for moderation:", error);
+    res.status(500).json({
+      message: "Failed to fetch advertisements for moderation",
+      error: error.message,
+    });
+  }
+};
+
+// Moderate advertisement
+export const moderateAdvertisement = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { approved } = req.body;
+
+    const advertisement = await Advertisement.findOne({
+      where: { advertisement_id: id },
+    });
+
+    if (!advertisement) {
+      return res.status(404).json({ message: "Оголошення не знайдено" });
+    }
+
+    if (approved) {
+      await advertisement.update({
+        mod_check: true,
+      });
+      res.json({ message: "Оголошення схвалено" });
+    } else {
+      await advertisement.update({
+        status: "rejected",
+      });
+      res.json({ message: "Оголошення відхилено" });
+    }
+  } catch (error) {
+    console.error("Помилка при модерації оголошення:", error);
+    res.status(500).json({ message: "Помилка при модерації оголошення" });
   }
 };

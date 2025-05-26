@@ -9,11 +9,16 @@ const router = express.Router();
 // Public routes
 router.get("/finds", advertisementController.getFinds);
 router.get("/losses", advertisementController.getLosses);
+router.get('/moderation', verifyToken, advertisementController.getAdvertisementsForModeration);
 router.get("/:id", advertisementController.getAdvertisementById);
 
-// Protected routes (require authentication)
 router.use(verifyToken);
 router.use(checkBlocked);
+
+router.put('/:id/moderate', advertisementController.moderateAdvertisement);
+
+// Other protected routes
+router.get("/user/my", advertisementController.getUserAdvertisements);
 router.post(
   "/",
   upload.array("images", 5),
@@ -24,7 +29,6 @@ router.post(
   upload.array("images", 5),
   advertisementController.addImagesToAdvertisement
 );
-router.get("/user/my", advertisementController.getUserAdvertisements);
 router.put("/:id", advertisementController.updateAdvertisement);
 router.delete("/:id", advertisementController.deleteAdvertisement);
 
