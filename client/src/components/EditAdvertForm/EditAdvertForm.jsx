@@ -2,51 +2,45 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FormInput from "../FormInput/FormInput";
 import Map from "../Map/Map";
-import styles from "./CreateAdvertForm.module.css";
+import styles from "../CreateAdvertForm/CreateAdvertForm.module.css";
 import phoneIcon from "../../assets/phone.png";
 import mailIcon from "../../assets/mail.png";
 import locationIcon from "../../assets/location.png";
 import SuccessModal from "../Modal/SuccessModal";
 
-const CreateAdvertForm = ({ type, ...props }) => {
+
+const EditAdvertForm = ({ type, initialData, onSuccess, onCancel, isEdit }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    categorie_id: "",
-    location_description: "",
-    location_coordinates: { lat: 0, lng: 0 },
-    reward: "0",
-    phone: "",
-    email: "",
-    images: [],
-    incident_date: new Date().toISOString().split("T")[0], 
+    title: initialData?.title || "",
+    description: initialData?.description || "",
+    categorie_id: initialData?.categorie_id?.toString() || "",
+    location_description: initialData?.location_description || "",
+    location_coordinates: initialData?.location_coordinates
+      ? typeof initialData.location_coordinates === "string"
+        ? JSON.parse(initialData.location_coordinates)
+        : initialData.location_coordinates
+      : { lat: 0, lng: 0 },
+    reward: initialData?.reward?.toString() || "0",
+    phone: initialData?.phone || "",
+    email: initialData?.email || "",
+    images: initialData?.Images
+      ? initialData.Images.map(img => ({ preview: img.image_url }))
+      : [],
+    incident_date: initialData?.incident_date
+      ? initialData.incident_date.split("T")[0]
+      : new Date().toISOString().split("T")[0],
   });
   const [errors, setErrors] = useState({});
   const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState(null);
-  const [googlePayClient, setGooglePayClient] = useState(null);
+  const [status, setStatus] = useState(null);
 
   useEffect(() => {
-    const initializeGooglePay = () => {
-      if (window.google && window.google.payments) {
-        const client = new window.google.payments.api.PaymentsClient({
-          environment: 'TEST'
-        });
-        setGooglePayClient(client);
-      }
-    };
-
-    if (window.google && window.google.payments) {
-      initializeGooglePay();
-    } else {
-      window.onGooglePayLoaded = initializeGooglePay;
-    }
-  }, []);
+    console.log("EditAdvertForm mounted", { initialData, type, isEdit });
+  }, [initialData, type, isEdit]);
 
   useEffect(() => {
-    // Завантаження категорій з БД
     const fetchCategories = async () => {
       try {
         const response = await fetch(process.env.REACT_APP_SERVER_URL+"/api/categories");
@@ -60,228 +54,134 @@ const CreateAdvertForm = ({ type, ...props }) => {
         console.error("Error fetching categories:", error);
       }
     };
-
     fetchCategories();
   }, []);
 
   const validateForm = () => {
     const newErrors = {};
-    
-    // Перевірка заголовку
-    if (!formData.title.trim()) {
-      newErrors.title = "Введіть назву речі";
-    }
-
-    // Перевірка опису
-    if (!formData.description.trim()) {
-      newErrors.description = "Введіть опис речі";
-    }
-
-    // Перевірка категорії
-    if (!formData.categorie_id) {
-      newErrors.categorie_id = "Виберіть категорію";
-    }
-
-    // Перевірка локації
-    if (!formData.location_description.trim()) {
-      newErrors.location_description = "Виберіть місце на карті";
-    }
-    if (formData.location_coordinates.lat === 0 && formData.location_coordinates.lng === 0) {
-      newErrors.location_coordinates = "Виберіть місце на карті";
-    }
-
-    // Перевірка дати
-    if (!formData.incident_date) {
-      newErrors.incident_date = "Виберіть дату";
-    }
-
-    // Перевірка телефону
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Введіть номер телефону";
-    } else if (!/^\+?[0-9]{10,13}$/.test(formData.phone.replace(/\s/g, ''))) {
-      newErrors.phone = "Введіть коректний номер телефону";
-    }
-
-    // Перевірка email
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Введіть коректний email";
-    }
-
-    // Перевірка фотографій
-    if (formData.images.length === 0) {
-      newErrors.images = "Додайте хоча б одну фотографію";
-    }
-
+    if (!formData.title.trim()) newErrors.title = "Введіть назву речі";
+    if (!formData.description.trim()) newErrors.description = "Введіть опис речі";
+    if (!formData.categorie_id) newErrors.categorie_id = "Виберіть категорію";
+    if (!formData.location_description.trim()) newErrors.location_description = "Виберіть місце на карті";
+    if (formData.location_coordinates.lat === 0 && formData.location_coordinates.lng === 0) newErrors.location_coordinates = "Виберіть місце на карті";
+    if (!formData.incident_date) newErrors.incident_date = "Виберіть дату";
+    if (!formData.phone.trim()) newErrors.phone = "Введіть номер телефону";
+    else if (!/^\+?[0-9]{10,13}$/.test(formData.phone.replace(/\s/g, ''))) newErrors.phone = "Введіть коректний номер телефону";
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Введіть коректний email";
+    if (formData.images.length === 0) newErrors.images = "Додайте хоча б одну фотографію";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const initializePayment = async () => {
-    if (!googlePayClient) {
-      throw new Error('Google Pay не ініціалізовано');
+  const isImageObjEqual = (a, b) => {
+    if (!a || !b) return false;
+    if (typeof a.preview === 'undefined' || typeof b.preview === 'undefined') return false;
+    return a.preview === b.preview && !a.file && !b.file;
+  };
+  const isFormDataChanged = (formData, initialData) => {
+    const fields = [
+      "title", "description", "categorie_id", "location_description", "reward", "phone", "email", "incident_date"
+    ];
+    for (const field of fields) {
+      if ((formData[field] || "") !== (initialData[field] || "")) return true;
     }
-
-    try {
-      const paymentDataRequest = {
-        apiVersion: 2,
-        apiVersionMinor: 0,
-        allowedPaymentMethods: [{
-          type: 'CARD',
-          parameters: {
-            allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
-            allowedCardNetworks: ['MASTERCARD', 'VISA']
-          },
-          tokenizationSpecification: {
-            type: 'PAYMENT_GATEWAY',
-            parameters: {
-              gateway: 'example',
-              gatewayMerchantId: 'exampleGatewayMerchantId'
-            }
-          }
-        }],
-        merchantInfo: {
-          merchantId: '12345678901234567890',
-          merchantName: 'ReFind'
-        },
-        transactionInfo: {
-          totalPriceStatus: 'FINAL',
-          totalPriceLabel: 'Total',
-          totalPrice: '50.00',
-          currencyCode: 'UAH',
-          countryCode: 'UA'
-        }
-      };
-
-      const paymentData = await googlePayClient.loadPaymentData(paymentDataRequest);
-      return paymentData;
-    } catch (error) {
-      if (error.statusCode === 'CANCELED') {
-        throw new Error('CANCELED');
-      }
-      throw error;
+    const coordsA = formData.location_coordinates || {};
+    const coordsB = typeof initialData.location_coordinates === "string"
+      ? JSON.parse(initialData.location_coordinates)
+      : (initialData.location_coordinates || {});
+    if (coordsA.lat !== coordsB.lat || coordsA.lng !== coordsB.lng) return true;
+    const imgsA = formData.images || [];
+    const imgsB = (initialData.Images || []).map(img => ({ preview: img.image_url }));
+    if (imgsA.length !== imgsB.length) return true;
+    for (let i = 0; i < imgsA.length; i++) {
+      if (!isImageObjEqual(imgsA[i], imgsB[i])) return true;
     }
+    return false;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("EditAdvertForm submit", formData);
     if (!validateForm()) {
       const firstError = document.querySelector(`[data-error="true"]`);
-      if (firstError) {
-        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-
+    if (!isFormDataChanged(formData, initialData)) {
+      setStatus('nochange');
+      setShowModal(true);
+      return;
+    }
     const token = localStorage.getItem("token");
     const formDataToSend = new FormData();
-    Object.keys(formData).forEach((key) => {
-      if (key === "location_coordinates") {
-        formDataToSend.append(key, JSON.stringify(formData[key]));
-      } else if (key !== "images") {
-        formDataToSend.append(key, formData[key]);
+    const fields = [
+      "title", "description", "categorie_id", "location_description", "reward", "phone", "email", "incident_date"
+    ];
+    fields.forEach(field => {
+      if ((formData[field] || "") !== (initialData[field] || "")) {
+        formDataToSend.append(field, formData[field]);
       }
     });
-    formDataToSend.append("type", type);
-    if (formData.images.length > 0) {
-      formData.images.forEach((imageObj) => {
+    const coordsA = formData.location_coordinates || {};
+    const coordsB = typeof initialData.location_coordinates === "string"
+      ? JSON.parse(initialData.location_coordinates)
+      : (initialData.location_coordinates || {});
+    if (coordsA.lat !== coordsB.lat || coordsA.lng !== coordsB.lng) {
+      formDataToSend.append("location_coordinates", JSON.stringify(coordsA));
+    }
+    const imgsA = formData.images || [];
+    const imgsB = (initialData.Images || []).map(img => ({ preview: img.image_url }));
+    let imagesChanged = false;
+    if (imgsA.length !== imgsB.length) imagesChanged = true;
+    for (let i = 0; i < imgsA.length; i++) {
+      if (!isImageObjEqual(imgsA[i], imgsB[i])) imagesChanged = true;
+    }
+    if (imagesChanged) {
+      imgsA.forEach((imageObj) => {
         if (imageObj.file) {
           formDataToSend.append("images", imageObj.file);
-        } else if (imageObj.preview) {
+        } else if (imageObj.preview && !imageObj.file) {
           formDataToSend.append("existingImages", imageObj.preview);
         }
       });
     }
-
-    if (type === 'lost') {
-      try {        
-        const paymentData = await initializePayment();
-
-        // Спочатку створюємо оголошення
-        const response = await fetch(process.env.REACT_APP_SERVER_URL+"/api/advertisement", {
-          method: "POST",
+    formDataToSend.append("type", type);
+    try {
+      const response = await fetch(
+        process.env.REACT_APP_SERVER_URL+`/api/advertisement/${initialData.advertisement_id}`,
+        {
+          method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
           },
           body: formDataToSend,
-        });
-
-        console.log("Advertisement creation response:", response.status, response.statusText);
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error("Server error details:", errorData);
-          throw new Error('Failed to create advertisement');
         }
-
-        const newAdvertisement = await response.json();
-        console.log("Created advertisement:", newAdvertisement);
-
-        // Після створення оголошення, зберігаємо дані про платіж
-        const paymentResponse = await fetch(process.env.REACT_APP_SERVER_URL+"/api/payment/create", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            advertisement_id: newAdvertisement.advertisement_id,
-            payment_data: paymentData
-          }),
-        });
-
-        console.log("Payment creation response:", paymentResponse.status, paymentResponse.statusText);
-
-        if (!paymentResponse.ok) {
-          const errorData = await paymentResponse.json().catch(() => ({}));
-          console.error("Payment error details:", errorData);
-          throw new Error('Failed to save payment data');
-        }
-
-        setPaymentStatus('success');
-        setShowModal(true);
-      } catch (error) {
-        console.error("Error in advertisement creation:", error);
-        if (error.message === 'CANCELED') {
-          setPaymentStatus('canceled');
-        } else {
-          setPaymentStatus('error');
-        }
-        setShowModal(true);
+      );
+      console.log("EditAdvertForm PUT response", response.status, response.statusText);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("EditAdvertForm server error details:", errorData);
+        throw new Error('Failed to update advertisement');
       }
-    } else {
-      try {
-        const response = await fetch(process.env.REACT_APP_SERVER_URL+"/api/advertisement", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formDataToSend,
-        });
-
-        console.log("Advertisement creation response:", response.status, response.statusText);
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error("Server error details:", errorData);
-          throw new Error('Failed to create advertisement');
-        }
-
-        const newAdvertisement = await response.json();
-        console.log("Created advertisement:", newAdvertisement);
-
-        setPaymentStatus('success');
-        setShowModal(true);
-      } catch (error) {
-        console.error("Error creating advertisement:", error);
-        setPaymentStatus('error');
-        setShowModal(true);
-      }
+      const updatedAd = await response.json();
+      setStatus('success');
+      setShowModal(true);
+      if (onSuccess) onSuccess(updatedAd);
+    } catch (error) {
+      console.error("EditAdvertForm error:", error);
+      setStatus('error');
+      setShowModal(true);
     }
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    navigate("/");
+    if (status === 'success') {
+      if (onSuccess) onSuccess(formData);
+      navigate("/profile");
+    } else if (onCancel) {
+      onCancel();
+    }
   };
 
   const handleChange = (e) => {
@@ -308,7 +208,6 @@ const CreateAdvertForm = ({ type, ...props }) => {
       file,
       preview: URL.createObjectURL(file)
     }));
-    
     setFormData(prev => ({
       ...prev,
       images: [...prev.images, ...newImages]
@@ -322,7 +221,9 @@ const CreateAdvertForm = ({ type, ...props }) => {
   const removeImage = (index) => {
     setFormData(prev => {
       const newImages = [...prev.images];
-      URL.revokeObjectURL(newImages[index].preview);
+      if (newImages[index].preview && newImages[index].file) {
+        URL.revokeObjectURL(newImages[index].preview);
+      }
       newImages.splice(index, 1);
       return {
         ...prev,
@@ -342,7 +243,9 @@ const CreateAdvertForm = ({ type, ...props }) => {
     if (file) {
       setFormData(prev => {
         const newImages = [...prev.images];
-        URL.revokeObjectURL(newImages[index].preview);
+        if (newImages[index].preview && newImages[index].file) {
+          URL.revokeObjectURL(newImages[index].preview);
+        }
         newImages[index] = {
           file,
           preview: URL.createObjectURL(file)
@@ -362,8 +265,8 @@ const CreateAdvertForm = ({ type, ...props }) => {
   useEffect(() => {
     return () => {
       formData.images.forEach(image => {
-        if (image.preview) {
-            URL.revokeObjectURL(image.preview);
+        if (image.preview && image.file) {
+          URL.revokeObjectURL(image.preview);
         }
       });
     };
@@ -382,6 +285,14 @@ const CreateAdvertForm = ({ type, ...props }) => {
     }));
   };
 
+  // Helper to ensure valid coordinates
+  const getValidCoordinates = (coords) => {
+    if (!coords || typeof coords !== 'object') return { lat: 50.4501, lng: 30.5234 };
+    const lat = Number(coords.lat);
+    const lng = Number(coords.lng);
+    if (isNaN(lat) || isNaN(lng)) return { lat: 50.4501, lng: 30.5234 };
+    return { lat, lng };
+  };
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
@@ -408,7 +319,7 @@ const CreateAdvertForm = ({ type, ...props }) => {
           error={errors.description}
           data-error={!!errors.description}
         />
-      </div>{" "}
+      </div>
       <div className={styles.photoUpload}>
         <label className={styles.label}>
           {type === "lost" ? "Фотографії втраченої речі" : "Фотографії знайденої речі"}
@@ -482,6 +393,7 @@ const CreateAdvertForm = ({ type, ...props }) => {
           data-error={!!(errors.location_description || errors.location_coordinates)}
         />
         <Map
+          initialCoordinates={getValidCoordinates(formData.location_coordinates)}
           onLocationSelect={handleLocationSelect}
           onAddressFound={(address) => {
             setFormData((prev) => ({
@@ -544,7 +456,6 @@ const CreateAdvertForm = ({ type, ...props }) => {
           error={errors.phone}
           data-error={!!errors.phone}
         />
-
         <FormInput
           label="Email (Необов'язково)"
           type="email"
@@ -556,33 +467,33 @@ const CreateAdvertForm = ({ type, ...props }) => {
           data-error={!!errors.email}
         />
       </div>
-      {type === "lost" && (
-        <div className={styles.feeSection}>
-          <h3>Вартість публікації: 50₴</h3>
-        </div>
-      )}
       <button
         type="submit"
-        className={`${styles.submitButton} ${
-          type === "find" ? styles.outlineButton : ""
-        }`}
+        className={styles.submitButton}
       >
-        Опублікувати
+        Зберегти зміни
       </button>
-
-      <SuccessModal 
-        show={showModal} 
+      <button
+        type="button"
+        className={styles.outlineButton}
+        style={{ marginTop: 10 }}
+        onClick={onCancel}
+      >
+        Скасувати
+      </button>
+      <SuccessModal
+        show={showModal}
         handleClose={handleCloseModal}
         message={
-          paymentStatus === 'success' 
-            ? "Оголошення створено успішно!" 
-            : paymentStatus === 'canceled'
-            ? "Оплату скасовано. Оголошення не створене."
-            : "Сталася помилка при створенні оголошення."
+          status === 'success'
+            ? "Оголошення оновлено успішно!"
+            : status === 'nochange'
+            ? "Жодних змін не внесено."
+            : "Сталася помилка при оновленні оголошення."
         }
       />
     </form>
   );
 };
 
-export default CreateAdvertForm;
+export default EditAdvertForm; 

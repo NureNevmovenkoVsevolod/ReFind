@@ -107,43 +107,41 @@ function App() {
 
   return (
     <div className="App">
-      {isLogin ? <AuthNavBar onLogout={handleLogout} /> : <NavBar />}
-      <div className="PageContent">
-        <Routes>
-          <Route path="/" element={<MainPage isLogin={isLogin} />} />
-          <Route
-            path="/registration"
-            element={<Registration isLogin={isLogin} />}
-          />
-          <Route
-            path="/login"
-            element={<Login isLogin={isLogin} setIsLogin={setIsLogin} />}
-          />
-          <Route
-            path="/auth/success"
-            element={<AuthSuccess setIsLogin={setIsLogin} />}
-          />
-          <Route
-            path="/lost/create"
-            element={isLogin ? <CreateLost /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/found/create"
-            element={isLogin ? <CreateFound /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/advertisement/:id"
-            element={<ItemCard isLogin={isLogin} isModerator={isModerator} />}
-          />
-          <Route path="/boardlost" element={<BoardLost isLogin={isLogin} />} />
-          <Route
-            path="/boardfound"
-            element={<BoardFound isLogin={isLogin} />}
-          />
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </div>
+      {isLogin ? <AuthNavBar onLogout={handleLogout} userData={localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null} /> : <NavBar />}
+      <Routes>
+        <Route path="/" element={<MainPage isLogin={isLogin} />} />
+        <Route
+          path="/registration"
+          element={<Registration isLogin={isLogin} />}
+        />
+        <Route
+          path="/login"
+          element={<Login isLogin={isLogin} setIsLogin={setIsLogin} />}
+        />
+        <Route
+          path="/auth/success"
+          element={<AuthSuccess setIsLogin={setIsLogin} />}
+        />
+        <Route
+          path="/lost/create"
+          element={isLogin ? <CreateLost /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/found/create"
+          element={isLogin ? <CreateFound /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/advertisement/:id"
+          element={<ItemCard isLogin={isLogin} isModerator={isModerator} />}
+        />
+        <Route path="/boardlost" element={<BoardLost isLogin={isLogin} />} />
+        <Route
+          path="/boardfound"
+          element={<BoardFound isLogin={isLogin} />}
+        />
+        <Route path="/profile" element={<UserProfile />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
       <Footer />
     </div>
   );

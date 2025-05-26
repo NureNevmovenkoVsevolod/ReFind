@@ -2,6 +2,7 @@ import Advertisement from "../models/advertisement.model.js";
 import Image from "../models/image.model.js";
 import Payment from "../models/payments.model.js";
 import Category from "../models/categories.model.js";
+import User from "../models/user.model.js";
 import { Op } from "sequelize";
 import fs from "fs/promises";
 import path from "path";
@@ -165,7 +166,11 @@ export const getAdvertisementById = async (req, res) => {
   try {
     const ad = await Advertisement.findOne({
       where: { advertisement_id: req.params.id },
-      include: [{ model: Image, attributes: ["image_url"] }],
+      include: [
+        { model: Image, attributes: ["image_url"] },
+        { model: User, attributes: ["first_name", "user_pfp"] },
+        { model: Category, attributes: ["categorie_id", "categorie_name"] },
+      ],
     });
 
     if (!ad)
@@ -173,6 +178,8 @@ export const getAdvertisementById = async (req, res) => {
 
     res.json({
       ...ad.toJSON(),
+      categorie_id: ad.categorie_id,
+      categorie_name: ad.Category?.categorie_name,
       location_coordinates: JSON.parse(ad.location_coordinates),
     });
   } catch (error) {
