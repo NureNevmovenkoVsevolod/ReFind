@@ -22,21 +22,21 @@ function ItemCard({ isLogin, isModerator }) {
     try {
       const decodedId = decodeId(encodedId);
       const token = localStorage.getItem("token");
-      
+
       await axios.put(
         `${process.env.REACT_APP_SERVER_URL}/api/advertisement/${decodedId}/moderate`,
         { approved },
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
       setModerationStatus(approved ? "approved" : "rejected");
 
-      setAd(prev => ({
+      setAd((prev) => ({
         ...prev,
         mod_check: approved,
-        status: approved ? "active" : "rejected"
+        status: approved ? "active" : "rejected",
       }));
     } catch (error) {
       console.error("Помилка при модерації:", error);
@@ -111,13 +111,13 @@ function ItemCard({ isLogin, isModerator }) {
 
   return (
     <div className={styles.container}>
-              <button 
-          className={styles.backBtn} 
-          onClick={() => navigate(-1)}
-          aria-label="Go back"
-        >
-          <span>←</span> Back
-        </button>
+      <button
+        className={styles.backBtn}
+        onClick={() => navigate(-1)}
+        aria-label="Go back"
+      >
+        <span>←</span> Back
+      </button>
 
       <div className={styles.main}>
         <ImageGallery images={Images?.map((img) => `${img.image_url}`)} />
@@ -157,14 +157,14 @@ function ItemCard({ isLogin, isModerator }) {
           )}
           {isModerator && !mod_check && (
             <div className={styles.moderationButtons}>
-              <button 
+              <button
                 className={`${styles.modButton} ${styles.approveButton}`}
                 onClick={() => handleModeration(true)}
                 disabled={moderationStatus !== null}
               >
                 Схвалити
               </button>
-              <button 
+              <button
                 className={`${styles.modButton} ${styles.rejectButton}`}
                 onClick={() => handleModeration(false)}
                 disabled={moderationStatus !== null}
@@ -175,7 +175,9 @@ function ItemCard({ isLogin, isModerator }) {
           )}
           {moderationStatus && (
             <p className={styles.moderationStatus}>
-              {moderationStatus === "approved" ? "Оголошення схвалено" : "Оголошення відхилено"}
+              {moderationStatus === "approved"
+                ? "Оголошення схвалено"
+                : "Оголошення відхилено"}
             </p>
           )}
         </div>
