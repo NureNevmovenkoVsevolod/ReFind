@@ -72,6 +72,12 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
       case 'blocked_until':
         if (formData.is_blocked && !value) {
           error = "Вкажіть дату блокування";
+        } else if (formData.is_blocked && value) {
+          const selectedDate = new Date(value);
+          const now = new Date();
+          if (selectedDate <= now) {
+            error = "Час блокування має бути в майбутньому";
+          }
         }
         break;
 
@@ -138,7 +144,7 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
         phone_number: user.phone_number || '',
         password: '',
         is_blocked: user.is_blocked || false,
-        blocked_until: user.blocked_until ? new Date(user.blocked_until).toISOString().slice(0, 16) : '',
+        blocked_until: user.blocked_until ? new Date(user.blocked_until).toLocaleString('sv', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }).slice(0, 16) : '',
         user_pfp: user.user_pfp || ''
       });
     } else {
@@ -184,6 +190,10 @@ const UserFormModal = ({ show, handleClose, user, onSubmit }) => {
 
       if (submitData.is_blocked) {
         submitData.blocked_at = new Date().toISOString();
+        if (submitData.blocked_until) {
+          const localDate = new Date(submitData.blocked_until);
+          submitData.blocked_until = localDate.toISOString();
+        }
       } else {
         submitData.blocked_at = null;
         submitData.blocked_until = null;
