@@ -141,7 +141,6 @@ function App() {
             path="/boardfound"
             element={<BoardFound isLogin={isLogin} />}
           />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
