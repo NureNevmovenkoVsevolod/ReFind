@@ -2,7 +2,15 @@ import React from "react";
 import { Container, Row, Button, Image } from "react-bootstrap";
 import styles from "./HeroSection.module.css";
 import arrow from "../../assets/arrow.png";
+
 const HeroSection = () => {
+  const scrollToCurrentFinds = () => {
+    const currentFindsSection = document.getElementById('current-finds');
+    if (currentFindsSection) {
+      currentFindsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <Container className={`${styles.img}`}>
       <section
@@ -17,6 +25,7 @@ const HeroSection = () => {
           style={{ maxWidth: "100px", marginBottom: "50px" }}
           variant={"outline-light"}
           className={styles.arrowButton}
+          onClick={scrollToCurrentFinds}
         >
           <Image src={arrow} className={styles.arrow}></Image>
         </Button>

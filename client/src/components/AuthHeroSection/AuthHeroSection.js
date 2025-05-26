@@ -13,7 +13,12 @@ const AuthHeroSection = () => {
   const goToCreateFound = () => {
     navigate("/found/create");
   };
-
+  const scrollToCurrentFinds = () => {
+    const currentFindsSection = document.getElementById('current-finds');
+    if (currentFindsSection) {
+      currentFindsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
   return (
     <Container className={`${styles.img}`}>
       <section
@@ -44,6 +49,7 @@ const AuthHeroSection = () => {
           style={{ maxWidth: "100px", marginBottom: "50px" }}
           variant={"outline-light"}
           className={styles.arrowButton}
+          onClick={scrollToCurrentFinds}
         >
           <Image src={arrow} className={styles.arrow}></Image>
         </Button>

@@ -69,7 +69,7 @@ function CurrentFindsSection() {
     }
   };
   return (
-    <Container className={styles.container}>
+    <Container id="current-finds" className={styles.container}>
       <h2 className={styles.title}>Current Finds</h2>
       <CategoryFilter onCategoryChange={handleCategoryChange} />
       <Row className={styles.findsGrid}>
