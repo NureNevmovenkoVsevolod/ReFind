@@ -9,7 +9,7 @@ import user from "../../assets/user.png";
 import logo from "../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
 
-function AuthNavBar({ onLogout }) {
+function AuthNavBar({ onLogout, userData }) {
   const navigate = useNavigate();
   const goToMain = () => {
     navigate("/");
@@ -66,8 +66,17 @@ function AuthNavBar({ onLogout }) {
         </Nav>
 
         <div className="d-flex align-items-center gap-3">
-          <Button>
-            <Image src={user} />
+          <Button className={styles.userButton} onClick={() => navigate('/profile')}>
+            <Image 
+              src={userData?.user_pfp || user} 
+              style={{ 
+                width: '40px', 
+                height: '40px', 
+                objectFit: 'cover',
+                borderRadius: userData?.user_pfp ? '50%' : '0'
+              }} 
+              alt={userData?.first_name || 'User avatar'}
+            />
           </Button>
 
           <Button
