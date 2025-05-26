@@ -102,47 +102,55 @@ function LoginForm({ setIsLogin }) {
   };
 
   return (
-    <div className={styles.container}>
-      <h2>Вхід</h2>
-      {errors.submit && (
-        <div className={styles.error}>{errors.submit}</div>
-      )}
-      <form onSubmit={handleSubmit}>
-        <FormInput
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          placeholder="Email"
-          error={errors.email}
-        />
-        <FormInput
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          placeholder="Пароль"
-          error={errors.password}
-        />
-        <button type="submit">Увійти</button>
-      </form>
+      <div className={styles.container}>
+        <h2>Вхід</h2>
+        {errors.submit && (
+            <div className={styles.error}>{errors.submit}</div>
+        )}
+        <form onSubmit={handleSubmit}>
+          <FormInput
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email"
+              error={errors.email}
+          />
+          <FormInput
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Пароль"
+              error={errors.password}
+          />
+          <p className="text-sm">
+            By using this service, you agree to our <a href="/privacy-policy" className="text-blue-500 underline">Privacy
+            Policy</a>.
+          </p>
+          <button type="submit">Увійти</button>
+        </form>
+        <p className="text-sm">
+          By using this service, you agree to our <a href="/privacy-policy" className="text-blue-500 underline">Privacy
+          Policy</a>.
+        </p>
 
-      <div className={styles.social_signin}>
-        <p>Увійти через:</p>
-        <div className={styles.social_icons}>
-          <img
-            src='https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_"G"_logo.svg'
-            alt="Google"
-            onClick={handleGoogleLogin}
-          />
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
-            alt="Facebook"
-            onClick={handleFacebookLogin}
-          />
+        <div className={styles.social_signin}>
+          <p>Увійти через:</p>
+          <div className={styles.social_icons}>
+            <img
+                src='https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_"G"_logo.svg'
+                alt="Google"
+                onClick={handleGoogleLogin}
+            />
+            <img
+                src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
+                alt="Facebook"
+                onClick={handleFacebookLogin}
+            />
+          </div>
         </div>
       </div>
-    </div>
   );
 }
 
