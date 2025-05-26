@@ -110,100 +110,102 @@ function ItemCard({ isLogin, isModerator }) {
   }
 
   return (
-    <div className={styles.container}>
-      <button
-        className={styles.backBtn}
-        onClick={() => navigate(-1)}
-        aria-label="Go back"
-      >
-        <span>←</span> Back
-      </button>
+    <div className="centerContent">
+      <div className={styles.container}>
+        <button
+          className={styles.backBtn}
+          onClick={() => navigate(-1)}
+          aria-label="Go back"
+        >
+          <span>←</span> Back
+        </button>
 
-      <div className={styles.main}>
-        <ImageGallery images={Images?.map((img) => `${img.image_url}`)} />
+        <div className={styles.main}>
+          <ImageGallery images={Images?.map((img) => `${img.image_url}`)} />
 
-        <div className={styles.contentSection}>
-          <div className={styles.zagolovok}>
-            {type == "find"
-              ? `Found item description`
-              : `Lost item description`}
+          <div className={styles.contentSection}>
+            <div className={styles.zagolovok}>
+              {type == "find"
+                ? `Found item description`
+                : `Lost item description`}
+            </div>
+            <h1>{title}</h1>
+            <div className={styles.info}>
+              <p>📅 {new Date(incident_date).toLocaleDateString()}</p>
+              <p>📍 {location_description}</p>
+              {Number.parseFloat(reward) === 0.0 ? (
+                ""
+              ) : (
+                <p>💰 Reward: {reward}₴</p>
+              )}
+            </div>
+            <p className={styles.shortDesc}>{description}</p>
           </div>
-          <h1>{title}</h1>
-          <div className={styles.info}>
-            <p>📅 {new Date(incident_date).toLocaleDateString()}</p>
-            <p>📍 {location_description}</p>
-            {Number.parseFloat(reward) === 0.0 ? (
-              ""
+        </div>
+
+        <div className={styles.bottom}>
+          <div className={styles.contacts}>
+            <h3>Contact details for communication:</h3>
+            <p>📞 {phone}</p>
+            {email ? <p>📧 {email}</p> : ""}
+            {isLogin && !isModerator ? (
+              <>
+                <button className={styles.messageBtn}>Send a message</button>
+                <p className={styles.favorite}>Favorite category 🤍</p>
+              </>
             ) : (
-              <p>💰 Reward: {reward}₴</p>
+              <></>
+            )}
+            {isModerator && !mod_check && (
+              <div className={styles.moderationButtons}>
+                <button
+                  className={`${styles.modButton} ${styles.approveButton}`}
+                  onClick={() => handleModeration(true)}
+                  disabled={moderationStatus !== null}
+                >
+                  Схвалити
+                </button>
+                <button
+                  className={`${styles.modButton} ${styles.rejectButton}`}
+                  onClick={() => handleModeration(false)}
+                  disabled={moderationStatus !== null}
+                >
+                  Відхилити
+                </button>
+              </div>
+            )}
+            {moderationStatus && (
+              <p className={styles.moderationStatus}>
+                {moderationStatus === "approved"
+                  ? "Оголошення схвалено"
+                  : "Оголошення відхилено"}
+              </p>
             )}
           </div>
-          <p className={styles.shortDesc}>{description}</p>
-        </div>
-      </div>
 
-      <div className={styles.bottom}>
-        <div className={styles.contacts}>
-          <h3>Contact details for communication:</h3>
-          <p>📞 {phone}</p>
-          {email ? <p>📧 {email}</p> : ""}
-          {isLogin && !isModerator ? (
-            <>
-              <button className={styles.messageBtn}>Send a message</button>
-              <p className={styles.favorite}>Favorite category 🤍</p>
-            </>
-          ) : (
-            <></>
-          )}
-          {isModerator && !mod_check && (
-            <div className={styles.moderationButtons}>
-              <button
-                className={`${styles.modButton} ${styles.approveButton}`}
-                onClick={() => handleModeration(true)}
-                disabled={moderationStatus !== null}
-              >
-                Схвалити
-              </button>
-              <button
-                className={`${styles.modButton} ${styles.rejectButton}`}
-                onClick={() => handleModeration(false)}
-                disabled={moderationStatus !== null}
-              >
-                Відхилити
-              </button>
-            </div>
-          )}
-          {moderationStatus && (
-            <p className={styles.moderationStatus}>
-              {moderationStatus === "approved"
-                ? "Оголошення схвалено"
-                : "Оголошення відхилено"}
-            </p>
-          )}
-        </div>
-
-        <div className={styles.mapWrapper}>
-          <h3>Location</h3>
-          <Map
-            initialCoordinates={{
-              lat: location_coordinates?.lat || 0,
-              lng: location_coordinates?.lng || 0,
-            }}
-            readOnly={true}
-          >
-            <TileLayer
-              attribution="&copy; OpenStreetMap"
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <Marker
-              position={[
-                location_coordinates?.lat || 0,
-                location_coordinates?.lng || 0,
-              ]}
+          <div className={styles.mapWrapper}>
+            <h3>Location</h3>
+            <Map
+              initialCoordinates={{
+                lat: location_coordinates?.lat || 0,
+                lng: location_coordinates?.lng || 0,
+              }}
+              readOnly={true}
             >
-              <Popup>{title}</Popup>
-            </Marker>
-          </Map>
+              <TileLayer
+                attribution="&copy; OpenStreetMap"
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <Marker
+                position={[
+                  location_coordinates?.lat || 0,
+                  location_coordinates?.lng || 0,
+                ]}
+              >
+                <Popup>{title}</Popup>
+              </Marker>
+            </Map>
+          </div>
         </div>
       </div>
     </div>
