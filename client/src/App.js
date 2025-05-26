@@ -20,6 +20,7 @@ import AdminModers from "./pages/AdminModers";
 import ModerNavBar from "./components/ModerNavBar/ModerNavBar";
 import ModerAdvert from "./pages/Moder/ModerAdvert";
 import UserProfile from "./pages/UserProfile";
+import ModerStats from "./pages/Moder/ModerStats";
 
 function App() {
   const [isLogin, setIsLogin] = useState(false);
@@ -94,7 +95,7 @@ function App() {
             path="/advertisement/:id"
             element={<ItemCard isLogin={isLogin} isModerator={isModerator} />}
           />
-          <Route path="/moder/stats" />
+          <Route path="/moder/stats" element={<ModerStats/>}/>
           <Route path="/moder/advertisments" element={<ModerAdvert />} />
           <Route path="/moder/complaints" />
           <Route path="/" element={<Navigate to="/moder/advertisments" />} />

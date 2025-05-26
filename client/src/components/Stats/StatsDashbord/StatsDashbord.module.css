@@ -1,0 +1,13 @@
+.maincontent {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 16px;
+  }
+  
+  .statsgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  
