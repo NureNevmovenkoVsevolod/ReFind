@@ -19,6 +19,7 @@ import BoardLost from "./pages/BoardLost";
 import AdminModers from "./pages/AdminModers";
 import ModerNavBar from "./components/ModerNavBar/ModerNavBar";
 import ModerAdvert from "./pages/Moder/ModerAdvert";
+import UserProfile from "./pages/UserProfile";
 
 function App() {
   const [isLogin, setIsLogin] = useState(false);
@@ -138,6 +139,7 @@ function App() {
             path="/boardfound"
             element={<BoardFound isLogin={isLogin} />}
           />
+          <Route path="/profile" element={<UserProfile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
