@@ -1,44 +1,39 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet } from "react-native";
+import { View, Text, TextInput as RNTextInput, StyleSheet } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 
-const EmailInput = ({ value, onChangeText, placeholder = "Введіть ваш email" }) => {
+const OurTextInput = ({ value, onChangeText, placeholder, label, icon = "person" }) => {
   const [error, setError] = useState("");
 
-  const validateEmail = (email) => {
+  const validateText = (text) => {
     let errorMessage = "";
-    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-    if (!email) {
-      errorMessage = "Email обов'язковий";
-    } else if (!emailRegex.test(email)) {
-      errorMessage = "Невірний формат email";
+    if (!text) {
+      errorMessage = `${label} обов'язковий`;
     }
     setError(errorMessage);
   };
 
   const handleTextChange = (text) => {
     onChangeText(text);
-    validateEmail(text);
+    validateText(text);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Email</Text>
+      <Text style={styles.label}>{label}</Text>
       <View style={styles.inputContainer}>
         <MaterialIcons
-          name="email"
+          name={icon}
           size={20}
           color="#999"
           style={styles.icon}
         />
-        <TextInput
+        <RNTextInput
           style={styles.input}
           placeholder={placeholder}
           value={value}
           onChangeText={handleTextChange}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          onBlur={() => validateEmail(value)}
+          onBlur={() => validateText(value)}
         />
       </View>
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -79,4 +74,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EmailInput;
+export default OurTextInput;

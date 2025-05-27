@@ -18,7 +18,7 @@ function HelloScreen({ navigation }) {
           <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('Login')}>
             <Text style={styles.loginButtonText}>Увійти</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.registerButton}>
+          <TouchableOpacity style={styles.registerButton} onPress={() => navigation.navigate('Register')} >
             <Text style={styles.registerButtonText}>Зареєструватися</Text>
           </TouchableOpacity>
         </View>

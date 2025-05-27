@@ -6,6 +6,9 @@ import { Text, View } from "react-native";
 import HelloScreen from "../screens/HelloScreen";
 import LoginScreen from "../screens/LoginScreen";
 import MainScreen from "../screens/MainScreen";
+import AuthSuccessScreen from "../screens/AuthSuccessScreen";
+import RegisterScreen from "../screens/RegisterScreen";
+import ProfileScreen from "../screens/ProfileScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -50,9 +53,24 @@ export default function AppNavigator() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
+          name="Register"
+          component={RegisterScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="AuthSuccess"
+          component={AuthSuccessScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="Main"
           component={MainScreen}
           options={{ title: "Головна", headerShown: false }}
+        />
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{ title: "Профіль", headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>
