@@ -36,19 +36,9 @@ router.get(
 
         const encodedData = encodeURIComponent(JSON.stringify(authData));
 
-        // Перевіряємо, чи це мобільний додаток
-        const platform = req.query.platform;
-        const redirectUri = req.query.redirect_uri;
-
-        if (platform === 'mobile' && redirectUri) {
-            // Для мобільного додатку використовуємо redirectUri
-            res.redirect(`${redirectUri}?data=${encodedData}`);
-        } else {
-            // Для веб-версії використовуємо стандартний URL
-            res.redirect(
-                process.env.REACT_APP_CLIENT_URL + `/auth/success?data=${encodedData}`
-            );
-        }
+        const redirectUrl =
+            process.env.REACT_APP_CLIENT_URL + `/auth/success?data=${encodedData}`;
+        res.redirect(redirectUrl);
     } catch (error) {
       console.error("Token generation error:", error);
       res.redirect(process.env.REACT_APP_CLIENT_URL+"/login?error=authentication_failed");

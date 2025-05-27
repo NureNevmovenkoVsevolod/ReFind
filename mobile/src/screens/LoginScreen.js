@@ -13,7 +13,6 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 import PasswordInput from '../components/PasswordInput';
 import EmailInput from '../components/EmailInput';
-import AuthButtons from '../components/AuthButtons/AuthButtons';
 
 const apiUrl = Constants.expoConfig.extra.API_URL;
 
@@ -38,7 +37,7 @@ const LoginScreen = ({ navigation }) => {
       const userRole = response.data.user.role; 
 
       if (userRole === 'admin' || userRole === 'moder') {
-        setLoginError('Неправильний email або пароль');
+        setLoginError('Адміністратори та модератори не можуть увійти через мобільний застосунок.');
         return;
       }
 
@@ -53,14 +52,6 @@ const LoginScreen = ({ navigation }) => {
     } catch (error) {
       setLoginError('Неправильний email або пароль');
     }
-  };
-
-  const handleAuthSuccess = (data) => {
-    if (data.user.role === 'admin' || data.user.role === 'moder') {
-      setLoginError('Неправильний email або пароль');
-      return;
-    }
-    navigation.navigate('Main');
   };
 
   return (
@@ -87,7 +78,17 @@ const LoginScreen = ({ navigation }) => {
         <View style={styles.line} />
       </View>
 
-      <AuthButtons onAuthSuccess={handleAuthSuccess} />
+      <View style={styles.socialRow}>
+        <TouchableOpacity style={styles.socialButton}>
+          <FontAwesome name="google" size={20} color="red" />
+          <Text style={styles.socialText}>Google</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.socialButton}>
+          <FontAwesome name="facebook" size={20} color="#1877F2" />
+          <Text style={styles.socialText}>Facebook</Text>
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity>
         <Text style={styles.bottomText}>
