@@ -32,6 +32,7 @@ const UserProfile = () => {
     const data = localStorage.getItem("user");
     return data ? JSON.parse(data) : null;
   });
+  
   const [editAd, setEditAd] = useState(null);
   const [showProfileEditModal, setShowProfileEditModal] = useState(false);
   const [deleteAd, setDeleteAd] = useState(null);
@@ -39,9 +40,17 @@ const UserProfile = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [favoriteCategories, setFavoriteCategories] = useState([]);
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     setAvatar(userData?.user_pfp || userIcon);
+    setNickname(userData?.first_name || "");
+    setLastName(userData?.last_name || "");
+    setEmail(userData?.email || "");
+    setPhoneNumber(userData?.phone_number || "");
   }, [userData]);
 
   useEffect(() => {
@@ -82,11 +91,12 @@ const UserProfile = () => {
       const token = localStorage.getItem("token");
       const userId = userData.user_id ?? userData.id;
       const updatedFields = {
-        first_name: newFields.first_name ?? userData.first_name,
-        last_name: userData.last_name ?? "",
-        email: userData.email ?? "",
+        first_name: newFields.first_name ?? nickname,
+        last_name: newFields.last_name ?? lastName,
+        email: newFields.email ?? email,
         user_pfp: newFields.user_pfp ?? userData.user_pfp,
-        phone_number: userData.phone_number ?? "",
+        phone_number: newFields.phone_number ?? phoneNumber,
+        password: newFields.password || undefined,
         is_blocked: userData.is_blocked ?? false,
         blocked_until: userData.blocked_until ?? null,
       };
@@ -101,6 +111,9 @@ const UserProfile = () => {
       setUserData(res.data);
       setAvatar(res.data.user_pfp || userIcon);
       setNickname(res.data.first_name || "");
+      setLastName(res.data.last_name || "");
+      setEmail(res.data.email || "");
+      setPhoneNumber(res.data.phone_number || "");
       return true;
     } catch (err) {
       setNicknameError("Failed to update profile");
@@ -139,6 +152,10 @@ const UserProfile = () => {
 
   const handleEditProfile = () => {
     setNickname(userData?.first_name || "");
+    setLastName(userData?.last_name || "");
+    setEmail(userData?.email || "");
+    setPhoneNumber(userData?.phone_number || "");
+    setPassword("");
     setShowProfileEditModal(true);
   };
 
@@ -171,14 +188,19 @@ const UserProfile = () => {
     if (nicknameError || !nickname.trim()) {
       return;
     }
-    await updateProfile({ first_name: nickname });
+    await updateProfile({
+      first_name: nickname,
+      last_name: lastName,
+      email: email,
+      phone_number: phoneNumber,
+      password: password || undefined,
+    });
     handleCloseModal();
   };
 
   const username =
     userData?.first_name + " " + userData?.last_name || "Username";
 
-  // Видалення оголошення
   const handleDeleteAd = async () => {
     if (!deleteAd) return;
     setDeleteLoading(true);
@@ -202,16 +224,28 @@ const UserProfile = () => {
     }
   };
 
-  // Оновлення оголошення після редагування
-  const handleAdEditSuccess = (updatedAd) => {
-    setAnnouncements((prev) =>
-      prev.map((ad) =>
-        ad.advertisement_id === updatedAd.advertisement_id ? updatedAd : ad
-      )
-    );
-    setShowEditModal(false);
-    setEditAd(null);
-    setSuccessMessage("Оголошення оновлено!");
+  const handleAdEditSuccess = async (updatedAd) => {
+  setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        process.env.REACT_APP_SERVER_URL + "/api/advertisement/user/my",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAnnouncements(res.data || []);
+    } catch (e) {
+      // fallback: оновлюємо тільки одне оголошення
+      setAnnouncements((prev) =>
+        prev.map((ad) =>
+          ad.advertisement_id === updatedAd.advertisement_id ? updatedAd : ad
+        )
+      );
+    } finally {
+      setLoading(false);
+      setShowEditModal(false);
+      setEditAd(null);
+      setSuccessMessage("Оголошення оновлено!");
+    }
   };
 
   return (
@@ -283,7 +317,7 @@ const UserProfile = () => {
               <LossCardProfile
                 key={item.advertisement_id}
                 advertisement_id={item.advertisement_id}
-                image={item.Images?.[0]?.image_url}
+                image={item.Images?.[0]?.image_url ? item.Images[0].image_url + '?t=' + Date.now() : undefined}
                 date={
                   item.incident_date
                     ? new Date(item.incident_date).toLocaleDateString("uk-UA", {
@@ -328,6 +362,7 @@ const UserProfile = () => {
         <Modal.Body>
           {editAd && (
             <EditAdvertForm
+              key={JSON.stringify(editAd)}
               type={editAd.type}
               initialData={editAd}
               onSuccess={(updatedAd) => {
@@ -410,53 +445,55 @@ const UserProfile = () => {
               <div className="text-danger mb-3">{avatarError}</div>
             )}
             <Form.Group className="mb-3">
-              <Form.Label>Nickname</Form.Label>
-              <div className={styles.nicknameControl}>
-                {isEditingName ? (
-                  <>
-                    <Form.Control
-                      type="text"
-                      value={nickname}
-                      onChange={handleNicknameChange}
-                      isInvalid={!!nicknameError}
-                      disabled={isValidating}
-                    />
-                    <Button
-                      variant="link"
-                      className={styles.editNameBtn}
-                      onClick={() => setIsEditingName(false)}
-                    >
-                      <i className="fas fa-times" />
-                      Cancel
-                    </Button>
-                    <Form.Control.Feedback type="invalid">
-                      {nicknameError}
-                    </Form.Control.Feedback>
-                    {isValidating && (
-                      <div className="text-muted mt-1">
-                        Checking nickname...
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <Form.Control
-                      type="text"
-                      value={nickname}
-                      disabled
-                      readOnly
-                    />
-                    <Button
-                      variant="link"
-                      className={styles.editNameBtn}
-                      onClick={() => setIsEditingName(true)}
-                    >
-                      <i className="fas fa-pen" />
-                      Edit
-                    </Button>
-                  </>
-                )}
-              </div>
+              <Form.Label>First Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={nickname}
+                onChange={handleNicknameChange}
+                isInvalid={!!nicknameError}
+                disabled={isValidating}
+              />
+              <Form.Control.Feedback type="invalid">
+                {nicknameError}
+              </Form.Control.Feedback>
+              {isValidating && (
+                <div className="text-muted mt-1">
+                  Checking nickname...
+                </div>
+              )}
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Last Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={lastName}
+                onChange={e => setLastName(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Phone Number</Form.Label>
+              <Form.Control
+                type="text"
+                value={phoneNumber}
+                onChange={e => setPhoneNumber(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>New Password</Form.Label>
+              <Form.Control
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Leave blank to keep current password"
+              />
             </Form.Group>
           </Form>
         </Modal.Body>

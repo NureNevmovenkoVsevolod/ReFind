@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import FormInput from "../FormInput/FormInput";
 import Map from "../Map/Map";
@@ -148,7 +148,7 @@ const EditAdvertForm = ({ type, initialData, onSuccess, onCancel, isEdit }) => {
     formDataToSend.append("type", type);
     try {
       const response = await fetch(
-        process.env.REACT_APP_SERVER_URL+`/api/advertisement/${initialData.advertisement_id}`,
+        `${process.env.REACT_APP_SERVER_URL}/api/advertisement/${initialData.advertisement_id}`,      
         {
           method: "PUT",
           headers: {
@@ -157,13 +157,30 @@ const EditAdvertForm = ({ type, initialData, onSuccess, onCancel, isEdit }) => {
           body: formDataToSend,
         }
       );
-      console.log("EditAdvertForm PUT response", response.status, response.statusText);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error("EditAdvertForm server error details:", errorData);
         throw new Error('Failed to update advertisement');
       }
       const updatedAd = await response.json();
+      // Додатковий GET-запит для отримання актуальних Images
+      try {
+        const getResponse = await fetch(
+          `${process.env.REACT_APP_SERVER_URL}/api/advertisement/${updatedAd.advertisement_id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (getResponse.ok) {
+          const freshAd = await getResponse.json();
+          setStatus('success');
+          setShowModal(true);
+          if (onSuccess) onSuccess(freshAd);
+          return;
+        }
+      } catch (e) {
+        // fallback
+      }
       setStatus('success');
       setShowModal(true);
       if (onSuccess) onSuccess(updatedAd);
@@ -285,14 +302,30 @@ const EditAdvertForm = ({ type, initialData, onSuccess, onCancel, isEdit }) => {
     }));
   };
 
-  // Helper to ensure valid coordinates
-  const getValidCoordinates = (coords) => {
-    if (!coords || typeof coords !== 'object') return { lat: 50.4501, lng: 30.5234 };
-    const lat = Number(coords.lat);
-    const lng = Number(coords.lng);
-    if (isNaN(lat) || isNaN(lng)) return { lat: 50.4501, lng: 30.5234 };
-    return { lat, lng };
+  // Гарантуємо, що координати завжди обʼєкт
+  const parseCoords = (coords) => {
+    if (!coords) return null;
+    if (typeof coords === 'string') {
+      try {
+        return JSON.parse(coords);
+      } catch {
+        return null;
+      }
+    }
+    return coords;
   };
+
+  const isValidCoords = (coords) => {
+    const parsed = parseCoords(coords);
+    if (!parsed || typeof parsed !== 'object') return false;
+    const lat = Number(parsed.lat);
+    const lng = Number(parsed.lng);
+    return !isNaN(lat) && !isNaN(lng) && !(lat === 0 && lng === 0);
+  };
+
+  const coords = parseCoords(formData.location_coordinates);
+  const showMap = isValidCoords(formData.location_coordinates);
+
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
@@ -392,21 +425,27 @@ const EditAdvertForm = ({ type, initialData, onSuccess, onCancel, isEdit }) => {
           error={errors.location_description || errors.location_coordinates}
           data-error={!!(errors.location_description || errors.location_coordinates)}
         />
-        <Map
-          initialCoordinates={getValidCoordinates(formData.location_coordinates)}
-          onLocationSelect={handleLocationSelect}
-          onAddressFound={(address) => {
-            setFormData((prev) => ({
-              ...prev,
-              location_description: address,
-            }));
-            setErrors(prev => ({
-              ...prev,
-              location_description: undefined,
-              location_coordinates: undefined
-            }));
-          }}
-        />
+        {/* Map rendering */}
+        {showMap ? (
+          <Map
+            key={coords.lat + ',' + coords.lng}
+            initialCoordinates={coords}
+            onLocationSelect={handleLocationSelect}
+            onAddressFound={(address) => {
+              setFormData((prev) => ({
+                ...prev,
+                location_description: address,
+              }));
+              setErrors(prev => ({
+                ...prev,
+                location_description: undefined,
+                location_coordinates: undefined
+              }));
+            }}
+          />
+        ) : (
+          <div style={{height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>Завантаження карти…</div>
+        )}
         {errors.location_coordinates && (
           <div className={styles.error} data-error="true">
             {errors.location_coordinates}
@@ -479,7 +518,7 @@ const EditAdvertForm = ({ type, initialData, onSuccess, onCancel, isEdit }) => {
         style={{ marginTop: 10 }}
         onClick={onCancel}
       >
-        Скасувати
+        <span style={{fontSize: '1.2em', marginRight: 6}}>✖</span> Скасувати
       </button>
       <SuccessModal
         show={showModal}

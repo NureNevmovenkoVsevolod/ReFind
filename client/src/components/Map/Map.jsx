@@ -18,25 +18,71 @@ const Map = ({ onLocationSelect, onAddressFound, initialCoordinates, readOnly = 
   const mapRef = useRef(null);
   const markerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
+  const mapContainerId = useRef(`map-${Math.random().toString(36).substr(2, 9)}`);
+
+  useEffect(() => {
+    const map = L.map(mapContainerId.current).setView(
+      initialCoordinates && typeof initialCoordinates.lat === 'number' && typeof initialCoordinates.lng === 'number'
+        ? [initialCoordinates.lat, initialCoordinates.lng]
+        : [50.4501, 30.5234],
+      13
+    );
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors",
+    }).addTo(map);
+    if (!readOnly) {
+      map.on("click", handleMapClick);
+    }
+    mapRef.current = map;
+    if (initialCoordinates && typeof initialCoordinates.lat === 'number' && typeof initialCoordinates.lng === 'number') {
+      markerRef.current = L.marker([initialCoordinates.lat, initialCoordinates.lng], { icon: defaultIcon }).addTo(map);
+    }
+    return () => {
+      if (mapRef.current) {
+        if (markerRef.current) {
+          markerRef.current.remove();
+        }
+        mapRef.current.remove();
+        mapRef.current = null;
+        markerRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    if (initialCoordinates && typeof initialCoordinates.lat === 'number' && typeof initialCoordinates.lng === 'number') {
+      if (!markerRef.current) {
+        markerRef.current = L.marker([initialCoordinates.lat, initialCoordinates.lng], { icon: defaultIcon }).addTo(mapRef.current);
+        mapRef.current.setView([initialCoordinates.lat, initialCoordinates.lng], mapRef.current.getZoom());
+      } else {
+        markerRef.current.setLatLng([initialCoordinates.lat, initialCoordinates.lng]);
+        mapRef.current.setView([initialCoordinates.lat, initialCoordinates.lng], mapRef.current.getZoom());
+      }
+    } else if (markerRef.current) {
+      markerRef.current.remove();
+      markerRef.current = null;
+    }
+  }, [initialCoordinates]);
 
   const addMarkerAt = async (lat, lng) => {
     if (markerRef.current) {
       markerRef.current.setLatLng([lat, lng]);
-    } else {
-      markerRef.current = L.marker([lat, lng], { icon: defaultIcon }).addTo(
-          mapRef.current
-      );
+    } else if (mapRef.current) {
+      markerRef.current = L.marker([lat, lng], { icon: defaultIcon }).addTo(mapRef.current);
     }
-
+    if (mapRef.current) {
+      mapRef.current.setView([lat, lng], mapRef.current.getZoom());
+    }
     if (!readOnly) {
       setIsLoading(true);
       try {
         const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
         );
         const data = await response.json();
         const address = data.display_name;
-
         if (onLocationSelect) {
           onLocationSelect({ lat, lng, address });
         }
@@ -52,53 +98,19 @@ const Map = ({ onLocationSelect, onAddressFound, initialCoordinates, readOnly = 
   };
 
   const handleMapClick = useCallback(
-      async (e) => {
-        const { lat, lng } = e.latlng;
-        await addMarkerAt(lat, lng);
-      },
-      [onLocationSelect, onAddressFound]
+    async (e) => {
+      const { lat, lng } = e.latlng;
+      await addMarkerAt(lat, lng);
+    },
+    [onLocationSelect, onAddressFound]
   );
-
-  useEffect(() => {
-    const map = L.map("map").setView(
-        initialCoordinates ? [initialCoordinates.lat, initialCoordinates.lng] : [50.4501, 30.5234],
-        13
-    );
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors",
-    }).addTo(map);
-
-    if (!readOnly) {
-      map.on("click", handleMapClick);
-    }
-
-    mapRef.current = map;
-
-    if (initialCoordinates) {
-      addMarkerAt(initialCoordinates.lat, initialCoordinates.lng);
-    }
-
-    return () => {
-      if (mapRef.current) {
-        if (markerRef.current) {
-          markerRef.current.remove();
-        }
-        mapRef.current.remove();
-        mapRef.current = null;
-        markerRef.current = null;
-      }
-    };
-  }, [initialCoordinates, readOnly]);
 
   return (
-      <div className={styles.mapContainer}>
-        <div id="map" className={styles.map} />
-        {!readOnly && isLoading && <div className={styles.loading}>Loading address...</div>}
-      </div>
+    <div className={styles.mapContainer}>
+      <div id={mapContainerId.current} className={styles.map} />
+      {!readOnly && isLoading && <div className={styles.loading}>Loading address...</div>}
+    </div>
   );
 };
-
-
 
 export default Map;
