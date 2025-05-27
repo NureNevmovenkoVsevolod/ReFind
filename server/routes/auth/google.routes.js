@@ -47,10 +47,19 @@ router.get(
 
       const encodedData = encodeURIComponent(JSON.stringify(authData));
 
-      const redirectUrl =
-        process.env.REACT_APP_CLIENT_URL + `/auth/success?data=${encodedData}`;
+      // Перевіряємо, чи це мобільний додаток
+      const platform = req.query.platform;
+      const redirectUri = req.query.redirect_uri;
 
-      res.redirect(redirectUrl);
+      if (platform === 'mobile' && redirectUri) {
+        // Для мобільного додатку використовуємо redirectUri
+        res.redirect(`${redirectUri}?data=${encodedData}`);
+      } else {
+        // Для веб-версії використовуємо стандартний URL
+        res.redirect(
+          process.env.REACT_APP_CLIENT_URL + `/auth/success?data=${encodedData}`
+        );
+      }
     } catch (error) {
       console.error("Google auth callback error:", error);
       console.error("Error stack:", error.stack);
