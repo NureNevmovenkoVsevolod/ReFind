@@ -120,12 +120,10 @@ export const createAdvertisement = async (req, res) => {
     res.status(201).json(completeAd);
   } catch (error) {
     console.error("Error creating advertisement:", error);
-    res
-      .status(500)
-      .json({
-        message: "Failed to create advertisement",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Failed to create advertisement",
+      error: error.message,
+    });
   }
 };
 
@@ -194,7 +192,10 @@ export const getUserAdvertisements = async (req, res) => {
   try {
     const ads = await Advertisement.findAll({
       where: { user_id: req.user.id },
-      include: [{ model: Image, attributes: ["image_url"] }],
+      include: [
+        { model: Image, attributes: ["image_url"] },
+        { model: Category, attributes: ["categorie_name"] },
+      ],
       order: [["createdAt", "DESC"]],
     });
 

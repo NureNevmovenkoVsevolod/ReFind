@@ -1,0 +1,44 @@
+.container {
+    max-width: 768px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: #1f2937; /* Tailwind's gray-800 */
+    font-family: system-ui, sans-serif;
+}
+
+.heading {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.subHeading {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.paragraph {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.list {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.listItem {
+    margin-bottom: 0.5rem;
+}
+
+.link {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+.footer {
+    font-size: 0.875rem;
+    color: #6b7280;
+}

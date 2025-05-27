@@ -2,8 +2,8 @@ import React, { useMemo, useState, useEffect, useRef } from "react";
 import styles from "./UserProfile.module.css";
 import Image from "react-bootstrap/Image";
 import Button from "react-bootstrap/Button";
-import Modal from 'react-bootstrap/Modal';
-import Form from 'react-bootstrap/Form';
+import Modal from "react-bootstrap/Modal";
+import Form from "react-bootstrap/Form";
 import { useNavigate } from "react-router-dom";
 import userIcon from "../assets/user.png";
 import LossCardProfile from "../components/LossCard/LossCardProfile";
@@ -12,6 +12,7 @@ import axios from "axios";
 import CreateAdvertForm from "../components/CreateAdvertForm/CreateAdvertForm";
 import SuccessModal from "../components/Modal/SuccessModal";
 import EditAdvertForm from "../components/EditAdvertForm/EditAdvertForm";
+import Loader from "../components/Loader/Loader";
 
 const UserProfile = () => {
   const navigate = useNavigate();
@@ -82,12 +83,12 @@ const UserProfile = () => {
       const userId = userData.user_id ?? userData.id;
       const updatedFields = {
         first_name: newFields.first_name ?? userData.first_name,
-        last_name: userData.last_name ?? '',
-        email: userData.email ?? '',
+        last_name: userData.last_name ?? "",
+        email: userData.email ?? "",
         user_pfp: newFields.user_pfp ?? userData.user_pfp,
-        phone_number: userData.phone_number ?? '',
+        phone_number: userData.phone_number ?? "",
         is_blocked: userData.is_blocked ?? false,
-        blocked_until: userData.blocked_until ?? null
+        blocked_until: userData.blocked_until ?? null,
       };
       console.log("PUT /api/user/", userId, updatedFields);
       const res = await axios.put(
@@ -174,7 +175,8 @@ const UserProfile = () => {
     handleCloseModal();
   };
 
-  const username = userData?.first_name || "Username";
+  const username =
+    userData?.first_name + " " + userData?.last_name || "Username";
 
   // Видалення оголошення
   const handleDeleteAd = async () => {
@@ -183,10 +185,13 @@ const UserProfile = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.delete(
-        process.env.REACT_APP_SERVER_URL + `/api/advertisement/${deleteAd.advertisement_id}`,
+        process.env.REACT_APP_SERVER_URL +
+          `/api/advertisement/${deleteAd.advertisement_id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setAnnouncements((prev) => prev.filter((ad) => ad.advertisement_id !== deleteAd.advertisement_id));
+      setAnnouncements((prev) =>
+        prev.filter((ad) => ad.advertisement_id !== deleteAd.advertisement_id)
+      );
       setSuccessMessage("Оголошення успішно видалено!");
     } catch (e) {
       setSuccessMessage("Помилка при видаленні оголошення");
@@ -199,7 +204,11 @@ const UserProfile = () => {
 
   // Оновлення оголошення після редагування
   const handleAdEditSuccess = (updatedAd) => {
-    setAnnouncements((prev) => prev.map((ad) => ad.advertisement_id === updatedAd.advertisement_id ? updatedAd : ad));
+    setAnnouncements((prev) =>
+      prev.map((ad) =>
+        ad.advertisement_id === updatedAd.advertisement_id ? updatedAd : ad
+      )
+    );
     setShowEditModal(false);
     setEditAd(null);
     setSuccessMessage("Оголошення оновлено!");
@@ -208,7 +217,11 @@ const UserProfile = () => {
   return (
     <div className={styles.profilePage}>
       <div className={styles.profileContent}>
-        <Button variant="link" className={styles.backBtn} onClick={() => navigate(-1)}>
+        <Button
+          variant="link"
+          className={styles.backBtn}
+          onClick={() => navigate(-1)}
+        >
           ← Back
         </Button>
         <h1 className={styles.username}>{username}</h1>
@@ -218,8 +231,10 @@ const UserProfile = () => {
             <span className={styles.noFavorites}>Немає обраних категорій</span>
           ) : (
             <div className={styles.favoritesList}>
-              {favoriteCategories.map(cat => (
-                <span key={cat.categorie_id} className={styles.favoriteBadge}>{cat.categorie_name}</span>
+              {favoriteCategories.map((cat) => (
+                <span key={cat.categorie_id} className={styles.favoriteBadge}>
+                  {cat.categorie_name}
+                </span>
               ))}
             </div>
           )}
@@ -237,10 +252,16 @@ const UserProfile = () => {
               onChange={handleAvatarChange}
               disabled={avatarUploading}
             />
-            {avatarError && <div style={{ color: "red", fontSize: 12 }}>{avatarError}</div>}
+            {avatarError && (
+              <div style={{ color: "red", fontSize: 12 }}>{avatarError}</div>
+            )}
           </div>
           <div className={styles.profileInfo}>
-            <Button variant="outline-secondary" className={styles.editBtn} onClick={handleEditProfile}>
+            <Button
+              variant="outline-secondary"
+              className={styles.editBtn}
+              onClick={handleEditProfile}
+            >
               Edit profile
             </Button>
             <div className={styles.ratingBlock}>
@@ -252,29 +273,55 @@ const UserProfile = () => {
         <h2 className={styles.announcementsTitle}>Мої оголошення</h2>
         <div className={styles.announcementsList}>
           {loading ? (
-            <div>Loading...</div>
+            <Loader />
           ) : announcements.length === 0 ? (
-            <div style={{ color: "#888", textAlign: "center", width: "100%" }}>У вас ще немає оголошень.</div>
+            <div style={{ color: "#888", textAlign: "center", width: "100%" }}>
+              У вас ще немає оголошень.
+            </div>
           ) : (
             announcements.map((item) => (
               <LossCardProfile
                 key={item.advertisement_id}
                 advertisement_id={item.advertisement_id}
                 image={item.Images?.[0]?.image_url}
-                date={item.incident_date ? new Date(item.incident_date).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}
+                date={
+                  item.incident_date
+                    ? new Date(item.incident_date).toLocaleDateString("uk-UA", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
+                    : ""
+                }
                 title={item.title}
                 description={item.description}
                 cityName={item.location_description}
-                categoryName={item.categorie_name || 'Other'}
-                onEdit={() => { setEditAd(item); setShowEditModal(true); }}
-                onDelete={() => { setDeleteAd(item); setShowDeleteModal(true); }}
+                categoryName={item.Category?.categorie_name || "Other"}
+                onEdit={() => {
+                  setEditAd(item);
+                  setShowEditModal(true);
+                }}
+                onDelete={() => {
+                  setDeleteAd(item);
+                  setShowDeleteModal(true);
+                }}
+                modCheck={item.mod_check}
+                status={item.status}
               />
             ))
           )}
         </div>
       </div>
 
-      <Modal show={showEditModal} onHide={() => { setShowEditModal(false); setEditAd(null); }} size="lg" centered>
+      <Modal
+        show={showEditModal}
+        onHide={() => {
+          setShowEditModal(false);
+          setEditAd(null);
+        }}
+        size="lg"
+        centered
+      >
         <Modal.Header closeButton>
           <Modal.Title>Редагувати оголошення</Modal.Title>
         </Modal.Header>
@@ -284,13 +331,13 @@ const UserProfile = () => {
               type={editAd.type}
               initialData={editAd}
               onSuccess={(updatedAd) => {
-                console.log('EditAdvertForm onSuccess', updatedAd);
+                console.log("EditAdvertForm onSuccess", updatedAd);
                 handleAdEditSuccess(updatedAd);
               }}
-              onCancel={() => { 
-                console.log('EditAdvertForm canceled');
-                setShowEditModal(false); 
-                setEditAd(null); 
+              onCancel={() => {
+                console.log("EditAdvertForm canceled");
+                setShowEditModal(false);
+                setEditAd(null);
               }}
               isEdit
             />
@@ -298,24 +345,43 @@ const UserProfile = () => {
         </Modal.Body>
       </Modal>
 
-      <Modal show={showDeleteModal} onHide={() => { setShowDeleteModal(false); setDeleteAd(null); }} centered>
+      <Modal
+        show={showDeleteModal}
+        onHide={() => {
+          setShowDeleteModal(false);
+          setDeleteAd(null);
+        }}
+        centered
+      >
         <Modal.Header closeButton>
           <Modal.Title>Підтвердіть видалення</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          Ви дійсно хочете видалити це оголошення?
-        </Modal.Body>
+        <Modal.Body>Ви дійсно хочете видалити це оголошення?</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => { setShowDeleteModal(false); setDeleteAd(null); }}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setShowDeleteModal(false);
+              setDeleteAd(null);
+            }}
+          >
             Скасувати
           </Button>
-          <Button variant="danger" onClick={handleDeleteAd} disabled={deleteLoading}>
+          <Button
+            variant="danger"
+            onClick={handleDeleteAd}
+            disabled={deleteLoading}
+          >
             {deleteLoading ? "Видалення..." : "Видалити"}
           </Button>
         </Modal.Footer>
       </Modal>
 
-      <SuccessModal show={!!successMessage} handleClose={() => setSuccessMessage("")} message={successMessage} />
+      <SuccessModal
+        show={!!successMessage}
+        handleClose={() => setSuccessMessage("")}
+        message={successMessage}
+      />
 
       <Modal show={showProfileEditModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
@@ -324,17 +390,25 @@ const UserProfile = () => {
         <Modal.Body>
           <Form>
             <div className={styles.avatarEditBlock}>
-              <Image src={avatar} className={styles.avatarPreview} alt="avatar" />
+              <Image
+                src={avatar}
+                className={styles.avatarPreview}
+                alt="avatar"
+              />
               <Button
                 variant="outline-secondary"
                 size="sm"
-                onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                onClick={() =>
+                  fileInputRef.current && fileInputRef.current.click()
+                }
                 disabled={avatarUploading}
               >
                 {avatarUploading ? "Uploading..." : "Change photo"}
               </Button>
             </div>
-            {avatarError && <div className="text-danger mb-3">{avatarError}</div>}
+            {avatarError && (
+              <div className="text-danger mb-3">{avatarError}</div>
+            )}
             <Form.Group className="mb-3">
               <Form.Label>Nickname</Form.Label>
               <div className={styles.nicknameControl}>
@@ -359,7 +433,9 @@ const UserProfile = () => {
                       {nicknameError}
                     </Form.Control.Feedback>
                     {isValidating && (
-                      <div className="text-muted mt-1">Checking nickname...</div>
+                      <div className="text-muted mt-1">
+                        Checking nickname...
+                      </div>
                     )}
                   </>
                 ) : (
@@ -388,10 +464,14 @@ const UserProfile = () => {
           <Button variant="secondary" onClick={handleCloseModal}>
             Close
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleSaveProfile}
-            disabled={isEditingName ? (!!nicknameError || isValidating || !nickname.trim()) : false}
+            disabled={
+              isEditingName
+                ? !!nicknameError || isValidating || !nickname.trim()
+                : false
+            }
           >
             Save Changes
           </Button>

@@ -105,7 +105,10 @@ function ItemCard({ isLogin, isModerator }) {
       } else {
         await axios.delete(
           `${process.env.REACT_APP_SERVER_URL}/api/user/favorite-category`,
-          { data: { categorie_id: ad.categorie_id }, headers: { Authorization: `Bearer ${token}` } }
+          {
+            data: { categorie_id: ad.categorie_id },
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
         setIsFavorite(false);
       }
@@ -128,13 +131,17 @@ function ItemCard({ isLogin, isModerator }) {
   }, [isLogin, favoriteLoading, ad?.categorie_id, isFavorite]);
 
   // Memoized ad fields
-  const images = useMemo(() => ad?.Images?.map((img) => `${img.image_url}`) || [], [ad]);
+  const images = useMemo(
+    () => ad?.Images?.map((img) => `${img.image_url}`) || [],
+    [ad]
+  );
   const locationCoordinates = useMemo(() => {
     if (!ad?.location_coordinates) return { lat: 0, lng: 0 };
     try {
-      const coords = typeof ad.location_coordinates === "string"
-        ? JSON.parse(ad.location_coordinates)
-        : ad.location_coordinates;
+      const coords =
+        typeof ad.location_coordinates === "string"
+          ? JSON.parse(ad.location_coordinates)
+          : ad.location_coordinates;
       return {
         lat: coords?.lat || 0,
         lng: coords?.lng || 0,
@@ -143,7 +150,11 @@ function ItemCard({ isLogin, isModerator }) {
       return { lat: 0, lng: 0 };
     }
   }, [ad]);
-  const formattedDate = useMemo(() => ad?.incident_date ? new Date(ad.incident_date).toLocaleDateString() : '', [ad]);
+  const formattedDate = useMemo(
+    () =>
+      ad?.incident_date ? new Date(ad.incident_date).toLocaleDateString() : "",
+    [ad]
+  );
 
   if (error)
     return (
@@ -174,13 +185,17 @@ function ItemCard({ isLogin, isModerator }) {
 
           <div className={styles.contentSection}>
             <div className={styles.zagolovok}>
-              {ad.type === "find" ? `Found item description` : `Lost item description`}
+              {ad.type === "find"
+                ? `Found item description`
+                : `Lost item description`}
             </div>
             <h1>{ad.title}</h1>
             <div className={styles.info}>
               <p>📅 {formattedDate}</p>
               <p>📍 {ad.location_description}</p>
-              {Number.parseFloat(ad.reward) === 0.0 ? null : <p>💰 Reward: {ad.reward}₴</p>}
+              {Number.parseFloat(ad.reward) === 0.0 ? null : (
+                <p>💰 Reward: {ad.reward}₴</p>
+              )}
             </div>
             <p className={styles.shortDesc}>{ad.description}</p>
           </div>
@@ -198,38 +213,56 @@ function ItemCard({ isLogin, isModerator }) {
                   className={styles.favorite}
                   onClick={handleFavoriteClick}
                   disabled={favoriteLoading}
-                  aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-                  style={{ background: 'none', border: 'none', cursor: isLogin ? 'pointer' : 'not-allowed', fontSize: 22 }}
+                  aria-label={
+                    isFavorite ? "Remove from favorites" : "Add to favorites"
+                  }
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: isLogin ? "pointer" : "not-allowed",
+                    fontSize: 22,
+                  }}
                 >
-                  {isFavorite ? '❤️' : '🤍'}
+                  {isFavorite ? "❤️" : "🤍"}
                 </button>
                 {isFavorite && (
-                  <div className={styles.favoriteMsg}>Категорію додано в обране</div>
+                  <div className={styles.favoriteMsg}>
+                    Категорію додано в обране
+                  </div>
                 )}
                 {favoriteError && (
                   <div className={styles.favoriteError}>{favoriteError}</div>
                 )}
               </>
             ) : (
-              <button
-                className={styles.favorite}
-                aria-label="Login to add to favorites"
-                style={{ background: 'none', border: 'none', cursor: 'not-allowed', fontSize: 22 }}
-                disabled
-              >
-                🤍
-              </button>
+              !isModerator && (
+                <button
+                  className={styles.favorite}
+                  aria-label="Login to add to favorites"
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "not-allowed",
+                    fontSize: 22,
+                  }}
+                  disabled
+                >
+                  🤍
+                </button>
+              )
             )}
             {ad.User && (
               <div className={styles.userInfoBlock}>
                 <div className={styles.userAvatarWrapper}>
                   <img
-                    src={ad.User.user_pfp || require('../assets/user.png')}
-                    alt={ad.User.first_name || 'User'}
+                    src={ad.User.user_pfp || require("../assets/user.png")}
+                    alt={ad.User.first_name || "User"}
                     className={styles.userAvatar}
                   />
                 </div>
-                <div className={styles.userName}>{ad.User.first_name || 'User'}</div>
+                <div className={styles.userName}>
+                  {ad.User.first_name || "User"}
+                </div>
               </div>
             )}
             {isModerator && !ad.mod_check && (
@@ -261,10 +294,7 @@ function ItemCard({ isLogin, isModerator }) {
 
           <div className={styles.mapWrapper}>
             <h3>Location</h3>
-            <Map
-              initialCoordinates={locationCoordinates}
-              readOnly={true}
-            >
+            <Map initialCoordinates={locationCoordinates} readOnly={true}>
               <TileLayer
                 attribution="&copy; OpenStreetMap"
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
