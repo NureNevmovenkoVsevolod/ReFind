@@ -12,7 +12,6 @@ import axios from "axios";
 import CreateAdvertForm from "../components/CreateAdvertForm/CreateAdvertForm";
 import SuccessModal from "../components/Modal/SuccessModal";
 import EditAdvertForm from "../components/EditAdvertForm/EditAdvertForm";
-import Loader from "../components/Loader/Loader";
 
 const UserProfile = () => {
   const navigate = useNavigate();
@@ -175,7 +174,7 @@ const UserProfile = () => {
     handleCloseModal();
   };
 
-  const username = userData?.first_name + " " + userData?.last_name || "Username";
+  const username = userData?.first_name || "Username";
 
   // Видалення оголошення
   const handleDeleteAd = async () => {
@@ -253,7 +252,7 @@ const UserProfile = () => {
         <h2 className={styles.announcementsTitle}>Мої оголошення</h2>
         <div className={styles.announcementsList}>
           {loading ? (
-            <Loader/>
+            <div>Loading...</div>
           ) : announcements.length === 0 ? (
             <div style={{ color: "#888", textAlign: "center", width: "100%" }}>У вас ще немає оголошень.</div>
           ) : (
@@ -266,11 +265,9 @@ const UserProfile = () => {
                 title={item.title}
                 description={item.description}
                 cityName={item.location_description}
-                categoryName={item.Category?.categorie_name || 'Other'}
+                categoryName={item.categorie_name || 'Other'}
                 onEdit={() => { setEditAd(item); setShowEditModal(true); }}
                 onDelete={() => { setDeleteAd(item); setShowDeleteModal(true); }}
-                modCheck={item.mod_check}
-                status={item.status}
               />
             ))
           )}

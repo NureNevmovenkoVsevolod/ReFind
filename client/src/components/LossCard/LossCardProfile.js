@@ -17,50 +17,19 @@ function LossCardProfile({
   description,
   onEdit,
   onDelete,
-  modCheck,
-  status,
 }) {
   const navigate = useNavigate();
-
-  const getStatusStyle = () => {
-    if (!modCheck) {
-      return { color: '#FF8C00' }; // Помаранчевий
-    }
-    if (status === 'rejected') {
-      return { color: '#FF0000' }; // Червоний
-    }
-    if (status === 'active' && modCheck) {
-      return { color: '#008000' }; // Зелений
-    }
-    return {};
-  };
-
-  const getStatusText = () => {
-    if (!modCheck) {
-      return 'Оголошення на модерації';
-    }
-    if (status === 'rejected') {
-      return 'Відхилено модерацією';
-    }
-    if (status === 'active' && modCheck) {
-      return 'Оголошення активне';
-    }
-    return '';
-  };
-
   const formatLocation = (location) => {
     if (!location) return "";
     const parts = location.split(",").map((part) => part.trim());
     if (parts.length <= 4) return parts.join(", ");
     return parts.slice(1, -2).join(", ");
   };
-
   const handleCardClick = (e) => {
     // Prevent navigation if edit/delete button was clicked
     if (e.target.closest('button')) return;
     navigate(`/advertisement/${encodeId(advertisement_id)}`);
   };
-
   return (
     <div className={styles.cardContainer} onClick={handleCardClick} style={{ cursor: 'pointer' }}>
       <div className={styles.imageContainer}>
@@ -89,9 +58,6 @@ function LossCardProfile({
           <div className={styles.categoryBadge}>
             <span>{categoryName}</span>
           </div>
-        </div>
-        <div style={{ marginTop: '10px', fontWeight: 'bold', ...getStatusStyle() }}>
-          {getStatusText()}
         </div>
       </div>
     </div>

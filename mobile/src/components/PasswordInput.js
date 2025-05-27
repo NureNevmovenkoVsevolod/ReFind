@@ -1,35 +1,30 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import React, { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const PasswordInput = ({ value, onChangeText }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const validatePassword = (password) => {
-    let errorMessage = "";
+    let errorMessage = '';
     if (!password) {
-      errorMessage = "Пароль обов'язковий";
+      errorMessage = 'Пароль обов\'язковий';
     } else if (password.length < 6) {
-      errorMessage = "Пароль має містити мінімум 6 символів";
+      errorMessage = 'Пароль має містити мінімум 6 символів';
     } else if (!/[A-Z]/.test(password)) {
-      errorMessage = "Пароль має містити хоча б одну велику літеру";
+      errorMessage = 'Пароль має містити хоча б одну велику літеру';
     } else if (!/[a-z]/.test(password)) {
-      errorMessage = "Пароль має містити хоча б одну малу літеру";
+      errorMessage = 'Пароль має містити хоча б одну малу літеру';
     } else if (!/[0-9]/.test(password)) {
-      errorMessage = "Пароль має містити хоча б одну цифру";
+      errorMessage = 'Пароль має містити хоча б одну цифру';
     }
     setError(errorMessage);
   };
 
   const handleTextChange = (text) => {
     onChangeText(text);
+    // Validate on change to provide immediate feedback
     validatePassword(text);
   };
 
@@ -44,11 +39,11 @@ const PasswordInput = ({ value, onChangeText }) => {
           secureTextEntry={!showPassword}
           value={value}
           onChangeText={handleTextChange}
-          onBlur={() => validatePassword(value)}
+          onBlur={() => validatePassword(value)} 
         />
         <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
           <MaterialIcons
-            name={showPassword ? "visibility" : "visibility-off"}
+            name={showPassword ? 'visibility' : 'visibility-off'}
             size={20}
             color="#ccc"
           />
@@ -60,23 +55,23 @@ const PasswordInput = ({ value, onChangeText }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    width: "100%",
-    marginBottom: 16,
-  },
+    container: {
+        width: '100%',
+        marginBottom: 16,
+      },
   label: {
     fontSize: 14,
     marginBottom: 6,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   inputContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
     paddingHorizontal: 10,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: '#f9f9f9',
   },
   icon: {
     marginRight: 6,
@@ -87,9 +82,9 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 12,
-    color: "red",
+    color: 'red',
     marginTop: 4,
   },
 });
 
-export default PasswordInput;
+export default PasswordInput; 

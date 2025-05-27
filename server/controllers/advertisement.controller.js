@@ -194,10 +194,7 @@ export const getUserAdvertisements = async (req, res) => {
   try {
     const ads = await Advertisement.findAll({
       where: { user_id: req.user.id },
-      include: [
-        { model: Image, attributes: ["image_url"] },
-        { model: Category, attributes: ["categorie_name"] }
-      ],
+      include: [{ model: Image, attributes: ["image_url"] }],
       order: [["createdAt", "DESC"]],
     });
 
