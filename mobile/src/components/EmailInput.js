@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import React, { useState } from "react";
+import { View, Text, TextInput, StyleSheet } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const EmailInput = ({ value, onChangeText }) => {
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const validateEmail = (email) => {
-    let errorMessage = '';
+    let errorMessage = "";
     const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
     if (!email) {
-      errorMessage = 'Email обов\'язковий';
+      errorMessage = "Email обов'язковий";
     } else if (!emailRegex.test(email)) {
-      errorMessage = 'Невірний формат email';
+      errorMessage = "Невірний формат email";
     }
     setError(errorMessage);
   };
@@ -25,7 +25,12 @@ const EmailInput = ({ value, onChangeText }) => {
     <View style={styles.container}>
       <Text style={styles.label}>Email</Text>
       <View style={styles.inputContainer}>
-        <MaterialIcons name="email" size={20} color="#999" style={styles.icon} />
+        <MaterialIcons
+          name="email"
+          size={20}
+          color="#999"
+          style={styles.icon}
+        />
         <TextInput
           style={styles.input}
           placeholder="Введіть ваш email"
@@ -33,7 +38,7 @@ const EmailInput = ({ value, onChangeText }) => {
           onChangeText={handleTextChange}
           keyboardType="email-address"
           autoCapitalize="none"
-          onBlur={() => validateEmail(value)} // Validate on blur
+          onBlur={() => validateEmail(value)}
         />
       </View>
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -43,22 +48,22 @@ const EmailInput = ({ value, onChangeText }) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
+    width: "100%",
     marginBottom: 16,
   },
   label: {
     fontSize: 14,
     marginBottom: 6,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   inputContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     paddingHorizontal: 10,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
   },
   icon: {
     marginRight: 6,
@@ -69,9 +74,9 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 12,
-    color: 'red',
+    color: "red",
     marginTop: 4,
   },
 });
 
-export default EmailInput; 
+export default EmailInput;

@@ -1,4 +1,6 @@
 import User from "../models/user.model.js";
+import Subscription from "../models/subscriptions.model.js";
+import Category from "../models/categories.model.js";
 
 // Common error responses
 const ERROR_MESSAGES = {
@@ -135,6 +137,50 @@ export const deleteUser = async (req, res) => {
     } catch (error) {
         handleControllerError(error, res, ERROR_MESSAGES.DELETE_ERROR);
     }
+};
+
+// Add category to favorites (only one per user)
+export const addFavoriteCategory = async (req, res) => {
+  try {
+    const { categorie_id } = req.body;
+    const user_id = req.user.user_id;
+    if (!categorie_id) return res.status(400).json({ message: "categorie_id is required" });
+    // Remove all previous subscriptions for this user
+    await Subscription.destroy({ where: { user_id } });
+    // Add new subscription
+    await Subscription.create({ user_id, categorie_id });
+    res.json({ message: "Added to favorites" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+// Remove category from favorites (unsubscribe)
+export const removeFavoriteCategory = async (req, res) => {
+  try {
+    const { categorie_id } = req.body;
+    const user_id = req.user.user_id;
+    if (!categorie_id) return res.status(400).json({ message: "categorie_id is required" });
+    const deleted = await Subscription.destroy({ where: { user_id, categorie_id } });
+    if (!deleted) return res.status(404).json({ message: "Not in favorites" });
+    res.json({ message: "Removed from favorites" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+// Get favorite category for user (only one)
+export const getFavoriteCategories = async (req, res) => {
+  try {
+    const user_id = req.user.user_id;
+    const favorite = await Subscription.findOne({
+      where: { user_id },
+      include: [{ model: Category, attributes: ["categorie_id", "categorie_name"] }],
+    });
+    res.json(favorite && favorite.Category ? [favorite.Category] : []);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
 };
 
 

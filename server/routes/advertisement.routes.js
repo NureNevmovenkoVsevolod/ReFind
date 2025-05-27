@@ -29,7 +29,7 @@ router.post(
   upload.array("images", 5),
   advertisementController.addImagesToAdvertisement
 );
-router.put("/:id", advertisementController.updateAdvertisement);
+router.put("/:id", upload.array("images", 5), advertisementController.updateAdvertisement);
 router.delete("/:id", advertisementController.deleteAdvertisement);
 
 export default router;

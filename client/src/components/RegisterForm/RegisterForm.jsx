@@ -115,49 +115,45 @@ function RegisterForm() {
         )}
         <form onSubmit={handleSubmit}>
           <FormInput
-              type="text"
-              name="first_name"
-              value={formData.first_name}
-              onChange={handleChange}
-              placeholder="Ім'я"
-              error={errors.first_name}
+            type="text"
+            name="first_name"
+            value={formData.first_name}
+            onChange={handleChange}
+            placeholder="Ім'я"
+            error={errors.first_name}
           />
           <FormInput
-              type="text"
-              name="last_name"
-              value={formData.last_name}
-              onChange={handleChange}
-              placeholder="Прізвище"
-              error={errors.last_name}
+            type="text"
+            name="last_name"
+            value={formData.last_name}
+            onChange={handleChange}
+            placeholder="Прізвище"
+            error={errors.last_name}
           />
           <FormInput
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Email"
-              error={errors.email}
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Email"
+            error={errors.email}
           />
           <FormInput
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Пароль"
-              error={errors.password}
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Пароль"
+            error={errors.password}
           />
           <FormInput
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Підтвердження паролю"
-              error={errors.confirmPassword}
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            placeholder="Підтвердження паролю"
+            error={errors.confirmPassword}
           />
-          <p className="text-sm" style={{background: "#ff9966", opacity: "70%", padding: "10px", borderRadius: "10px" }}>
-            By using this service, you agree to our <a href="/privacy-policy" style={{color: "Blue"}} className="text-blue-500 underline">Privacy
-            Policy</a>.
-          </p>
           <button type="submit">Зареєструватися</button>
         </form>
 
@@ -165,7 +161,7 @@ function RegisterForm() {
           <p>Увійти через:</p>
           <div className={styles.social_icons}>
             <img
-                src='https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_"G"_logo.svg'
+              src='https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_"G"_logo.svg'
               alt="Google"
               onClick={handleGoogleLogin}
             />

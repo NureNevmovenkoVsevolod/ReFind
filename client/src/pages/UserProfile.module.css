@@ -231,3 +231,37 @@
 .nicknameControl {
   position: relative;
 }
+
+.favoritesBlock {
+  margin: 18px 0 24px 0;
+  padding: 14px 18px;
+  background: #f8fafd;
+  border-radius: 12px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+.favoritesBlock h4 {
+  margin-bottom: 8px;
+  font-size: 1.08rem;
+  color: #333;
+}
+.favoritesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.favoriteBadge {
+  background: #fff;
+  border: 1.5px solid #2eaf4d;
+  color: #2eaf4d;
+  border-radius: 16px;
+  padding: 6px 16px;
+  font-size: 1rem;
+  font-weight: 500;
+  box-shadow: 0 1px 4px rgba(46,175,77,0.07);
+  transition: background 0.2s, color 0.2s;
+}
+.noFavorites {
+  color: #aaa;
+  font-size: 1rem;
+  font-style: italic;
+}
