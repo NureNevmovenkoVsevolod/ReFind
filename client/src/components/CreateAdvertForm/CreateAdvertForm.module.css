@@ -148,13 +148,28 @@
 }
 
 .outlineButton {
-  background-color: transparent;
-  border: 2px solid #2196f3;
-  color: #000;
+  background-color: #fff;
+  border: 2px solid #ff4d4f;
+  color: #ff4d4f;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 1.1rem;
+  padding: 12px 0;
+  width: 100%;
+  margin-top: 10px;
+  box-shadow: 0 2px 8px rgba(255,77,79,0.08);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .outlineButton:hover {
-  background-color: rgba(33, 150, 243, 0.1);
+  background-color: #ff4d4f;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(255,77,79,0.15);
+  border-color: #ff7875;
 }
 
 .label {

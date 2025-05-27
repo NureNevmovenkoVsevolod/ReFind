@@ -203,15 +203,29 @@ const UserProfile = () => {
   };
 
   // Оновлення оголошення після редагування
-  const handleAdEditSuccess = (updatedAd) => {
-    setAnnouncements((prev) =>
-      prev.map((ad) =>
-        ad.advertisement_id === updatedAd.advertisement_id ? updatedAd : ad
-      )
-    );
-    setShowEditModal(false);
-    setEditAd(null);
-    setSuccessMessage("Оголошення оновлено!");
+  const handleAdEditSuccess = async (updatedAd) => {
+    // Після оновлення робимо повторний запит до бекенду для актуального списку з фото
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        process.env.REACT_APP_SERVER_URL + "/api/advertisement/user/my",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAnnouncements(res.data || []);
+    } catch (e) {
+      // fallback: оновлюємо тільки одне оголошення
+      setAnnouncements((prev) =>
+        prev.map((ad) =>
+          ad.advertisement_id === updatedAd.advertisement_id ? updatedAd : ad
+        )
+      );
+    } finally {
+      setLoading(false);
+      setShowEditModal(false);
+      setEditAd(null);
+      setSuccessMessage("Оголошення оновлено!");
+    }
   };
 
   return (
@@ -283,7 +297,7 @@ const UserProfile = () => {
               <LossCardProfile
                 key={item.advertisement_id}
                 advertisement_id={item.advertisement_id}
-                image={item.Images?.[0]?.image_url}
+                image={item.Images?.[0]?.image_url ? item.Images[0].image_url + '?t=' + Date.now() : undefined}
                 date={
                   item.incident_date
                     ? new Date(item.incident_date).toLocaleDateString("uk-UA", {
@@ -328,6 +342,7 @@ const UserProfile = () => {
         <Modal.Body>
           {editAd && (
             <EditAdvertForm
+              key={JSON.stringify(editAd)}
               type={editAd.type}
               initialData={editAd}
               onSuccess={(updatedAd) => {

@@ -127,8 +127,6 @@ export const createAdvertisement = async (req, res) => {
   }
 };
 
-// отримання загублених та знайдених оголошень
-
 export const getFinds = async (req, res) => getAdsByType("find", req, res);
 export const getLosses = async (req, res) => getAdsByType("lost", req, res);
 
@@ -157,8 +155,6 @@ const getAdsByType = async (type, req, res) => {
     res.status(500).json({ message: `Failed to fetch ${type}s` });
   }
 };
-
-// id пошук
 
 export const getAdvertisementById = async (req, res) => {
   try {
@@ -228,7 +224,6 @@ export const updateAdvertisement = async (req, res) => {
       reward,
       phone,
       email,
-      images = [],
     } = req.body;
 
     await ad.update({
@@ -242,17 +237,57 @@ export const updateAdvertisement = async (req, res) => {
       email,
     });
 
-    if (images.length > 0) {
+    let newImageUrls = [];
+
+    if (req.body.existingImages) {
+      if (Array.isArray(req.body.existingImages)) {
+        newImageUrls = req.body.existingImages;
+      } else {
+        newImageUrls = [req.body.existingImages];
+      }
+    }
+
+    // 2. Додаємо нові фото (файли)
+    if (req.files?.length) {
+      for (const file of req.files) {
+        const result = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "advertisements" },
+            (error, result) => (error ? reject(error) : resolve(result))
+          );
+          stream.end(file.buffer);
+        });
+        newImageUrls.push(result.secure_url);
+      }
+    }
+
+    // 3. Оновлюємо Images у БД
+    if (newImageUrls.length > 0) {
       await Image.destroy({ where: { advertisement_id: ad.advertisement_id } });
       await Image.bulkCreate(
-        images.map((url) => ({
+        newImageUrls.map((url) => ({
           advertisement_id: ad.advertisement_id,
           image_url: url,
         }))
       );
     }
+    // --- Кінець оновлення фото ---
 
-    res.json(ad);
+    // Повертаємо повний обʼєкт з Images
+    const updatedAd = await Advertisement.findOne({
+      where: { advertisement_id: ad.advertisement_id },
+      include: [
+        { model: Image, attributes: ["image_url"] },
+        { model: Category, attributes: ["categorie_id", "categorie_name"] },
+      ],
+    });
+
+    res.json({
+      ...updatedAd.toJSON(),
+      categorie_id: updatedAd.categorie_id,
+      categorie_name: updatedAd.Category?.categorie_name,
+      location_coordinates: JSON.parse(updatedAd.location_coordinates),
+    });
   } catch (error) {
     console.error("Error updating advertisement:", error);
     res.status(500).json({ message: "Failed to update advertisement" });
