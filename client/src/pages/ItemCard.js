@@ -109,7 +109,7 @@ function ItemCard({ isLogin, isModerator }) {
         );
         setIsFavorite(false);
       }
-      // Re-fetch favorite to sync state
+
       try {
         const res = await axios.get(
           `${process.env.REACT_APP_SERVER_URL}/api/user/favorite-categories`,
@@ -210,7 +210,7 @@ function ItemCard({ isLogin, isModerator }) {
                   <div className={styles.favoriteError}>{favoriteError}</div>
                 )}
               </>
-            ) : (
+            ) : !isModerator && (
               <button
                 className={styles.favorite}
                 aria-label="Login to add to favorites"

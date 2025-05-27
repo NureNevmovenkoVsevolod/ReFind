@@ -7,7 +7,6 @@ import { Image } from 'react-bootstrap';
 const UserCard = ({ user, onEdit, onDelete, onViewDetails }) => {
   const userStatus = user.is_blocked ? 'Заблокований' : 'Активний';
 
-  // Отримуємо перші літери імені та прізвища
   const getInitials = (firstName, lastName) => {
     const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '';
     const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
@@ -21,7 +20,6 @@ const UserCard = ({ user, onEdit, onDelete, onViewDetails }) => {
       <div className={styles.cardBody}>
         <div className={styles.userInfoTop}>
           <div className={styles.avatarContainer}>
-            {/* Відображаємо фото користувача, якщо воно є, інакше - перші літери */}
             {user.user_pfp ? (
               <img src={user.user_pfp} alt={`${user.username}'s avatar`} className={styles.avatarImage} />
             ) : (
