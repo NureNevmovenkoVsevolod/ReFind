@@ -21,6 +21,7 @@ import ModerNavBar from "./components/ModerNavBar/ModerNavBar";
 import ModerAdvert from "./pages/Moder/ModerAdvert";
 import UserProfile from "./pages/UserProfile";
 import ModerStats from "./pages/Moder/ModerStats";
+import PrivacyPolicy from "./components/PrivacyPolicy/PrivacyPolicy";
 
 function App() {
   const [isLogin, setIsLogin] = useState(false);
@@ -139,6 +140,7 @@ function App() {
           path="/boardfound"
           element={<BoardFound isLogin={isLogin} />}
         />
+        <Route path="/privacy" element={<PrivacyPolicy />}/>
         <Route path="/profile" element={<UserProfile />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
