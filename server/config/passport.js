@@ -81,7 +81,7 @@ passport.use(
           },
         });
 
-        if (!user) {
+        if (user) {
           await user.update({
             auth_provider: "google",
             provider_id: profile.id,
