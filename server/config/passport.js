@@ -73,12 +73,9 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       try {
         console.log("Facebook Profile:", profile);
-        
+
         let user = await User.findOne({
-          where: {
-            provider_id: profile.id,
-            auth_provider: "facebook",
-          },
+          where: { email: profile.emails[0].value },
         });
 
         if (user) {
