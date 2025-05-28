@@ -298,6 +298,7 @@ class AdvertisementController extends IAdvertisementController {
                 reward: reward || 0,
                 phone,
                 email,
+                mod_check: false,
             });
 
             let newImageUrls = [];
