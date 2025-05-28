@@ -32,7 +32,7 @@ const UserProfile = () => {
     const data = localStorage.getItem("user");
     return data ? JSON.parse(data) : null;
   });
-  
+
   const [editAd, setEditAd] = useState(null);
   const [showProfileEditModal, setShowProfileEditModal] = useState(false);
   const [deleteAd, setDeleteAd] = useState(null);
@@ -100,13 +100,11 @@ const UserProfile = () => {
         is_blocked: userData.is_blocked ?? false,
         blocked_until: userData.blocked_until ?? null,
       };
-      console.log("PUT /api/user/", userId, updatedFields);
       const res = await axios.put(
         `${process.env.REACT_APP_SERVER_URL}/api/user/${userId}`,
         updatedFields,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log("PUT response:", res.data);
       localStorage.setItem("user", JSON.stringify(res.data));
       setUserData(res.data);
       setAvatar(res.data.user_pfp || userIcon);
@@ -117,7 +115,6 @@ const UserProfile = () => {
       return true;
     } catch (err) {
       setNicknameError("Failed to update profile");
-      console.error("PUT error:", err, err?.response?.data);
       return false;
     }
   };
@@ -141,7 +138,6 @@ const UserProfile = () => {
           },
         }
       );
-      // Оновлюємо профіль з новим user_pfp
       await updateProfile({ user_pfp: res.data.avatarUrl });
     } catch (err) {
       setAvatarError("Помилка завантаження аватара");
@@ -225,7 +221,7 @@ const UserProfile = () => {
   };
 
   const handleAdEditSuccess = async (updatedAd) => {
-  setLoading(true);
+    setLoading(true);
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
@@ -258,26 +254,9 @@ const UserProfile = () => {
         >
           ← Back
         </Button>
-        <h1 className={styles.username}>{username}</h1>
-        <div className={styles.favoritesBlock}>
-          <h4>Обрані категорії:</h4>
-          {favoriteCategories.length === 0 ? (
-            <span className={styles.noFavorites}>Немає обраних категорій</span>
-          ) : (
-            <div className={styles.favoritesList}>
-              {favoriteCategories.map((cat) => (
-                <span key={cat.categorie_id} className={styles.favoriteBadge}>
-                  {cat.categorie_name}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className={styles.profileTop}>
-          <div className={styles.avatarBlock}>
-            <div>
-              <Image src={avatar} className={styles.avatar} alt="avatar" />
-            </div>
+        <div className={styles.profileCard}>
+          <div className={styles.avatarBigBlock}>
+            <Image src={avatar} className={styles.avatarBig} alt="avatar" />
             <input
               type="file"
               accept="image/*"
@@ -289,18 +268,37 @@ const UserProfile = () => {
             {avatarError && (
               <div style={{ color: "red", fontSize: 12 }}>{avatarError}</div>
             )}
-          </div>
-          <div className={styles.profileInfo}>
             <Button
               variant="outline-secondary"
-              className={styles.editBtn}
+              className={styles.editBtnUnderAvatar}
               onClick={handleEditProfile}
             >
               Edit profile
             </Button>
+          </div>
+          <div className={styles.profileMainInfo}>
+            <div className={styles.nameRow}>
+              <span className={styles.profileName}>{nickname}</span>
+              <span className={styles.profileLastName}>{lastName}</span>
+            </div>
+            <div className={styles.profileEmail}>{email}</div>
             <div className={styles.ratingBlock}>
-              <div className={styles.ratingTitle}>Your rating:</div>
-              <div className={styles.ratingValue}>4.5/5 ☆</div>
+              <span className={styles.ratingStar}>★</span>
+              <span className={styles.ratingValue}>4.5/5</span>
+            </div>
+            <div className={styles.favoritesBlock}>
+              <h4>Обрані категорії:</h4>
+              {favoriteCategories.length === 0 ? (
+                <span className={styles.noFavorites}>Немає обраних категорій</span>
+              ) : (
+                <div className={styles.favoritesList}>
+                  {favoriteCategories.map((cat) => (
+                    <span key={cat.categorie_id} className={styles.favoriteBadge}>
+                      {cat.categorie_name}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -366,11 +364,9 @@ const UserProfile = () => {
               type={editAd.type}
               initialData={editAd}
               onSuccess={(updatedAd) => {
-                console.log("EditAdvertForm onSuccess", updatedAd);
                 handleAdEditSuccess(updatedAd);
               }}
               onCancel={() => {
-                console.log("EditAdvertForm canceled");
                 setShowEditModal(false);
                 setEditAd(null);
               }}

@@ -22,9 +22,6 @@ class UserController {
         this.createUser = this.createUser.bind(this);
         this.updateUser = this.updateUser.bind(this);
         this.deleteUser = this.deleteUser.bind(this);
-        this.addFavoriteCategory = this.addFavoriteCategory.bind(this);
-        this.removeFavoriteCategory = this.removeFavoriteCategory.bind(this);
-        this.getFavoriteCategories = this.getFavoriteCategories.bind(this);
     }
 
     // Utility methods
@@ -152,49 +149,60 @@ class UserController {
             this.handleControllerError(error, res, ERROR_MESSAGES.DELETE_ERROR);
         }
     }
-
-    async addFavoriteCategory(req, res) {
-        try {
-            const { categorie_id } = req.body;
-            const user_id = req.user.user_id;
-            if (!categorie_id) return res.status(400).json({ message: "categorie_id is required" });
-            
-            await Subscription.destroy({ where: { user_id } });
-            await Subscription.create({ user_id, categorie_id });
-            res.json({ message: "Added to favorites" });
-        } catch (err) {
-            res.status(500).json({ message: "Server error", error: err.message });
-        }
-    }
-
-    async removeFavoriteCategory(req, res) {
-        try {
-            const { categorie_id } = req.body;
-            const user_id = req.user.user_id;
-            if (!categorie_id) return res.status(400).json({ message: "categorie_id is required" });
-            
-            const deleted = await Subscription.destroy({ where: { user_id, categorie_id } });
-            if (!deleted) return res.status(404).json({ message: "Not in favorites" });
-            res.json({ message: "Removed from favorites" });
-        } catch (err) {
-            res.status(500).json({ message: "Server error", error: err.message });
-        }
-    }
-
-    async getFavoriteCategories(req, res) {
-        try {
-            const user_id = req.user.user_id;
-            const favorite = await Subscription.findOne({
-                where: { user_id },
-                include: [{ model: Category, attributes: ["categorie_id", "categorie_name"] }],
-            });
-            res.json(favorite && favorite.Category ? [favorite.Category] : []);
-        } catch (err) {
-            res.status(500).json({ message: "Server error", error: err.message });
-        }
-    }
 }
 
+// Add category to favorites (only one per user)
+const addFavoriteCategory = async (req, res) => {
+  try {
+    const { categorie_id } = req.body;
+    const user_id = req.user.id;
+    if (!categorie_id) return res.status(400).json({ message: "categorie_id is required" });
+
+    // Перевірити, чи вже є така підписка
+    const exists = await Subscription.findOne({ where: { user_id, categorie_id } });
+    if (exists) {
+      return res.status(400).json({ message: "Категорія вже у відслідкованих" });
+    }
+
+    await Subscription.create({ user_id, categorie_id });
+    res.json({ message: "Added to favorites" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+// Remove category from favorites (unsubscribe)
+const removeFavoriteCategory = async (req, res) => {
+  try {
+    const { categorie_id } = req.body;
+    const user_id = req.user.id;
+    if (!categorie_id) return res.status(400).json({ message: "categorie_id is required" });
+    const deleted = await Subscription.destroy({ where: { user_id, categorie_id } });
+    if (!deleted) return res.status(404).json({ message: "Not in favorites" });
+    res.json({ message: "Removed from favorites" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+// Get favorite category for user (only one)
+const getFavoriteCategories = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const favorites = await Subscription.findAll({
+      where: { user_id },
+      include: [{ model: Category, attributes: ["categorie_id", "categorie_name"] }],
+    });
+    const categories = favorites
+      .map((sub) => sub.Category)
+      .filter(Boolean);
+    res.json(categories);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
 export default new UserController();
+export { addFavoriteCategory, removeFavoriteCategory, getFavoriteCategories };
 
 
