@@ -1,6 +1,6 @@
 import express from "express";
 import passport from "passport";
-import { generateToken } from "../../controllers/auth.controller.js";
+import authController from "../../controllers/auth.controller.js";
 
 const router = express.Router();
 
@@ -28,7 +28,7 @@ router.get(
         );
       }
 
-      const token = generateToken(req.user);
+      const token = authController.generateToken(req.user);
 
       const userData = {
         id: req.user.user_id,
