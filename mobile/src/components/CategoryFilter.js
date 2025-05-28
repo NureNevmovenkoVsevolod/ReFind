@@ -9,7 +9,6 @@ const apiUrl = Constants.expoConfig.extra.API_URL;
 const CategoryFilter = ({ onSelectCategory }) => {
   const [categories, setCategories] = useState([]);
   const [activeCategoryName, setActiveCategoryName] = useState('All');
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -21,7 +20,7 @@ const CategoryFilter = ({ onSelectCategory }) => {
           }
         };
         const response = await axios.get(`${apiUrl}/api/categories`, config);
-        const formattedCategories = response.data.map(cat => ({ _id: cat._id, name: cat.categorie_name }));
+        const formattedCategories = response.data.map(cat => ({ _id: cat.categorie_id, name: cat.categorie_name }));
         setCategories([{ _id: 'all-filter-option', name: 'All' }, ...formattedCategories]);
         setActiveCategoryName('All');
       } catch (error) {
@@ -31,8 +30,6 @@ const CategoryFilter = ({ onSelectCategory }) => {
         } else {
           Alert.alert('Помилка', 'Не вдалося завантажити категорії.');
         }
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -47,14 +44,6 @@ const CategoryFilter = ({ onSelectCategory }) => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color="#5a67d8" />
-        <Text>Завантаження категорій...</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>

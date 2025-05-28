@@ -9,6 +9,7 @@ const router = express.Router();
 // Public routes
 router.get("/finds", advertisementController.getFinds);
 router.get("/losses", advertisementController.getLosses);
+router.get("/all", advertisementController.getAllAds);
 router.get('/moderation', verifyToken, advertisementController.getAdvertisementsForModeration);
 router.get("/:id", advertisementController.getAdvertisementById);
 
