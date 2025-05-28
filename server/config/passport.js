@@ -21,89 +21,89 @@ passport.deserializeUser(async (id, done) => {
 });
 
 passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.REACT_APP_SERVER_URL+"/auth/google/callback",
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        let user = await User.findOne({
-          where: { email: profile.emails[0].value },
-        });
+    new GoogleStrategy(
+        {
+          clientID: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          callbackURL: process.env.REACT_APP_SERVER_URL+"/auth/google/callback",
+        },
+        async (accessToken, refreshToken, profile, done) => {
+          try {
+            let user = await User.findOne({
+              where: { email: profile.emails[0].value },
+            });
 
-        if (user) {
-          console.log("Existing user found, updating...");
-          await user.update({
-            auth_provider: "google",
-            provider_id: profile.id,
-            user_pfp: profile.photos && profile.photos[0] ? profile.photos[0].value : null,
-          });
+            if (user) {
+              console.log("Existing user found, updating...");
+              await user.update({
+                auth_provider: "google",
+                provider_id: profile.id,
+                user_pfp: profile.photos && profile.photos[0] ? profile.photos[0].value : null,
+              });
 
-          await user.reload();
-        } else {
-          console.log("Creating new user...");
-          user = await User.create({
-            email: profile.emails[0].value,
-            first_name: profile.name.givenName || "",
-            last_name: profile.name.familyName || "",
-            auth_provider: "google",
-            provider_id: profile.id,
-            user_pfp: profile.photos && profile.photos[0] ? profile.photos[0].value : null,
-          });
+              await user.reload();
+            } else {
+              console.log("Creating new user...");
+              user = await User.create({
+                email: profile.emails[0].value,
+                first_name: profile.name.givenName || "",
+                last_name: profile.name.familyName || "",
+                auth_provider: "google",
+                provider_id: profile.id,
+                user_pfp: profile.photos && profile.photos[0] ? profile.photos[0].value : null,
+              });
+            }
+            return done(null, user);
+          } catch (error) {
+            console.error("Google auth error:", error);
+            return done(error, null);
+          }
         }
-        return done(null, user);
-      } catch (error) {
-        console.error("Google auth error:", error);
-        return done(error, null);
-      }
-    }
-  )
+    )
 );
 
 passport.use(
-  new FacebookStrategy(
-    {
-      clientID: process.env.FACEBOOK_APP_ID,
-      clientSecret: process.env.FACEBOOK_APP_SECRET,
-      callbackURL: process.env.REACT_APP_SERVER_URL+"/auth/facebook/callback",
-      profileFields: ["id", "emails", "name", "picture"],
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        console.log("Facebook Profile:", profile);
+    new FacebookStrategy(
+        {
+          clientID: process.env.FACEBOOK_APP_ID,
+          clientSecret: process.env.FACEBOOK_APP_SECRET,
+          callbackURL: process.env.REACT_APP_SERVER_URL+"/auth/facebook/callback",
+          profileFields: ["id", "emails", "name", "picture"],
+        },
+        async (accessToken, refreshToken, profile, done) => {
+          try {
+            console.log("Facebook Profile:", profile);
 
-        let user = await User.findOne({
-          where: { email: profile.emails[0].value },
-        });
+            let user = await User.findOne({
+              where: { email: profile.emails[0].value },
+            });
 
-        if (user) {
-          await user.update({
-            auth_provider: "facebook",
-            provider_id: profile.id,
-            user_pfp: profile.photos && profile.photos[0] ? profile.photos[0].value : null,
-          });
-          console.log(user);
-          await user.reload();
-        }else{
-          user = await User.create({
-            email: profile.emails && profile.emails[0] ? profile.emails[0].value : "",
-            first_name: profile.name.givenName || "",
-            last_name: profile.name.familyName || "",
-            auth_provider: "facebook",
-            provider_id: profile.id,
-            user_pfp: profile.photos && profile.photos[0] ? profile.photos[0].value : null,
-          });
+            if (user) {
+              await user.update({
+                auth_provider: "facebook",
+                provider_id: profile.id,
+                user_pfp: profile.photos && profile.photos[0] ? profile.photos[0].value : null,
+              });
+              console.log(user);
+              await user.reload();
+            }else{
+              user = await User.create({
+                email: profile.emails && profile.emails[0] ? profile.emails[0].value : "",
+                first_name: profile.name.givenName || "",
+                last_name: profile.name.familyName || "",
+                auth_provider: "facebook",
+                provider_id: profile.id,
+                user_pfp: profile.photos && profile.photos[0] ? profile.photos[0].value : null,
+              });
+            }
+
+            return done(null, user);
+          } catch (error) {
+            console.error("Facebook auth error:", error);
+            return done(error, null);
+          }
         }
-
-        return done(null, user);
-      } catch (error) {
-        console.error("Facebook auth error:", error);
-        return done(error, null);
-      }
-    }
-  )
+    )
 );
 
 export default passport;
