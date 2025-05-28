@@ -9,6 +9,8 @@ import SuccessModal from "../components/Modal/SuccessModal";
 import NotFound from "./NotFound";
 import Loader from "../components/Loader/Loader";
 import axios from "axios";
+import Toast from "../components/Toast/Toast";
+import { t, getLanguage } from "../utils/i18n";
 
 function ItemCard({ isLogin, isModerator }) {
   const { id: encodedId } = useParams();
@@ -20,6 +22,9 @@ function ItemCard({ isLogin, isModerator }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [favoriteError, setFavoriteError] = useState("");
+  const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+  const [address, setAddress] = useState("");
 
   const navigate = useNavigate();
 
@@ -65,6 +70,26 @@ function ItemCard({ isLogin, isModerator }) {
       .catch(() => setIsFavorite(false));
   }, [isLogin, ad?.categorie_id]);
 
+  useEffect(() => {
+    if (!ad?.location_coordinates) {
+      setAddress(ad?.location_description || "");
+      return;
+    }
+    let coords = ad.location_coordinates;
+    if (typeof coords === "string") {
+      try { coords = JSON.parse(coords); } catch { coords = null; }
+    }
+    if (!coords || !coords.lat || !coords.lng) {
+      setAddress(ad?.location_description || "");
+      return;
+    }
+    const lang = getLanguage();
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${coords.lat}&lon=${coords.lng}&format=json&accept-language=${lang}`)
+      .then(res => res.json())
+      .then(data => setAddress(data.display_name || ad.location_description))
+      .catch(() => setAddress(ad.location_description));
+  }, [ad?.location_coordinates, getLanguage()]);
+
   const handleCloseModal = useCallback(() => setShowModal(false), []);
 
   const handleModeration = useCallback(
@@ -106,6 +131,8 @@ function ItemCard({ isLogin, isModerator }) {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setIsFavorite(true);
+        setToastMsg(t('toast.categoryAdded', { category: ad.categorie_name }));
+        setShowToast(true);
       } else {
         const res = await axios.delete(
           `${process.env.REACT_APP_SERVER_URL}/api/user/favorite-category`,
@@ -174,6 +201,7 @@ function ItemCard({ isLogin, isModerator }) {
   return (
     <div className="centerContent">
       <div className={styles.container}>
+        <Toast show={showToast} onClose={() => setShowToast(false)}>{toastMsg}</Toast>
         <button
           className={styles.backBtn}
           onClick={() => navigate(-1)}
@@ -194,7 +222,7 @@ function ItemCard({ isLogin, isModerator }) {
             <h1>{ad.title}</h1>
             <div className={styles.info}>
               <p>📅 {formattedDate}</p>
-              <p>📍 {ad.location_description}</p>
+              <p>📍 {address}</p>
               {Number.parseFloat(ad.reward) === 0.0 ? null : (
                 <p>💰 Reward: {ad.reward}₴</p>
               )}
@@ -210,48 +238,51 @@ function ItemCard({ isLogin, isModerator }) {
             {ad.email ? <p>📧 {ad.email}</p> : null}
             {isLogin && !isModerator ? (
               <>
-                <button className={styles.messageBtn}>Send a message</button>
-                <button
-                  className={styles.favorite}
-                  onClick={handleFavoriteClick}
-                  disabled={favoriteLoading}
-                  aria-label={
-                    isFavorite ? "Remove from favorites" : "Add to favorites"
-                  }
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: isLogin ? "pointer" : "not-allowed",
-                    fontSize: 22,
-                  }}
-                >
-                  {isFavorite ? "❤️" : "🤍"}
-                </button>
-                {isFavorite && (
-                  <div className={styles.favoriteMsg}>
-                    Категорію додано в обране
-                  </div>
-                )}
-                {favoriteError && (
-                  <div className={styles.favoriteError}>{favoriteError}</div>
-                )}
+                <button className={styles.messageBtn}>{t('sendMessage')}</button>
+                <div className={styles.categoryFavoriteRow}>
+                  <span className={styles.categoryBadge}>{ad.categorie_name}</span>
+                  <button
+                    className={styles.favorite}
+                    onClick={handleFavoriteClick}
+                    disabled={favoriteLoading}
+                    aria-label={
+                      isFavorite ? "Remove from favorites" : "Add to favorites"
+                    }
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: isLogin ? "pointer" : "not-allowed",
+                      fontSize: 22,
+                      marginLeft: 10,
+                    }}
+                  >
+                    {isFavorite ? "❤️" : "🤍"}
+                  </button>
+                </div>
               </>
             ) : (
               !isModerator && (
-                <button
-                  className={styles.favorite}
-                  aria-label="Login to add to favorites"
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "not-allowed",
-                    fontSize: 22,
-                  }}
-                  disabled
-                >
-                  🤍
-                </button>
+                <div className={styles.categoryFavoriteRow}>
+                  <span className={styles.categoryBadge}>{ad.categorie_name}</span>
+                  <button
+                    className={styles.favorite}
+                    aria-label="Login to add to favorites"
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "not-allowed",
+                      fontSize: 22,
+                      marginLeft: 10,
+                    }}
+                    disabled
+                  >
+                    🤍
+                  </button>
+                </div>
               )
+            )}
+            {favoriteError && (
+              <div className={styles.favoriteError}>{favoriteError}</div>
             )}
             {ad.User && (
               <div className={styles.userInfoBlock}>

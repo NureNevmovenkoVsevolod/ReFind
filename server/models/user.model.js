@@ -19,7 +19,7 @@ const User = sequelize.define(
       allowNull: false,
     },
     user_pfp: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(2048),
       allowNull: true,
     },
     password: {

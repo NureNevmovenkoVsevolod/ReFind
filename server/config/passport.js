@@ -81,7 +81,15 @@ passport.use(
           },
         });
 
-        if (!user) {
+        if (user) {
+          await user.update({
+            auth_provider: "google",
+            provider_id: profile.id,
+            user_pfp: profile.photos && profile.photos[0] ? profile.photos[0].value : null,
+          });
+
+          await user.reload();
+        }else{
           user = await User.create({
             email: profile.emails && profile.emails[0] ? profile.emails[0].value : "",
             first_name: profile.name.givenName || "",
