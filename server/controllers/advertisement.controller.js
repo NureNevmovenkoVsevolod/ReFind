@@ -185,7 +185,7 @@ class AdvertisementController extends IAdvertisementController {
         order: [["createdAt", "DESC"]],
       });
 
-      const items = rows.map(this.mapAdWithCategory);
+      const items = rows.map(mapAdWithCategory);
 
       res.json({
         items,
