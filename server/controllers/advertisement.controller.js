@@ -147,47 +147,70 @@ class AdvertisementController extends IAdvertisementController {
         }
     }
 
-    async getAllAds(req, res) {
-        try {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 8;
-            const offset = (page - 1) * limit;
-            const category = req.query.category;
+    
+async getAllAds(req, res) {
+  try {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 8;
+      const offset = (page - 1) * limit;
+      const category = req.query.category;
+      const search = req.query.search;
 
-            const whereClause = {
-                status: "active",
-                mod_check: true,
-            };
+      const whereClause = {
+          status: "active",
+          mod_check: true,
+      };
 
-            if (category) {
-                whereClause.categorie_id = category;
-            }
+      if (category) {
+          whereClause.categorie_id = category;
+      }
 
-            const { count, rows } = await Advertisement.findAndCountAll({
-                where: whereClause,
-                limit,
-                offset,
-                include: [
-                    { model: Image, attributes: ["image_url"] },
-                    { model: Category, attributes: ["categorie_id", "categorie_name"] },
-                ],
-                order: [["createdAt", "DESC"]],
-            });
+      if (search) {
+          whereClause[Op.or] = [
+              {
+                  title: {
+                      [Op.iLike]: `%${search}%`
+                  }
+              },
+              {
+                  description: {
+                      [Op.iLike]: `%${search}%`
+                  }
+              },
+              {
+                  location_description: {
+                      [Op.iLike]: `%${search}%`
+                  }
+              }
+          ];
+      }
 
-            const items = rows.map(this.mapAdWithCategory);
+      const { count, rows } = await Advertisement.findAndCountAll({
+          where: whereClause,
+          limit,
+          offset,
+          include: [
+              { model: Image, attributes: ["image_url"] },
+              { model: Category, attributes: ["categorie_id", "categorie_name"] },
+          ],
+          order: [["createdAt", "DESC"]],
+          distinct: true,
+      });
 
-            res.json({
-                items,
-                total: count,
-                currentPage: page,
-                totalPages: Math.ceil(count / limit),
-                hasMore: offset + rows.length < count,
-            });
-        } catch (error) {
-            console.error("Error fetching all advertisements:", error);
-            res.status(500).json({ message: "Failed to fetch all advertisements" });
-        }
-    }
+      const items = rows.map(this.mapAdWithCategory);
+
+      res.json({
+          items,
+          total: count,
+          currentPage: page,
+          totalPages: Math.ceil(count / limit),
+          hasMore: offset + rows.length < count,
+      });
+  } catch (error) {
+      console.error("Error fetching all advertisements:", error);
+      res.status(500).json({ message: "Failed to fetch all advertisements" });
+  }
+}
 
     async getFinds(req, res) {
         await this.getAdsByType("find", req, res);
