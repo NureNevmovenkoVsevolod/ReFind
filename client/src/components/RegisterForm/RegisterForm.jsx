@@ -71,6 +71,7 @@ function RegisterForm() {
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
+        console.log("Token збережено:", localStorage.getItem("token"));
         navigate("/");
       }
     } catch (error) {

@@ -23,6 +23,18 @@ import UserProfile from "./pages/UserProfile";
 import ModerStats from "./pages/Moder/ModerStats";
 import PrivacyPolicy from "./components/PrivacyPolicy/PrivacyPolicy";
 
+axios.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
 function App() {
   const [isLogin, setIsLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

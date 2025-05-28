@@ -91,36 +91,38 @@ function ItemCard({ isLogin, isModerator }) {
 
   const handleFavoriteClick = useCallback(async () => {
     if (!isLogin || favoriteLoading || !ad?.categorie_id) return;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setFavoriteError("Ви не авторизовані. Увійдіть у систему.");
+      return;
+    }
     setFavoriteLoading(true);
     setFavoriteError("");
-    const token = localStorage.getItem("token");
     try {
       if (!isFavorite) {
-        await axios.post(
+        const res = await axios.post(
           `${process.env.REACT_APP_SERVER_URL}/api/user/favorite-category`,
-          { categorie_id: ad.categorie_id },
+          { categorie_id: Number(ad.categorie_id) },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setIsFavorite(true);
       } else {
-        await axios.delete(
+        const res = await axios.delete(
           `${process.env.REACT_APP_SERVER_URL}/api/user/favorite-category`,
           {
-            data: { categorie_id: ad.categorie_id },
+            data: { categorie_id: Number(ad.categorie_id) },
             headers: { Authorization: `Bearer ${token}` },
           }
         );
         setIsFavorite(false);
       }
       // Re-fetch favorite to sync state
-      try {
-        const res = await axios.get(
-          `${process.env.REACT_APP_SERVER_URL}/api/user/favorite-categories`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        const favs = res.data || [];
-        setIsFavorite(favs.some((cat) => cat.categorie_id === ad.categorie_id));
-      } catch {}
+      const res = await axios.get(
+        `${process.env.REACT_APP_SERVER_URL}/api/user/favorite-categories`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const favs = res.data || [];
+      setIsFavorite(favs.some((cat) => cat.categorie_id === ad.categorie_id));
     } catch (e) {
       setFavoriteError(
         "Виникла помилка при додаванні в обране. Спробуйте ще раз або зверніться до підтримки."
