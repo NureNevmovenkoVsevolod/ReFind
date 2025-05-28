@@ -7,9 +7,19 @@ import Image from "react-bootstrap/Image";
 import styles from "./NavBar.module.css";
 import logo from "../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
+import { t, getLanguage, setLanguage } from "../../utils/i18n";
 
 function NavBar() {
   const navigate = useNavigate();
+  const [lang, setLang] = React.useState(getLanguage());
+
+  const handleLangSwitch = () => {
+    const newLang = lang === "en" ? "uk" : "en";
+    setLanguage(newLang);
+    setLang(newLang);
+    window.location.reload(); // простий спосіб для оновлення всіх текстів
+  };
+
   const goToRegistration = () => {
     navigate("/registration");
   };
@@ -40,13 +50,20 @@ function NavBar() {
           ReFind
         </Navbar.Brand>
 
-        <Nav className="ms-auto d-flex flex-row gap-2">
+        <Nav className="ms-auto d-flex flex-row gap-2 align-items-center">
+          <span className={styles.langSwitcher} onClick={handleLangSwitch} title={lang === 'en' ? 'Switch to Ukrainian' : 'Switch to English'} aria-label={lang === 'en' ? 'Switch to Ukrainian' : 'Switch to English'}>
+            {lang === "en" ? (
+              <img src="/flags/us.svg" alt="EN" width={28} height={20} />
+            ) : (
+              <img src="/flags/ua.svg" alt="UA" width={28} height={20} />
+            )}
+          </span>
           <Button
             onClick={goToRegistration}
             className={styles.register}
             style={{ fontSize: "18px" }}
           >
-            Register
+            {t('navbar.profile')}
           </Button>
           <Button
             onClick={goToLogin}

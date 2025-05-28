@@ -358,20 +358,26 @@ const UserProfile = () => {
           <Modal.Title>Редагувати оголошення</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {editAd && (
-            <EditAdvertForm
-              key={JSON.stringify(editAd)}
-              type={editAd.type}
-              initialData={editAd}
-              onSuccess={(updatedAd) => {
-                handleAdEditSuccess(updatedAd);
-              }}
-              onCancel={() => {
-                setShowEditModal(false);
-                setEditAd(null);
-              }}
-              isEdit
-            />
+          {editAd && editAd.mod_check === false ? (
+            <div style={{ color: 'red', fontWeight: 500, fontSize: 18, textAlign: 'center', padding: '30px 0' }}>
+              Це оголошення знаходиться на модерації і не може бути відредаговане.
+            </div>
+          ) : (
+            editAd && (
+              <EditAdvertForm
+                key={JSON.stringify(editAd)}
+                type={editAd.type}
+                initialData={editAd}
+                onSuccess={(updatedAd) => {
+                  handleAdEditSuccess(updatedAd);
+                }}
+                onCancel={() => {
+                  setShowEditModal(false);
+                  setEditAd(null);
+                }}
+                isEdit
+              />
+            )
           )}
         </Modal.Body>
       </Modal>
