@@ -57,8 +57,7 @@ class UserController {
 
     async getUserById(req, res) {
         try {
-            const { id } = req.params;
-            const user = await User.findByPk(id, {
+            const user = await User.findByPk(req.params.id, {
                 attributes: { exclude: ['password'] }
             });
             
@@ -110,8 +109,12 @@ class UserController {
 
     async updateUser(req, res) {
         try {
-            const { id } = req.params;
-            const updateData = {
+            const user = await User.findByPk(req.params.id);
+            if (!user) {
+                return res.status(404).json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
+            }
+
+            await user.update({
                 first_name: req.body.first_name,
                 last_name: req.body.last_name,
                 email: req.body.email,
@@ -119,14 +122,7 @@ class UserController {
                 phone_number: req.body.phone_number,
                 is_blocked: req.body.is_blocked,
                 blocked_until: req.body.blocked_until
-            };
-
-            const user = await User.findByPk(id);
-            if (!user) {
-                return res.status(404).json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
-            }
-
-            await user.update(updateData);
+            });
             res.json(this.excludePassword(user));
         } catch (error) {
             this.handleControllerError(error, res, ERROR_MESSAGES.UPDATE_ERROR);
@@ -135,9 +131,8 @@ class UserController {
 
     async deleteUser(req, res) {
         try {
-            const { id } = req.params;
             const deletedCount = await User.destroy({
-                where: { user_id: id }
+                where: { user_id: req.params.id }
             });
 
             if (deletedCount === 0) {

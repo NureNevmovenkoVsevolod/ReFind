@@ -25,7 +25,6 @@ function ItemCard({ isLogin, isModerator }) {
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [address, setAddress] = useState("");
-
   const navigate = useNavigate();
 
   // Memoized decodeId
@@ -44,10 +43,7 @@ function ItemCard({ isLogin, isModerator }) {
     setLoading(true);
     fetch(`${process.env.REACT_APP_SERVER_URL}/api/advertisement/${decodedId}`)
       .then(async (res) => {
-        if (!res.ok) {
-          const msg = (await res.json()).message || "Loading error.";
-          throw new Error(msg);
-        }
+        if (!res.ok) throw new Error((await res.json()).message || "Loading error.");
         return res.json();
       })
       .then(setAd)
@@ -70,6 +66,7 @@ function ItemCard({ isLogin, isModerator }) {
       .catch(() => setIsFavorite(false));
   }, [isLogin, ad?.categorie_id]);
 
+  // Address localization
   useEffect(() => {
     if (!ad?.location_coordinates) {
       setAddress(ad?.location_description || "");
@@ -92,27 +89,20 @@ function ItemCard({ isLogin, isModerator }) {
 
   const handleCloseModal = useCallback(() => setShowModal(false), []);
 
-  const handleModeration = useCallback(
-    async (approved) => {
-      try {
-        const token = localStorage.getItem("token");
-        await axios.put(
-          `${process.env.REACT_APP_SERVER_URL}/api/advertisement/${decodedId}/moderate`,
-          { approved },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setModerationStatus(approved ? "approved" : "rejected");
-        setAd((prev) => ({
-          ...prev,
-          mod_check: approved,
-          status: approved ? "active" : "rejected",
-        }));
-      } catch (error) {
-        setError("Помилка при модерації оголошення");
-      }
-    },
-    [decodedId]
-  );
+  const handleModeration = useCallback(async (approved) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `${process.env.REACT_APP_SERVER_URL}/api/advertisement/${decodedId}/moderate`,
+        { approved },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setModerationStatus(approved ? "approved" : "rejected");
+      setAd((prev) => ({ ...prev, mod_check: approved, status: approved ? "active" : "rejected" }));
+    } catch {
+      setError("Помилка при модерації оголошення");
+    }
+  }, [decodedId]);
 
   const handleFavoriteClick = useCallback(async () => {
     if (!isLogin || favoriteLoading || !ad?.categorie_id) return;
@@ -125,7 +115,7 @@ function ItemCard({ isLogin, isModerator }) {
     setFavoriteError("");
     try {
       if (!isFavorite) {
-        const res = await axios.post(
+        await axios.post(
           `${process.env.REACT_APP_SERVER_URL}/api/user/favorite-category`,
           { categorie_id: Number(ad.categorie_id) },
           { headers: { Authorization: `Bearer ${token}` } }
@@ -134,12 +124,9 @@ function ItemCard({ isLogin, isModerator }) {
         setToastMsg(t('toast.categoryAdded', { category: ad.categorie_name }));
         setShowToast(true);
       } else {
-        const res = await axios.delete(
+        await axios.delete(
           `${process.env.REACT_APP_SERVER_URL}/api/user/favorite-category`,
-          {
-            data: { categorie_id: Number(ad.categorie_id) },
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { data: { categorie_id: Number(ad.categorie_id) }, headers: { Authorization: `Bearer ${token}` } }
         );
         setIsFavorite(false);
       }
@@ -150,191 +137,108 @@ function ItemCard({ isLogin, isModerator }) {
       );
       const favs = res.data || [];
       setIsFavorite(favs.some((cat) => cat.categorie_id === ad.categorie_id));
-    } catch (e) {
-      setFavoriteError(
-        "Виникла помилка при додаванні в обране. Спробуйте ще раз або зверніться до підтримки."
-      );
+    } catch {
+      setFavoriteError("Виникла помилка при додаванні в обране. Спробуйте ще раз або зверніться до підтримки.");
     } finally {
       setFavoriteLoading(false);
     }
   }, [isLogin, favoriteLoading, ad?.categorie_id, isFavorite]);
 
   // Memoized ad fields
-  const images = useMemo(
-    () => ad?.Images?.map((img) => `${img.image_url}`) || [],
-    [ad]
-  );
+  const images = useMemo(() => ad?.Images?.map((img) => `${img.image_url}`) || [], [ad]);
   const locationCoordinates = useMemo(() => {
     if (!ad?.location_coordinates) return { lat: 0, lng: 0 };
     try {
-      const coords =
-        typeof ad.location_coordinates === "string"
-          ? JSON.parse(ad.location_coordinates)
-          : ad.location_coordinates;
-      return {
-        lat: coords?.lat || 0,
-        lng: coords?.lng || 0,
-      };
-    } catch {
-      return { lat: 0, lng: 0 };
-    }
+      const coords = typeof ad.location_coordinates === "string" ? JSON.parse(ad.location_coordinates) : ad.location_coordinates;
+      return { lat: coords?.lat || 0, lng: coords?.lng || 0 };
+    } catch { return { lat: 0, lng: 0 }; }
   }, [ad]);
-  const formattedDate = useMemo(
-    () =>
-      ad?.incident_date ? new Date(ad.incident_date).toLocaleDateString() : "",
-    [ad]
-  );
+  const formattedDate = useMemo(() => ad?.incident_date ? new Date(ad.incident_date).toLocaleDateString() : "", [ad]);
 
   if (error)
     return (
       <>
-        <SuccessModal
-          show={showModal}
-          handleClose={handleCloseModal}
-          message={`Advertisement was not found.\nReason: ${error}`}
-        />
+        <SuccessModal show={showModal} handleClose={handleCloseModal} message={`Advertisement was not found.\nReason: ${error}`} />
         <NotFound />
       </>
     );
   if (loading || !ad) return <Loader />;
 
+  // Category + Favorite button block
+  const CategoryFavorite = () => (
+    <div className={styles.categoryFavoriteRow}>
+      <span className={styles.categoryBadge}>{ad.categorie_name}</span>
+      <button
+        className={styles.favorite}
+        onClick={isLogin && !isModerator ? handleFavoriteClick : undefined}
+        disabled={favoriteLoading || !isLogin || isModerator}
+        aria-label={isFavorite ? t('removeFromFavorites') : t('addToFavorites')}
+        style={{ background: "none", border: "none", cursor: isLogin && !isModerator ? "pointer" : "not-allowed", fontSize: 22, marginLeft: 10 }}
+      >
+        {isFavorite ? "❤️" : "🤍"}
+      </button>
+    </div>
+  );
+
   return (
     <div className="centerContent">
       <div className={styles.container}>
         <Toast show={showToast} onClose={() => setShowToast(false)}>{toastMsg}</Toast>
-        <button
-          className={styles.backBtn}
-          onClick={() => navigate(-1)}
-          aria-label="Go back"
-        >
+        <button className={styles.backBtn} onClick={() => navigate(-1)} aria-label="Go back">
           <span>←</span> Back
         </button>
-
         <div className={styles.main}>
           <ImageGallery images={images} />
-
           <div className={styles.contentSection}>
-            <div className={styles.zagolovok}>
-              {ad.type === "find"
-                ? `Found item description`
-                : `Lost item description`}
-            </div>
+            <div className={styles.zagolovok}>{ad.type === "find" ? `Found item description` : `Lost item description`}</div>
             <h1>{ad.title}</h1>
             <div className={styles.info}>
               <p>📅 {formattedDate}</p>
               <p>📍 {address}</p>
-              {Number.parseFloat(ad.reward) === 0.0 ? null : (
-                <p>💰 Reward: {ad.reward}₴</p>
-              )}
+              {Number.parseFloat(ad.reward) === 0.0 ? null : <p>💰 Reward: {ad.reward}₴</p>}
             </div>
             <p className={styles.shortDesc}>{ad.description}</p>
           </div>
         </div>
-
         <div className={styles.bottom}>
           <div className={styles.contacts}>
             <h3>Contact details for communication:</h3>
             <p>📞 {ad.phone}</p>
-            {ad.email ? <p>📧 {ad.email}</p> : null}
-            {isLogin && !isModerator ? (
-              <>
-                <button className={styles.messageBtn}>{t('sendMessage')}</button>
-                <div className={styles.categoryFavoriteRow}>
-                  <span className={styles.categoryBadge}>{ad.categorie_name}</span>
-                  <button
-                    className={styles.favorite}
-                    onClick={handleFavoriteClick}
-                    disabled={favoriteLoading}
-                    aria-label={
-                      isFavorite ? "Remove from favorites" : "Add to favorites"
-                    }
-                    style={{
-                      background: "none",
-                      border: "none",
-                      cursor: isLogin ? "pointer" : "not-allowed",
-                      fontSize: 22,
-                      marginLeft: 10,
-                    }}
-                  >
-                    {isFavorite ? "❤️" : "🤍"}
-                  </button>
-                </div>
-              </>
-            ) : (
-              !isModerator && (
-                <div className={styles.categoryFavoriteRow}>
-                  <span className={styles.categoryBadge}>{ad.categorie_name}</span>
-                  <button
-                    className={styles.favorite}
-                    aria-label="Login to add to favorites"
-                    style={{
-                      background: "none",
-                      border: "none",
-                      cursor: "not-allowed",
-                      fontSize: 22,
-                      marginLeft: 10,
-                    }}
-                    disabled
-                  >
-                    🤍
-                  </button>
-                </div>
-              )
-            )}
-            {favoriteError && (
-              <div className={styles.favoriteError}>{favoriteError}</div>
-            )}
+            {ad.email && <p>📧 {ad.email}</p>}
+            {isLogin && !isModerator && <>
+              <button className={styles.messageBtn}>{t('sendMessage')}</button>
+              <CategoryFavorite />
+            </>}
+            {!isLogin && !isModerator && <CategoryFavorite />}
+            {favoriteError && <div className={styles.favoriteError}>{favoriteError}</div>}
             {ad.User && (
               <div className={styles.userInfoBlock}>
                 <div className={styles.userAvatarWrapper}>
-                  <img
-                    src={ad.User.user_pfp || require("../assets/user.png")}
+                  <img src={ad.User.user_pfp || require("../assets/user.png")}
                     alt={ad.User.first_name || "User"}
                     className={styles.userAvatar}
                   />
                 </div>
-                <div className={styles.userName}>
-                  {ad.User.first_name || "User"}
-                </div>
+                <div className={styles.userName}>{ad.User.first_name || "User"}</div>
               </div>
             )}
             {isModerator && !ad.mod_check && (
               <div className={styles.moderationButtons}>
-                <button
-                  className={`${styles.modButton} ${styles.approveButton}`}
-                  onClick={() => handleModeration(true)}
-                  disabled={moderationStatus !== null}
-                >
-                  Схвалити
-                </button>
-                <button
-                  className={`${styles.modButton} ${styles.rejectButton}`}
-                  onClick={() => handleModeration(false)}
-                  disabled={moderationStatus !== null}
-                >
-                  Відхилити
-                </button>
+                <button className={`${styles.modButton} ${styles.approveButton}`} onClick={() => handleModeration(true)} disabled={moderationStatus !== null}>Схвалити</button>
+                <button className={`${styles.modButton} ${styles.rejectButton}`} onClick={() => handleModeration(false)} disabled={moderationStatus !== null}>Відхилити</button>
               </div>
             )}
             {moderationStatus && (
               <p className={styles.moderationStatus}>
-                {moderationStatus === "approved"
-                  ? "Оголошення схвалено"
-                  : "Оголошення відхилено"}
+                {moderationStatus === "approved" ? "Оголошення схвалено" : "Оголошення відхилено"}
               </p>
             )}
           </div>
-
           <div className={styles.mapWrapper}>
             <h3>Location</h3>
             <Map initialCoordinates={locationCoordinates} readOnly={true}>
-              <TileLayer
-                attribution="&copy; OpenStreetMap"
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <Marker
-                position={[locationCoordinates.lat, locationCoordinates.lng]}
-              >
+              <TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <Marker position={[locationCoordinates.lat, locationCoordinates.lng]}>
                 <Popup>{ad.title}</Popup>
               </Marker>
             </Map>

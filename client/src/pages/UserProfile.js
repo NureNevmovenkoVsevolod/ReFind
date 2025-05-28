@@ -14,6 +14,11 @@ import SuccessModal from "../components/Modal/SuccessModal";
 import EditAdvertForm from "../components/EditAdvertForm/EditAdvertForm";
 import Loader from "../components/Loader/Loader";
 
+const getUserFromStorage = () => {
+  const data = localStorage.getItem("user");
+  return data ? JSON.parse(data) : null;
+};
+
 const UserProfile = () => {
   const navigate = useNavigate();
   const [announcements, setAnnouncements] = useState([]);
@@ -28,11 +33,7 @@ const UserProfile = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const fileInputRef = useRef();
   const saveTimeoutRef = useRef(null);
-  const [userData, setUserData] = useState(() => {
-    const data = localStorage.getItem("user");
-    return data ? JSON.parse(data) : null;
-  });
-
+  const [userData, setUserData] = useState(getUserFromStorage);
   const [editAd, setEditAd] = useState(null);
   const [showProfileEditModal, setShowProfileEditModal] = useState(false);
   const [deleteAd, setDeleteAd] = useState(null);
@@ -54,49 +55,37 @@ const UserProfile = () => {
   }, [userData]);
 
   useEffect(() => {
-    const fetchAnnouncements = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(
-          process.env.REACT_APP_SERVER_URL + "/api/advertisement/user/my",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setAnnouncements(res.data || []);
-      } catch (e) {
+        const [adsRes, favRes] = await Promise.all([
+          axios.get(process.env.REACT_APP_SERVER_URL + "/api/advertisement/user/my", { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(process.env.REACT_APP_SERVER_URL + "/api/user/favorite-categories", { headers: { Authorization: `Bearer ${token}` } })
+        ]);
+        setAnnouncements(adsRes.data || []);
+        setFavoriteCategories(favRes.data || []);
+      } catch {
         setAnnouncements([]);
+        setFavoriteCategories([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchAnnouncements();
-    // Fetch favorite categories
-    const fetchFavorites = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(
-          process.env.REACT_APP_SERVER_URL + "/api/user/favorite-categories",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setFavoriteCategories(res.data || []);
-      } catch (e) {
-        setFavoriteCategories([]);
-      }
-    };
-    fetchFavorites();
+    fetchData();
   }, []);
 
-  const updateProfile = async (newFields) => {
+  const updateProfile = async (fields) => {
     try {
       const token = localStorage.getItem("token");
       const userId = userData.user_id ?? userData.id;
       const updatedFields = {
-        first_name: newFields.first_name ?? nickname,
-        last_name: newFields.last_name ?? lastName,
-        email: newFields.email ?? email,
-        user_pfp: newFields.user_pfp ?? userData.user_pfp,
-        phone_number: newFields.phone_number ?? phoneNumber,
-        password: newFields.password || undefined,
+        first_name: fields.first_name ?? nickname,
+        last_name: fields.last_name ?? lastName,
+        email: fields.email ?? email,
+        user_pfp: fields.user_pfp ?? userData.user_pfp,
+        phone_number: fields.phone_number ?? phoneNumber,
+        password: fields.password || undefined,
         is_blocked: userData.is_blocked ?? false,
         blocked_until: userData.blocked_until ?? null,
       };
@@ -113,7 +102,7 @@ const UserProfile = () => {
       setEmail(res.data.email || "");
       setPhoneNumber(res.data.phone_number || "");
       return true;
-    } catch (err) {
+    } catch {
       setNicknameError("Failed to update profile");
       return false;
     }
@@ -139,7 +128,7 @@ const UserProfile = () => {
         }
       );
       await updateProfile({ user_pfp: res.data.avatarUrl });
-    } catch (err) {
+    } catch {
       setAvatarError("Помилка завантаження аватара");
     } finally {
       setAvatarUploading(false);
@@ -161,29 +150,23 @@ const UserProfile = () => {
     setIsEditingName(false);
   };
 
-  const handleNicknameChange = async (e) => {
+  const handleNicknameChange = (e) => {
     const newNickname = e.target.value;
     setNickname(newNickname);
     setNicknameError("");
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(async () => {
       if (newNickname) {
         setIsValidating(true);
         const validation = await validateText(newNickname);
         setIsValidating(false);
-        if (!validation.isValid) {
-          setNicknameError(validation.error);
-        }
+        if (!validation.isValid) setNicknameError(validation.error);
       }
     }, 500);
   };
 
   const handleSaveProfile = async () => {
-    if (nicknameError || !nickname.trim()) {
-      return;
-    }
+    if (nicknameError || !nickname.trim()) return;
     await updateProfile({
       first_name: nickname,
       last_name: lastName,
@@ -194,24 +177,18 @@ const UserProfile = () => {
     handleCloseModal();
   };
 
-  const username =
-    userData?.first_name + " " + userData?.last_name || "Username";
-
   const handleDeleteAd = async () => {
     if (!deleteAd) return;
     setDeleteLoading(true);
     try {
       const token = localStorage.getItem("token");
       await axios.delete(
-        process.env.REACT_APP_SERVER_URL +
-          `/api/advertisement/${deleteAd.advertisement_id}`,
+        process.env.REACT_APP_SERVER_URL + `/api/advertisement/${deleteAd.advertisement_id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setAnnouncements((prev) =>
-        prev.filter((ad) => ad.advertisement_id !== deleteAd.advertisement_id)
-      );
+      setAnnouncements((prev) => prev.filter((ad) => ad.advertisement_id !== deleteAd.advertisement_id));
       setSuccessMessage("Оголошення успішно видалено!");
-    } catch (e) {
+    } catch {
       setSuccessMessage("Помилка при видаленні оголошення");
     } finally {
       setDeleteLoading(false);
@@ -229,13 +206,8 @@ const UserProfile = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setAnnouncements(res.data || []);
-    } catch (e) {
-      // fallback: оновлюємо тільки одне оголошення
-      setAnnouncements((prev) =>
-        prev.map((ad) =>
-          ad.advertisement_id === updatedAd.advertisement_id ? updatedAd : ad
-        )
-      );
+    } catch {
+      setAnnouncements((prev) => prev.map((ad) => ad.advertisement_id === updatedAd.advertisement_id ? updatedAd : ad));
     } finally {
       setLoading(false);
       setShowEditModal(false);
@@ -247,32 +219,15 @@ const UserProfile = () => {
   return (
     <div className={styles.profilePage}>
       <div className={styles.profileContent}>
-        <Button
-          variant="link"
-          className={styles.backBtn}
-          onClick={() => navigate(-1)}
-        >
+        <Button variant="link" className={styles.backBtn} onClick={() => navigate(-1)}>
           ← Back
         </Button>
         <div className={styles.profileCard}>
           <div className={styles.avatarBigBlock}>
             <Image src={avatar} className={styles.avatarBig} alt="avatar" />
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              style={{ display: "none" }}
-              onChange={handleAvatarChange}
-              disabled={avatarUploading}
-            />
-            {avatarError && (
-              <div style={{ color: "red", fontSize: 12 }}>{avatarError}</div>
-            )}
-            <Button
-              variant="outline-secondary"
-              className={styles.editBtnUnderAvatar}
-              onClick={handleEditProfile}
-            >
+            <input type="file" accept="image/*" ref={fileInputRef} style={{ display: "none" }} onChange={handleAvatarChange} disabled={avatarUploading} />
+            {avatarError && <div style={{ color: "red", fontSize: 12 }}>{avatarError}</div>}
+            <Button variant="outline-secondary" className={styles.editBtnUnderAvatar} onClick={handleEditProfile}>
               Edit profile
             </Button>
           </div>
@@ -316,27 +271,14 @@ const UserProfile = () => {
                 key={item.advertisement_id}
                 advertisement_id={item.advertisement_id}
                 image={item.Images?.[0]?.image_url ? item.Images[0].image_url + '?t=' + Date.now() : undefined}
-                date={
-                  item.incident_date
-                    ? new Date(item.incident_date).toLocaleDateString("uk-UA", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
-                    : ""
-                }
+                date={item.incident_date ? new Date(item.incident_date).toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" }) : ""}
                 title={item.title}
                 description={item.description}
                 cityName={item.location_description}
+                cityCoords={item.location_coordinates ? (typeof item.location_coordinates === 'string' ? JSON.parse(item.location_coordinates) : item.location_coordinates) : undefined}
                 categoryName={item.Category?.categorie_name || "Other"}
-                onEdit={() => {
-                  setEditAd(item);
-                  setShowEditModal(true);
-                }}
-                onDelete={() => {
-                  setDeleteAd(item);
-                  setShowDeleteModal(true);
-                }}
+                onEdit={() => { setEditAd(item); setShowEditModal(true); }}
+                onDelete={() => { setDeleteAd(item); setShowDeleteModal(true); }}
                 modCheck={item.mod_check}
                 status={item.status}
               />
@@ -345,15 +287,7 @@ const UserProfile = () => {
         </div>
       </div>
 
-      <Modal
-        show={showEditModal}
-        onHide={() => {
-          setShowEditModal(false);
-          setEditAd(null);
-        }}
-        size="lg"
-        centered
-      >
+      <Modal show={showEditModal} onHide={() => { setShowEditModal(false); setEditAd(null); }} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>Редагувати оголошення</Modal.Title>
         </Modal.Header>
@@ -368,13 +302,8 @@ const UserProfile = () => {
                 key={JSON.stringify(editAd)}
                 type={editAd.type}
                 initialData={editAd}
-                onSuccess={(updatedAd) => {
-                  handleAdEditSuccess(updatedAd);
-                }}
-                onCancel={() => {
-                  setShowEditModal(false);
-                  setEditAd(null);
-                }}
+                onSuccess={handleAdEditSuccess}
+                onCancel={() => { setShowEditModal(false); setEditAd(null); }}
                 isEdit
               />
             )
@@ -382,43 +311,22 @@ const UserProfile = () => {
         </Modal.Body>
       </Modal>
 
-      <Modal
-        show={showDeleteModal}
-        onHide={() => {
-          setShowDeleteModal(false);
-          setDeleteAd(null);
-        }}
-        centered
-      >
+      <Modal show={showDeleteModal} onHide={() => { setShowDeleteModal(false); setDeleteAd(null); }} centered>
         <Modal.Header closeButton>
           <Modal.Title>Підтвердіть видалення</Modal.Title>
         </Modal.Header>
         <Modal.Body>Ви дійсно хочете видалити це оголошення?</Modal.Body>
         <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setShowDeleteModal(false);
-              setDeleteAd(null);
-            }}
-          >
+          <Button variant="secondary" onClick={() => { setShowDeleteModal(false); setDeleteAd(null); }}>
             Скасувати
           </Button>
-          <Button
-            variant="danger"
-            onClick={handleDeleteAd}
-            disabled={deleteLoading}
-          >
+          <Button variant="danger" onClick={handleDeleteAd} disabled={deleteLoading}>
             {deleteLoading ? "Видалення..." : "Видалити"}
           </Button>
         </Modal.Footer>
       </Modal>
 
-      <SuccessModal
-        show={!!successMessage}
-        handleClose={() => setSuccessMessage("")}
-        message={successMessage}
-      />
+      <SuccessModal show={!!successMessage} handleClose={() => setSuccessMessage("")} message={successMessage} />
 
       <Modal show={showProfileEditModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
@@ -427,91 +335,39 @@ const UserProfile = () => {
         <Modal.Body>
           <Form>
             <div className={styles.avatarEditBlock}>
-              <Image
-                src={avatar}
-                className={styles.avatarPreview}
-                alt="avatar"
-              />
-              <Button
-                variant="outline-secondary"
-                size="sm"
-                onClick={() =>
-                  fileInputRef.current && fileInputRef.current.click()
-                }
-                disabled={avatarUploading}
-              >
+              <Image src={avatar} className={styles.avatarPreview} alt="avatar" />
+              <Button variant="outline-secondary" size="sm" onClick={() => fileInputRef.current && fileInputRef.current.click()} disabled={avatarUploading}>
                 {avatarUploading ? "Uploading..." : "Change photo"}
               </Button>
             </div>
-            {avatarError && (
-              <div className="text-danger mb-3">{avatarError}</div>
-            )}
+            {avatarError && <div className="text-danger mb-3">{avatarError}</div>}
             <Form.Group className="mb-3">
               <Form.Label>First Name</Form.Label>
-              <Form.Control
-                type="text"
-                value={nickname}
-                onChange={handleNicknameChange}
-                isInvalid={!!nicknameError}
-                disabled={isValidating}
-              />
-              <Form.Control.Feedback type="invalid">
-                {nicknameError}
-              </Form.Control.Feedback>
-              {isValidating && (
-                <div className="text-muted mt-1">
-                  Checking nickname...
-                </div>
-              )}
+              <Form.Control type="text" value={nickname} onChange={handleNicknameChange} isInvalid={!!nicknameError} disabled={isValidating} />
+              <Form.Control.Feedback type="invalid">{nicknameError}</Form.Control.Feedback>
+              {isValidating && <div className="text-muted mt-1">Checking nickname...</div>}
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Last Name</Form.Label>
-              <Form.Control
-                type="text"
-                value={lastName}
-                onChange={e => setLastName(e.target.value)}
-              />
+              <Form.Control type="text" value={lastName} onChange={e => setLastName(e.target.value)} />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-              />
+              <Form.Control type="email" value={email} onChange={e => setEmail(e.target.value)} />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Phone Number</Form.Label>
-              <Form.Control
-                type="text"
-                value={phoneNumber}
-                onChange={e => setPhoneNumber(e.target.value)}
-              />
+              <Form.Control type="text" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>New Password</Form.Label>
-              <Form.Control
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="Leave blank to keep current password"
-              />
+              <Form.Control type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Leave blank to keep current password" />
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
-            Close
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleSaveProfile}
-            disabled={
-              isEditingName
-                ? !!nicknameError || isValidating || !nickname.trim()
-                : false
-            }
-          >
+          <Button variant="secondary" onClick={handleCloseModal}>Close</Button>
+          <Button variant="primary" onClick={handleSaveProfile} disabled={isEditingName ? !!nicknameError || isValidating || !nickname.trim() : false}>
             Save Changes
           </Button>
         </Modal.Footer>
