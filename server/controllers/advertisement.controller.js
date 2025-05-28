@@ -278,6 +278,10 @@ class AdvertisementController extends IAdvertisementController {
                     .status(404)
                     .json({ message: "Advertisement not found or unauthorized" });
 
+            if (ad.mod_check === false) {
+                return res.status(403).json({ message: "Оголошення знаходиться на модерації і не може бути відредаговане." });
+            }
+
             const {
                 title,
                 description,

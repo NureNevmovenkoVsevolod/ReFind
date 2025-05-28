@@ -30,3 +30,23 @@
     background-color: rgba(0, 0, 0, 0.1) !important;
     border-radius: 4px;
 }
+
+.langSwitcher {
+  cursor: pointer;
+  margin-right: 16px;
+  margin-left: 0;
+  display: flex;
+  align-items: center;
+  height: 36px;
+  width: 36px;
+  border-radius: 50%;
+  background: #fffbe6;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  justify-content: center;
+  transition: box-shadow 0.18s, background 0.18s;
+  border: 1.5px solid #ffe14d;
+}
+.langSwitcher:hover {
+  background: #ffe14d;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+}

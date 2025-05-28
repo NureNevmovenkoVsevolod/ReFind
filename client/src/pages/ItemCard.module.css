@@ -106,8 +106,11 @@
 }
 
 .favorite {
-    margin-top: 15px;
-    font-weight: bold;
+    margin-top: 0;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    height: 32px;
 }
 
 .mapWrapper {
@@ -248,4 +251,32 @@
   color: #e74c3c;
   margin-top: 4px;
   font-weight: 500;
+}
+
+.categoryFavoriteRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 4px 0;
+  min-height: 38px;
+}
+
+.categoryBadge {
+  background: #e6f0fa;
+  color: #007bff;
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  box-shadow: 0 1px 4px rgba(0,123,255,0.07);
+  border: 1.5px solid #007bff;
+  letter-spacing: 0.2px;
+  display: flex;
+  align-items: center;
+  transition: background 0.18s, color 0.18s, border 0.18s;
+}
+.categoryBadge:hover {
+  background: #d0e7fa;
+  color: #0056b3;
+  border-color: #0056b3;
 }
