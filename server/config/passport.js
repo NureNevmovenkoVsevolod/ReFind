@@ -80,11 +80,11 @@ passport.use(
 
         if (user) {
           await user.update({
-            auth_provider: "google",
+            auth_provider: "facebook",
             provider_id: profile.id,
             user_pfp: profile.photos && profile.photos[0] ? profile.photos[0].value : null,
           });
-
+          console.log(user);
           await user.reload();
         }else{
           user = await User.create({
