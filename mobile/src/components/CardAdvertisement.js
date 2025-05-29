@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from "@expo/vector-icons";
 
-const CardAdvertisement = ({ item, onPress }) => {
+const CardAdvertisement = ({ item, onPress, navigation }) => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('uk-UA', {
@@ -35,7 +35,7 @@ const CardAdvertisement = ({ item, onPress }) => {
   return (
     <TouchableOpacity 
       style={styles.card} 
-      onPress={() => onPress && onPress(item)}
+      onPress={() => navigation && navigation.navigate('AdvertisementDetail', { item })}
       activeOpacity={0.7}
     >
       <Image 

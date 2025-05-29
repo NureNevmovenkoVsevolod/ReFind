@@ -61,6 +61,7 @@ function MainScreen({ navigation }) {
       <AdvertisementSection 
         selectedCategoryId={selectedCategoryId}
         searchQuery={debouncedSearchQuery}
+        navigation={navigation}
         onAdvertisementPress={handleAdvertisementPress}
       />
       

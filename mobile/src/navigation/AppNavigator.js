@@ -9,6 +9,8 @@ import MainScreen from "../screens/MainScreen";
 import AuthSuccessScreen from "../screens/AuthSuccessScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import MapScreen from "../screens/MapScreen";
+import AdDetail from '../screens/AdDetail';
 
 const Stack = createNativeStackNavigator();
 
@@ -71,6 +73,16 @@ export default function AppNavigator() {
           name="Profile"
           component={ProfileScreen}
           options={{ title: "Профіль", headerShown: false }}
+        />
+        <Stack.Screen
+          name="Map"
+          component={MapScreen}
+          options={{ title: "Карта", headerShown: false }}
+        />
+        <Stack.Screen
+          name="AdvertisementDetail"
+          component={AdDetail}
+          options={{ title: "Оголошення", headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

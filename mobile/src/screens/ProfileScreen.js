@@ -55,42 +55,44 @@ function ProfileScreen({ navigation }) {
   };
 
   const renderAd = ({ item }) => (
-    <CardAdvertisement item={item} onPress={() => {}} />
+    <CardAdvertisement item={item} navigation={navigation} />
   );
 
   return (
     <View style={styles.container}>
-      {user ? (
-        <>
-          <View style={styles.profileHeader}>
-            <Image
-              source={{ uri: user.user_pfp || DEFAULT_AVATAR }}
-              style={styles.avatar}
-            />
-            <Text style={styles.name}>{user.first_name || 'Користувач'}</Text>
-            {user.last_name ? <Text style={styles.lastName}>{user.last_name}</Text> : null}
-            {user.email ? <Text style={styles.email}>{user.email}</Text> : null}
-          </View>
-          <Text style={styles.sectionTitle}>Мої оголошення</Text>
-          {adsLoading ? (
-            <ActivityIndicator size="large" color="#5a67d8" style={{ marginTop: 20 }} />
-          ) : ads.length === 0 ? (
-            <Text style={styles.noAds}>У вас ще немає оголошень</Text>
-          ) : (
-            <FlatList
-              data={ads}
-              renderItem={renderAd}
-              keyExtractor={item => item.advertisement_id?.toString() || item.id?.toString() || Math.random().toString()}
-              contentContainerStyle={{ paddingBottom: 20 }}
-            />
-          )}
-        </>
-      ) : (
-        <ActivityIndicator size="large" color="#5a67d8" />
-      )}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutButtonText}>Вийти</Text>
-      </TouchableOpacity>
+      <View style={{ flex: 1, width: '100%' }}>
+        {user ? (
+          <>
+            <View style={styles.profileHeader}>
+              <Image
+                source={{ uri: user.user_pfp || DEFAULT_AVATAR }}
+                style={styles.avatar}
+              />
+              <Text style={styles.name}>{user.first_name || 'Користувач'}</Text>
+              {user.last_name ? <Text style={styles.lastName}>{user.last_name}</Text> : null}
+              {user.email ? <Text style={styles.email}>{user.email}</Text> : null}
+            </View>
+            <Text style={styles.sectionTitle}>Мої оголошення</Text>
+            {adsLoading ? (
+              <ActivityIndicator size="large" color="#5a67d8" style={{ marginTop: 20 }} />
+            ) : ads.length === 0 ? (
+              <Text style={styles.noAds}>У вас ще немає оголошень</Text>
+            ) : (
+              <FlatList
+                data={ads}
+                renderItem={renderAd}
+                keyExtractor={item => item.advertisement_id?.toString() || item.id?.toString() || Math.random().toString()}
+                contentContainerStyle={{ paddingBottom: 20 }}
+              />
+            )}
+          </>
+        ) : (
+          <ActivityIndicator size="large" color="#5a67d8" />
+        )}
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>Вийти</Text>
+        </TouchableOpacity>
+      </View>
       <BottomNavBar activeScreen="Profile" navigation={navigation} />
     </View>
   );
@@ -101,7 +103,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f9fa',
     paddingTop: 30,
-    alignItems: 'center',
   },
   profileHeader: {
     alignItems: 'center',

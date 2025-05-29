@@ -15,7 +15,7 @@ import CardAdvertisement from './CardAdvertisement';
 
 const apiUrl = Constants.expoConfig.extra.API_URL;
 
-const AdvertisementSection = ({ selectedCategoryId, searchQuery, onAdvertisementPress }) => {
+const AdvertisementSection = ({ selectedCategoryId, searchQuery, navigation }) => {
   const [advertisements, setAdvertisements] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -140,7 +140,7 @@ const AdvertisementSection = ({ selectedCategoryId, searchQuery, onAdvertisement
         renderItem={({ item }) => (
           <CardAdvertisement 
             item={item} 
-            onPress={onAdvertisementPress}
+            navigation={navigation}
           />
         )}
         onEndReached={loadMoreAdvertisements}
