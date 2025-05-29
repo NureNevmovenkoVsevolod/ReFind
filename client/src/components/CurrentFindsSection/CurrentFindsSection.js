@@ -5,6 +5,7 @@ import FindCard from "../FindCard/FindCard";
 import ShowMoreButton from "../ShowMoreButton/ShowMoreButton";
 import styles from "./CurrentFindsSection.module.css";
 import axios from "axios";
+import { t } from '../../utils/i18n';
 
 function CurrentFindsSection() {
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -70,7 +71,7 @@ function CurrentFindsSection() {
   };
   return (
     <Container id="current-finds" className={styles.container}>
-      <h2 className={styles.title}>Current Finds</h2>
+      <h2 className={styles.title}>{t('main.currentFinds')}</h2>
       <CategoryFilter onCategoryChange={handleCategoryChange} />
       <Row className={styles.findsGrid}>
         {finds && finds.length > 0 ? (

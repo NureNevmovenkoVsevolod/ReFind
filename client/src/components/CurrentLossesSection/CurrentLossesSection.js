@@ -5,6 +5,7 @@ import LossCard from "../LossCard/LossCard";
 import ShowMoreButton from "../ShowMoreButton/ShowMoreButton";
 import styles from "../CurrentFindsSection/CurrentFindsSection.module.css";
 import axios from "axios";
+import { t } from '../../utils/i18n';
 
 function CurrentLossesSection() {
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -69,7 +70,7 @@ function CurrentLossesSection() {
 
   return (
     <Container className={styles.container}>
-      <h2 className={styles.title}>Current Losses</h2>
+      <h2 className={styles.title}>{t('main.currentLosses')}</h2>
       <CategoryFilter onCategoryChange={handleCategoryChange} />
       <Row className={styles.findsGrid}>
         {losses && losses.length > 0 ? (

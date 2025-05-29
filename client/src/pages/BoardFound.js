@@ -3,6 +3,7 @@ import styles from './Board.module.css';
 import LossCard from '../components/LossCard/LossCard';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { t } from '../utils/i18n';
 
 const ITEMS_PER_PAGE = 100;
 const DEFAULT_CATEGORY = { value: 'all', label: 'All categories' };
@@ -118,8 +119,7 @@ const BoardFound = () => {
     if (filteredItems.length === 0) {
       return (
         <div className={styles.noResults}>
-          <h3>No items found matching your criteria</h3>
-          <p>Try adjusting your search or filters</p>
+          <h3>{t('categoryFilter.noFound')}</h3>
         </div>
       );
     }
@@ -139,55 +139,50 @@ const BoardFound = () => {
   }, [isLoading, error, filteredItems, formatDate, fetchData]);
 
   return (
-    <div className={styles.boardPage}>
-      <div className={styles.contentWrapper}>
+    <div className={styles.container}>
+      <div className={styles.contentWrapper} style={{ marginTop: 40 }}>
+        <h1 className={styles.title}>{t('foundPage.title')}</h1>
         <button 
           className={styles.backBtn} 
           onClick={() => navigate(-1)}
-          aria-label="Go back"
+          aria-label={t('back')}
         >
-          <span>←</span> Back
+          <span>←</span> {t('back')}
         </button>
-        
-        <h1 className={styles.title}>Board Found</h1>
         
         <div className={styles.filters}>
           <div className={styles.filterGroup}>
             <input
               type="text"
-              placeholder="Search by name, description or location..."
+              placeholder={t('search.placeholder')}
               className={styles.searchInput}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Search input"
+              aria-label={t('search.placeholder')}
             />
             
             <select
               className={styles.categorySelect}
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              aria-label="Category select"
+              aria-label={t('categoryFilter.title')}
             >
-              {categories.map(category => (
-                <option key={category.value} value={category.value}>
-                  {category.label}
-                </option>
-              ))}
+              {categories.map(cat => <option key={cat.value} value={cat.value}>{cat.value === 'all' ? t('categoryFilter.all') : cat.label}</option>)}
             </select>
             
             <select
               className={styles.sortSelect}
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
-              aria-label="Sort order select"
+              aria-label={t('sort.newest')}
             >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
+              <option value="newest">{t('sort.newest')}</option>
+              <option value="oldest">{t('sort.oldest')}</option>
             </select>
           </div>
         </div>
 
-        <h2 className={styles.subtitle}>Relevant finds according to your criteria</h2>
+        <h2 className={styles.subtitle}>{t('subtitle.found')}</h2>
         
         <div className={styles.cardsContainer}>
           {renderContent}

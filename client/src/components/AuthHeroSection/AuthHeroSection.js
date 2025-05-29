@@ -3,6 +3,7 @@ import { Container, Row, Button, Image } from "react-bootstrap";
 import styles from "./AuthHeroSection.module.css";
 import arrow from "../../assets/arrow.png";
 import { useNavigate } from "react-router-dom";
+import { t } from '../../utils/i18n';
 
 const AuthHeroSection = () => {
   const navigate = useNavigate();
@@ -24,8 +25,13 @@ const AuthHeroSection = () => {
       <section
         className={`d-flex justify-content-start align-items-center ${styles.section}`}
       >
-        <h1 className={styles.heroTitle}>
-          Integrity <br /> is rewarded
+        <h1 className={styles.heroTitle} style={{ textAlign: 'left', whiteSpace: 'pre-line' }}>
+          {t('main.heroTitle').split('\n').map((line, idx) => (
+            <React.Fragment key={idx}>
+              {line}
+              {idx !== t('main.heroTitle').split('\n').length - 1 && <br />}
+            </React.Fragment>
+          ))}
         </h1>
         <div className={styles.buttonsGroup}>
           <Button
@@ -33,14 +39,14 @@ const AuthHeroSection = () => {
             variant="secondary"
             onClick={goToCreateFound}
           >
-            Report found
+            {t('main.reportFound')}
           </Button>
           <Button
             className={styles.reportButton}
             variant="outline-primary"
             onClick={goToCreateLost}
           >
-            Report lost
+            {t('main.reportLost')}
           </Button>
         </div>
       </section>

@@ -2,6 +2,7 @@ import React from "react";
 import { Container, Row, Button, Image } from "react-bootstrap";
 import styles from "./HeroSection.module.css";
 import arrow from "../../assets/arrow.png";
+import { t } from '../../utils/i18n';
 
 const HeroSection = () => {
   const scrollToCurrentFinds = () => {
@@ -16,8 +17,13 @@ const HeroSection = () => {
       <section
         className={`d-flex justify-content-start align-items-center ${styles.section}`}
       >
-        <h1 className={styles.heroTitle}>
-          Integrity <br /> is rewarded
+        <h1 className={styles.heroTitle} style={{ textAlign: 'left', whiteSpace: 'pre-line' }}>
+          {t('main.heroTitle').split('\n').map((line, idx) => (
+            <React.Fragment key={idx}>
+              {line}
+              {idx !== t('main.heroTitle').split('\n').length - 1 && <br />}
+            </React.Fragment>
+          ))}
         </h1>
       </section>
       <Row className="d-flex justify-content-center">

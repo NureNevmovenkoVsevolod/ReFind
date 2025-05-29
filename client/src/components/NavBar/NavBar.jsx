@@ -63,14 +63,14 @@ function NavBar() {
             className={styles.register}
             style={{ fontSize: "18px" }}
           >
-            {t('navbar.profile')}
+            {t('navbar.register')}
           </Button>
           <Button
             onClick={goToLogin}
             className={styles.login}
             style={{ fontSize: "18px" }}
           >
-            Login
+            {t('navbar.login')}
           </Button>
         </Nav>
       </Container>

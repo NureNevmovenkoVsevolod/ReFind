@@ -2,6 +2,7 @@ import React from "react";
 import styles from "./CreateLost.module.css";
 import CreateAdvertForm from "../components/CreateAdvertForm/CreateAdvertForm";
 import { useNavigate } from "react-router-dom";
+import { t } from '../utils/i18n';
 
 const CreateLost = () => {
   const navigate = useNavigate();
@@ -11,12 +12,12 @@ const CreateLost = () => {
       <button
         className={styles.backBtn}
         onClick={() => navigate(-1)}
-        aria-label="Go back"
+        aria-label={t('createLost.back')}
       >
-        <span>←</span> Back
+        <span>←</span> {t('createLost.back')}
       </button>
         <div className={styles.header}>
-          <h1>I Lost</h1>
+          <h1>{t('createLost.title')}</h1>
         </div>
         <CreateAdvertForm type="lost" />
       </div>

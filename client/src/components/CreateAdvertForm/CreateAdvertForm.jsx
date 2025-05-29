@@ -7,6 +7,20 @@ import phoneIcon from "../../assets/phone.png";
 import mailIcon from "../../assets/mail.png";
 import locationIcon from "../../assets/location.png";
 import SuccessModal from "../Modal/SuccessModal";
+import { t } from '../../utils/i18n';
+
+// Мапа з назви категорії з БД на ключ для t()
+const CATEGORY_NAME_TO_KEY = {
+  'Гаманець': 'category.wallet',
+  'Телефон': 'category.phone',
+  'Документ': 'category.document',
+  'Ключ': 'category.key',
+  'Тварина': 'category.animal',
+  'Одяг': 'category.clothes',
+  'Електроніка': 'category.electronics',
+  'Гаджет': 'category.gadget',
+  'Інше': 'category.other',
+};
 
 const CreateAdvertForm = ({ type, ...props }) => {
   const navigate = useNavigate();
@@ -53,7 +67,7 @@ const CreateAdvertForm = ({ type, ...props }) => {
         const data = await response.json();
         const formattedCategories = data.map((cat) => ({
           value: cat.categorie_id.toString(),
-          label: cat.categorie_name,
+          label: t(CATEGORY_NAME_TO_KEY[cat.categorie_name] || cat.categorie_name),
         }));
         setCategories(formattedCategories);
       } catch (error) {
@@ -387,7 +401,7 @@ const CreateAdvertForm = ({ type, ...props }) => {
     <form className={styles.form} onSubmit={handleSubmit}>
       <div className={styles.inputGroup}>
         <FormInput
-          label={type === "lost" ? "Назва втраченої речі" : "Назва знайденої речі"}
+          label={type === "lost" ? t('createAdvert.lostTitle') : t('createAdvert.foundTitle')}
           type="text"
           name="title"
           value={formData.title}
@@ -399,7 +413,7 @@ const CreateAdvertForm = ({ type, ...props }) => {
       </div>
       <div className={styles.inputGroup}>
         <FormInput
-          label={type === "lost" ? "Опис втраченої речі" : "Опис знайденої речі"}
+          label={type === "lost" ? t('createAdvert.lostDescription') : t('createAdvert.foundDescription')}
           type="textarea"
           name="description"
           value={formData.description}
@@ -411,7 +425,7 @@ const CreateAdvertForm = ({ type, ...props }) => {
       </div>{" "}
       <div className={styles.photoUpload}>
         <label className={styles.label}>
-          {type === "lost" ? "Фотографії втраченої речі" : "Фотографії знайденої речі"}
+          {type === "lost" ? t('createAdvert.lostPhotos') : t('createAdvert.foundPhotos')}
         </label>
         <div className={`${styles.uploadArea} ${errors.images ? styles.error : ''}`}>
           <div className={styles.imagePreview}>
@@ -420,7 +434,7 @@ const CreateAdvertForm = ({ type, ...props }) => {
                 <img src={image.preview} alt={`Preview ${index + 1}`} />
                 <div className={styles.imageActions}>
                   <label className={styles.replaceButton}>
-                    Замінити
+                    {t('createAdvert.replace')}
                     <input
                       type="file"
                       accept="image/*"
@@ -433,14 +447,14 @@ const CreateAdvertForm = ({ type, ...props }) => {
                     className={styles.removeButton}
                     onClick={() => removeImage(index)}
                   >
-                    Видалити
+                    {t('createAdvert.remove')}
                   </button>
                 </div>
               </div>
             ))}
             {formData.images.length < 5 && (
               <label className={styles.uploadButton}>
-                <span>+ Додати фото</span>
+                <span>{t('createAdvert.addPhoto')}</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -456,7 +470,7 @@ const CreateAdvertForm = ({ type, ...props }) => {
       </div>
       <div className={styles.inputGroup}>
         <FormInput
-          label="Виберіть категорію"
+          label={t('createAdvert.selectCategory')}
           type="select"
           name="categorie_id"
           value={formData.categorie_id}
@@ -465,19 +479,19 @@ const CreateAdvertForm = ({ type, ...props }) => {
           options={categories}
           error={errors.categorie_id}
           data-error={!!errors.categorie_id}
-          placeholder="Виберіть категорію"
+          placeholder={t('createAdvert.selectCategory')}
         />
       </div>
       <div className={styles.locationGroup}>
         <FormInput
-          label={`Де ви ${type === "lost" ? "втратили" : "знайшли"} річ?`}
+          label={type === "lost" ? t('createAdvert.whereLost') : t('createAdvert.whereFound')}
           type="text"
           name="location_description"
           value={formData.location_description}
           onChange={handleChange}
           icon={locationIcon}
           required
-          placeholder="Клікніть на карту, щоб вибрати місце"
+          placeholder={t('createAdvert.mapPlaceholder')}
           error={errors.location_description || errors.location_coordinates}
           data-error={!!(errors.location_description || errors.location_coordinates)}
         />
@@ -503,9 +517,7 @@ const CreateAdvertForm = ({ type, ...props }) => {
       </div>
       <div className={styles.inputGroup}>
         <FormInput
-          label={
-            type === "lost" ? "Дата втрати речі" : "Дата знахідки речі"
-          }
+          label={type === "lost" ? t('createAdvert.lostDate') : t('createAdvert.foundDate')}
           type="date"
           name="incident_date"
           value={formData.incident_date}
@@ -517,11 +529,7 @@ const CreateAdvertForm = ({ type, ...props }) => {
       </div>
       <div className={styles.inputGroup}>
         <FormInput
-          label={
-            type === "lost"
-              ? "Винагорода (0 - без винагороди)"
-              : "Винагорода (0 - безкоштовно)"
-          }
+          label={type === "lost" ? t('createAdvert.rewardLost') : t('createAdvert.rewardFound')}
           type="number"
           name="reward"
           value={formData.reward}
@@ -534,7 +542,7 @@ const CreateAdvertForm = ({ type, ...props }) => {
       </div>
       <div className={styles.contactInfo}>
         <FormInput
-          label="Номер телефону"
+          label={t('createAdvert.phone')}
           type="tel"
           name="phone"
           value={formData.phone}
@@ -546,7 +554,7 @@ const CreateAdvertForm = ({ type, ...props }) => {
         />
 
         <FormInput
-          label="Email (Необов'язково)"
+          label={t('createAdvert.email')}
           type="email"
           name="email"
           value={formData.email}
@@ -558,7 +566,7 @@ const CreateAdvertForm = ({ type, ...props }) => {
       </div>
       {type === "lost" && (
         <div className={styles.feeSection}>
-          <h3>Вартість публікації: 50₴</h3>
+          <h3>{t('createAdvert.price')}</h3>
         </div>
       )}
       <button
@@ -567,7 +575,7 @@ const CreateAdvertForm = ({ type, ...props }) => {
           type === "find" ? styles.outlineButton : ""
         }`}
       >
-        Опублікувати
+        {t('createAdvert.publish')}
       </button>
 
       <SuccessModal 
@@ -575,10 +583,10 @@ const CreateAdvertForm = ({ type, ...props }) => {
         handleClose={handleCloseModal}
         message={
           paymentStatus === 'success' 
-            ? "Оголошення створено успішно!" 
+            ? t('createAdvert.success')
             : paymentStatus === 'canceled'
-            ? "Оплату скасовано. Оголошення не створене."
-            : "Сталася помилка при створенні оголошення."
+            ? t('createAdvert.canceled')
+            : t('createAdvert.error')
         }
       />
     </form>
