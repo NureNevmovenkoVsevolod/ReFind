@@ -47,10 +47,9 @@
 
 📁 client/         → React (frontend)
 📁 server/         → Node.js + Express API
-📁 db/             → Моделі Sequelize
-📁 mobile/         → React Native (опційно)
-📁 public/         → assets, іконки, favicon
-📁 uploads/        → зображення
+📁 server/models/             → Моделі Sequelize
+📁 mobile/         → React Native
+📁 client/public/         → assets, іконки, favicon
 
 ````
 
@@ -67,7 +66,6 @@ cd refind
 2. **Start**
 
 ```bash
-npm run install-all
 npm run build
 npm start
 ```
