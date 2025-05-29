@@ -123,7 +123,24 @@ class AuthController extends IAuthController {
             if (!user) {
                 return res.status(401).json({ message: "Invalid credentials" });
             }
-
+            // Перевірка блокування
+            if (user.is_blocked) {
+                const now = new Date();
+                const blockedUntil = new Date(user.blocked_until);
+                
+                if (user.blocked_until && blockedUntil > now) {
+                    return res.status(403).json({ 
+                        message: "Account is blocked until " + blockedUntil.toLocaleString('uk-UA', { timeZone: 'Europe/Kiev' }),
+                        blocked_until: user.blocked_until
+                    });
+                } else {
+                    await user.update({ 
+                        is_blocked: false,
+                        blocked_at: null,
+                        blocked_until: null
+                    });
+                }
+            }
             const isValidPassword = await user.comparePassword(password);
             if (!isValidPassword) {
                 return res.status(401).json({ message: "Invalid credentials" });
