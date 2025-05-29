@@ -1,5 +1,6 @@
-import { ImageBackground, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { ImageBackground, StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import backround from '../../assets/back.jpg';
+import logo from '../../assets/logo.png';
 
 function HelloScreen({ navigation }) {
     return (
@@ -8,21 +9,19 @@ function HelloScreen({ navigation }) {
       style={styles.background}
       resizeMode="cover"
     >
-      <View style={styles.container}>
-        <View style={styles.text}>
-            <Text style={styles.title}>Знайдіть свої втрачені речі</Text>
-            <Text style={styles.subtitle}>Онлайн бюро знахідок</Text>
+      <View style={styles.overlay}>
+        <View style={styles.logoContainer}>
+          <Image source={logo} style={styles.logo} resizeMode="contain" />
+          <Text style={styles.appName}>ReFind</Text>
         </View>
-
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('Login')}>
             <Text style={styles.loginButtonText}>Увійти</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.registerButton} onPress={() => navigation.navigate('Register')} >
-            <Text style={styles.registerButtonText}>Зареєструватися</Text>
+            <Text style={styles.registerButtonText}>Зареєструватись</Text>
           </TouchableOpacity>
         </View>
-
       </View>
     </ImageBackground>
     );
@@ -30,67 +29,84 @@ function HelloScreen({ navigation }) {
 
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "space-between", 
-      paddingVertical: 50, 
-      width: '100%', 
-    },
-    text:{
-        marginTop: 140
-    },
     background: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
     },
-    title: {
-      fontSize: 24,
-      fontWeight: 'bold',
-      color: '#333',
-      textAlign: 'center',
-      marginBottom: 5,
+    overlay: {
+      flex: 1,
+      width: '100%',
+      backgroundColor: 'rgba(255,255,255,0.85)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 24,
     },
-    subtitle: {
-      fontSize: 16,
-      color: '#555', 
-      textAlign: 'center',
-      marginBottom: 40,
+    logoContainer: {
+      alignItems: 'center',
+      marginBottom: 60,
+    },
+    logo: {
+      width: 100,
+      height: 100,
+      marginBottom: 16,
+      borderRadius: 20,
+      backgroundColor: '#f3f3f3',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    appName: {
+      fontSize: 36,
+      fontWeight: 'bold',
+      color: '#6200EE',
+      letterSpacing: 2,
+      marginBottom: 10,
     },
     buttonContainer: {
-      width: '80%', 
-      alignItems: 'center',
-      marginBottom: 20,
-    },
-    loginButton: {
-      backgroundColor: '#6200EE', 
-      paddingVertical: 15,
-      paddingHorizontal: 40,
-      borderRadius: 25, 
-      marginBottom: 15,
       width: '100%',
       alignItems: 'center',
+    },
+    loginButton: {
+      backgroundColor: '#6200EE',
+      paddingVertical: 16,
+      borderRadius: 30,
+      width: '100%',
+      alignItems: 'center',
+      marginBottom: 18,
+      shadowColor: '#6200EE',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 6,
+      elevation: 4,
     },
     loginButtonText: {
       color: 'white',
-      fontSize: 18,
+      fontSize: 20,
       fontWeight: 'bold',
+      letterSpacing: 1,
     },
     registerButton: {
-      backgroundColor: 'transparent',
-      paddingVertical: 15,
-      paddingHorizontal: 40,
-      borderRadius: 25,
+      backgroundColor: 'white',
       borderWidth: 2,
-      borderColor: '#6200EE', 
+      borderColor: '#6200EE',
+      paddingVertical: 16,
+      borderRadius: 30,
       width: '100%',
       alignItems: 'center',
+      shadowColor: '#6200EE',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
     },
     registerButtonText: {
-      color: '#6200EE', 
-      fontSize: 18,
+      color: '#6200EE',
+      fontSize: 20,
       fontWeight: 'bold',
+      letterSpacing: 1,
     },
   });
 
