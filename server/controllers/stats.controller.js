@@ -28,7 +28,7 @@ class StatsController {
     }
     async getCountActiveComplaints(req, res) {
         try {
-            res.json({ count: await Complaint.count({ where: { complaint_status: 'active' } }) });
+            res.json({ count: await Complaint.count({ where: { complaint_status: 'pending' } }) });
         } catch {
             res.status(500).json({ message: "Failed to getCountActiveComplaints" });
         }

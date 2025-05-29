@@ -6,15 +6,48 @@ import Image from '../models/image.model.js';
 
 class ComplaintController {
     constructor() {
+        this.create = this.create.bind(this);
         this.getAll = this.getAll.bind(this);
         this.getById = this.getById.bind(this);
         this.rejectComplaint = this.rejectComplaint.bind(this);
         this.deleteAdvertisement = this.deleteAdvertisement.bind(this);
     }
 
+    async create(req, res) {
+        try {
+            const { advertisement_id, complaints_text, title } = req.body;
+            const user_id = req.user.id;
+
+            // Перевірка чи існує оголошення
+            const advertisement = await Advertisement.findByPk(advertisement_id);
+            if (!advertisement) {
+                return res.status(404).json({ message: "Оголошення не знайдено" });
+            }
+
+            const complaint = await Complaint.create({
+                user_id,
+                advertisement_id,
+                complaints_text,
+                title,
+                complaint_status: "pending"
+            });
+
+            res.status(201).json({
+                message: "Скаргу успішно створено",
+                complaint
+            });
+        } catch (error) {
+            console.error("Помилка при створенні скарги:", error);
+            res.status(500).json({ message: "Помилка при створенні скарги" });
+        }
+    }
+
     async getAll(req, res) {
         try {
             const complaints = await Complaint.findAll({
+                where: {
+                    complaint_status: 'pending'
+                },
                 include: [
                     {
                         model: User,

@@ -19,6 +19,7 @@ import BoardLost from "./pages/BoardLost";
 import AdminModers from "./pages/AdminModers";
 import ModerNavBar from "./components/ModerNavBar/ModerNavBar";
 import ModerAdvert from "./pages/Moder/ModerAdvert";
+import ModerCompl from "./pages/Moder/ModerCompl";
 import UserProfile from "./pages/UserProfile";
 import ModerStats from "./pages/Moder/ModerStats";
 import PrivacyPolicy from "./components/PrivacyPolicy/PrivacyPolicy";
@@ -110,7 +111,7 @@ function App() {
           />
           <Route path="/moder/stats" element={<ModerStats/>}/>
           <Route path="/moder/advertisments" element={<ModerAdvert />} />
-          <Route path="/moder/complaints" />
+          <Route path="/moder/complaints" element={<ModerCompl />} />
           <Route path="/" element={<Navigate to="/moder/advertisments" />} />
           <Route path="*" element={<Navigate to="/moder/advertisments" />} />
         </Routes>

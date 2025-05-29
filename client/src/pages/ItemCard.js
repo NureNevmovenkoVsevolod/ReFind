@@ -11,6 +11,7 @@ import Loader from "../components/Loader/Loader";
 import axios from "axios";
 import Toast from "../components/Toast/Toast";
 import { t, getLanguage } from "../utils/i18n";
+import ComplaintModal from "../components/Modal/ComplaintModal";
 
 function ItemCard({ isLogin, isModerator }) {
   const { id: encodedId } = useParams();
@@ -25,6 +26,9 @@ function ItemCard({ isLogin, isModerator }) {
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [address, setAddress] = useState("");
+  const [showComplaintModal, setShowComplaintModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [complaintSuccess, setComplaintSuccess] = useState(false);
   const navigate = useNavigate();
 
   // Memoized decodeId
@@ -144,6 +148,27 @@ function ItemCard({ isLogin, isModerator }) {
     }
   }, [isLogin, favoriteLoading, ad?.categorie_id, isFavorite]);
 
+  const handleComplaintSubmit = async (formData) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${process.env.REACT_APP_SERVER_URL}/api/complaints`,
+        {
+          advertisement_id: decodedId,
+          complaints_text: formData.description,
+          title: formData.title
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setShowComplaintModal(false);
+      setComplaintSuccess(true);
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error("Error submitting complaint:", error);
+      setError("Помилка при відправці скарги");
+    }
+  };
+
   // Memoized ad fields
   const images = useMemo(() => ad?.Images?.map((img) => `${img.image_url}`) || [], [ad]);
   const locationCoordinates = useMemo(() => {
@@ -222,6 +247,14 @@ function ItemCard({ isLogin, isModerator }) {
                 <div className={styles.userName}>{ad.User.first_name || "User"}</div>
               </div>
             )}
+            {isLogin && !isModerator && 
+               <button 
+               className={styles.complaintBtn}
+               onClick={() => setShowComplaintModal(true)}
+             >
+               Залишити скаргу
+             </button>
+            }
             {isModerator && !ad.mod_check && (
               <div className={styles.moderationButtons}>
                 <button className={`${styles.modButton} ${styles.approveButton}`} onClick={() => handleModeration(true)} disabled={moderationStatus !== null}>Схвалити</button>
@@ -245,6 +278,19 @@ function ItemCard({ isLogin, isModerator }) {
           </div>
         </div>
       </div>
+
+      <ComplaintModal
+        show={showComplaintModal}
+        handleClose={() => setShowComplaintModal(false)}
+        onSubmit={handleComplaintSubmit}
+        advertisementTitle={ad?.title}
+      />
+
+      <SuccessModal
+        show={showSuccessModal}
+        handleClose={() => setShowSuccessModal(false)}
+        message={`Дякуємо, що повідомили нас про проблему з оголошенням "${ad?.title}". Ми отримали вашу скаргу та розпочали її перевірку.`}
+      />
     </div>
   );
 }

@@ -1,0 +1,38 @@
+.formGroup {
+    margin-bottom: 20px;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+.formGroup input,
+.formGroup textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.formGroup textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.errorInput {
+    border-color: #dc3545 !important;
+}
+
+.errorMessage {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.modalBody {
+    padding: 20px;
+} 

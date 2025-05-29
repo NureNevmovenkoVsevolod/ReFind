@@ -2,4 +2,43 @@
     min-height: 100vh;
     background-color: #F8FAFC;
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
+    padding: 24px;
+}
+
+.content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.content h1 {
+    font-size: 24px;
+    color: #1a1a1a;
+    margin-bottom: 24px;
+}
+
+.complaintsList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.noComplaints {
+    text-align: center;
+    color: #666;
+    font-size: 16px;
+    padding: 32px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.error {
+    text-align: center;
+    color: #C62828;
+    font-size: 16px;
+    padding: 32px;
+    background: #FFEBEE;
+    border-radius: 12px;
+    margin: 24px auto;
+    max-width: 600px;
+}
