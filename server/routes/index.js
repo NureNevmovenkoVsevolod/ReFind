@@ -5,6 +5,8 @@ import statsRouter from "../routes/stats.routes.js";
 import CategoriesController from "../controllers/categories.controller.js";
 import moderRouter from "../routes/mod.routes.js"
 import complaintsRouter from '../routes/complaints.routes.js';
+import fcmRoutes from '../routes/fcm.routes.js';
+
 
 const router = Router();
 
@@ -14,5 +16,6 @@ router.use("/user", userRouter);
 router.use("/moder", moderRouter);
 router.use("/stats", statsRouter);
 router.use("/complaints", complaintsRouter);
+router.use('/fcm', fcmRoutes);
 
 export default router;

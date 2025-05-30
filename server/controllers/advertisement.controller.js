@@ -9,6 +9,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { v2 as cloudinary } from "cloudinary";
 import IAdvertisementController from "../interfaces/IAdvertisementController.js";
+import notificationService from '../services/notificationService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -125,7 +126,9 @@ class AdvertisementController extends IAdvertisementController {
         where: { advertisement_id: advertisement.advertisement_id },
         include: [{ model: Image, attributes: ["image_url"] }],
       });
+
       res.status(201).json(completeAd);
+
     } catch (error) {
       console.error("Error creating advertisement:", error);
       res
@@ -478,6 +481,15 @@ class AdvertisementController extends IAdvertisementController {
       if (approved) {
         await advertisement.update({ mod_check: true });
         res.json({ message: "Оголошення схвалено" });
+
+        setTimeout(async () => {
+          try {
+            await notificationService.sendNewAdvertisementNotification(advertisement);
+          } catch (error) {
+            console.error('Failed to send notification:', error);
+          }
+        }, 1000);
+
       } else {
         await advertisement.update({ status: "rejected" });
         res.json({ message: "Оголошення відхилено" });

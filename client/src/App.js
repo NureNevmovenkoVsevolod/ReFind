@@ -23,6 +23,8 @@ import ModerCompl from "./pages/Moder/ModerCompl";
 import UserProfile from "./pages/UserProfile";
 import ModerStats from "./pages/Moder/ModerStats";
 import PrivacyPolicy from "./components/PrivacyPolicy/PrivacyPolicy";
+import notificationService from './services/notificationService';
+
 
 axios.interceptors.response.use(
   response => response,
@@ -63,6 +65,7 @@ function App() {
         .then(() => {
           setIsLogin(true);
           setIsLoading(false);
+          notificationService.initialize();
         })
         .catch((error) => {
           localStorage.removeItem("token");
