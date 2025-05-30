@@ -2,6 +2,8 @@
 import { messaging, getToken, onMessage } from '../config/firebase';
 import axios from 'axios';
 import { encodeId } from '../utils/encodeId';
+import { createRoot } from 'react-dom/client';
+import NotificationModal from '../components/NotificationModal/NotificationModal';
 
 class NotificationService {
   constructor() {
@@ -13,16 +15,52 @@ class NotificationService {
     if (this.isInitialized) return;
 
     try {
-      // Запитати дозвіл на сповіщення
-      const permission = await Notification.requestPermission();
-      
-      if (permission === 'granted') {
-        console.log('Notification permission granted');
+      const currentPermission = Notification.permission;
+      console.log('Current browser permission status:', currentPermission);
+
+      if (currentPermission === 'default') {
+        // Створюємо контейнер для модального вікна
+        const modalContainer = document.createElement('div');
+        modalContainer.id = 'notification-modal-root';
+        document.body.appendChild(modalContainer);
+
+        // Створюємо корінь React
+        const root = createRoot(modalContainer);
+
+        // Функція для закриття модального вікна
+        const closeModal = () => {
+          root.unmount();
+          document.body.removeChild(modalContainer);
+        };
+
+        // Функція для увімкнення сповіщень
+        const enableNotifications = async () => {
+          closeModal();
+          const permission = await Notification.requestPermission();
+          if (permission === 'granted') {
+            console.log('Notification permission granted');
+            await this.getTokenAndSave();
+            this.setupMessageListener();
+            this.isInitialized = true;
+          } else {
+            console.log('Notification permission denied');
+          }
+        };
+
+        // Рендеримо модальне вікно
+        root.render(
+          <NotificationModal
+            onEnable={enableNotifications}
+            onClose={closeModal}
+          />
+        );
+      } else if (currentPermission === 'granted') {
+        console.log('Notification permission already granted');
         await this.getTokenAndSave();
         this.setupMessageListener();
         this.isInitialized = true;
       } else {
-        console.log('Notification permission denied');
+        console.log('Notification permission was previously denied');
       }
     } catch (error) {
       console.error('Error initializing notifications:', error);
