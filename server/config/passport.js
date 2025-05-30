@@ -38,7 +38,7 @@ passport.use(
               await user.update({
                 auth_provider: "google",
                 provider_id: profile.id,
-                user_pfp: profile.photos && profile.photos[0] ? profile.photos[0].value : null,
+                user_pfp: user.user_pfp || (profile.photos && profile.photos[0] ? profile.photos[0].value : null),
               });
 
               await user.reload();
@@ -82,7 +82,7 @@ passport.use(
               await user.update({
                 auth_provider: "facebook",
                 provider_id: profile.id,
-                user_pfp: profile.photos && profile.photos[0] ? profile.photos[0].value : null,
+                user_pfp: user.user_pfp || (profile.photos && profile.photos[0] ? profile.photos[0].value : null),
               });
               console.log(user);
               await user.reload();
