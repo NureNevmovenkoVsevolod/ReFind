@@ -11,6 +11,7 @@ import RegisterScreen from "../screens/RegisterScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import MapScreen from "../screens/MapScreen";
 import AdDetail from '../screens/AdDetail';
+import EditProfileScreen from '../screens/EditProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -83,6 +84,11 @@ export default function AppNavigator() {
           name="AdvertisementDetail"
           component={AdDetail}
           options={{ title: "Оголошення", headerShown: false }}
+        />
+        <Stack.Screen
+          name="EditProfile"
+          component={EditProfileScreen}
+          options={{ title: "Редагувати профіль", headerShown: true }}
         />
       </Stack.Navigator>
     </NavigationContainer>

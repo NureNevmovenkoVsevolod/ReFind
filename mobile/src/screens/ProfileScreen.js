@@ -71,6 +71,9 @@ function ProfileScreen({ navigation }) {
               <Text style={styles.name}>{user.first_name || 'Користувач'}</Text>
               {user.last_name ? <Text style={styles.lastName}>{user.last_name}</Text> : null}
               {user.email ? <Text style={styles.email}>{user.email}</Text> : null}
+              <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('EditProfile')}>
+                <Text style={styles.editButtonText}>Редагувати профіль</Text>
+              </TouchableOpacity>
             </View>
             <Text style={styles.sectionTitle}>Мої оголошення</Text>
             {adsLoading ? (
@@ -155,6 +158,19 @@ const styles = StyleSheet.create({
   logoutButtonText: {
     color: 'white',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  editButton: {
+    marginTop: 10,
+    backgroundColor: '#5a67d8',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignSelf: 'center',
+  },
+  editButtonText: {
+    color: 'white',
+    fontSize: 15,
     fontWeight: 'bold',
   },
 });
