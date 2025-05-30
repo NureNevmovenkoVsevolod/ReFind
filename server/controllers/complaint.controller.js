@@ -138,6 +138,7 @@ class ComplaintController {
                         attributes: [
                             'advertisement_id',
                             'title',
+                            'user_id',
                             'description',
                             'categorie_id',
                             'type',
@@ -181,6 +182,7 @@ class ComplaintController {
                     id: complaint.Advertisement.advertisement_id,
                     title: complaint.Advertisement.title,
                     description: complaint.Advertisement.description,
+                    user_id: complaint.Advertisement.user_id,
                     type: complaint.Advertisement.type,
                     location_description: complaint.Advertisement.location_description,
                     location_coordinates: JSON.parse(complaint.Advertisement.location_coordinates),

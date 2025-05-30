@@ -247,7 +247,10 @@ function ItemCard({ isLogin, isModerator }) {
                 <div className={styles.userName}>{ad.User.first_name || "User"}</div>
               </div>
             )}
-            {isLogin && !isModerator && 
+            {isLogin && !isModerator && ad.User && (() => {
+              const currentUser = JSON.parse(localStorage.getItem('user'));
+              return ad.User.user_id !== currentUser?.id;
+            })() && 
                <button 
                className={styles.complaintBtn}
                onClick={() => setShowComplaintModal(true)}

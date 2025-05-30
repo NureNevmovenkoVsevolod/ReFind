@@ -236,7 +236,7 @@ class AdvertisementController extends IAdvertisementController {
         where: { advertisement_id: req.params.id },
         include: [
           { model: Image, attributes: ["image_url"] },
-          { model: User, attributes: ["first_name", "user_pfp"] },
+          { model: User, attributes: ["user_id", "first_name", "user_pfp"] },
           { model: Category, attributes: ["categorie_id", "categorie_name"] },
         ],
       });
