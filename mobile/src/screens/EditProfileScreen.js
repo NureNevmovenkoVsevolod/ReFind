@@ -4,22 +4,21 @@ import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import OurTextInput from '../components/OurTextInput';
 import EmailInput from '../components/EmailInput';
-import PasswordInput from '../components/PasswordInput';
 import Constants from 'expo-constants';
 
 const DEFAULT_AVATAR = 'https://via.placeholder.com/100x100.png?text=User';
-const apiUrl = Constants.expoConfig?.extra?.API_URL || 'https://refind-wm5m.onrender.com/api';
+const apiUrl = 'https://refind-wm5m.onrender.com/api';
 
 const EditProfileScreen = ({ navigation }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
   const [avatar, setAvatar] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [debugInfo, setDebugInfo] = useState('');
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -27,6 +26,9 @@ const EditProfileScreen = ({ navigation }) => {
       const userData = await AsyncStorage.getItem('userData');
       if (userData) {
         const user = JSON.parse(userData);
+        if (!user.user_id && user.id) {
+          user.user_id = user.id;
+        }
         setFirstName(user.first_name || '');
         setLastName(user.last_name || '');
         setEmail(user.email || '');
@@ -76,26 +78,45 @@ const EditProfileScreen = ({ navigation }) => {
   };
 
   const handleSave = async () => {
+    console.log('handleSave called');
     if (!firstName.trim() || !lastName.trim()) {
       setError("Ім'я та прізвище обов'язкові");
+      setDebugInfo('Валідація: порожнє імʼя або прізвище');
       return;
     }
     if (!validateEmail(email)) {
       setError('Некоректний email');
+      setDebugInfo('Валідація: некоректний email');
       return;
     }
     if (phone && !validatePhone(phone)) {
       setError('Некоректний номер телефону');
+      setDebugInfo('Валідація: некоректний телефон');
       return;
     }
     setSaving(true);
     setError('');
+    setDebugInfo('Відправка запиту...');
     try {
       const token = await AsyncStorage.getItem('userToken');
       const userData = await AsyncStorage.getItem('userData');
       const user = userData ? JSON.parse(userData) : {};
+      if (!user.user_id && user.id) {
+        user.user_id = user.id;
+      }
       let avatarUrl = avatar;
+      console.log('user:', user);
+      console.log('user_id:', user.user_id);
+      setDebugInfo('user_id: ' + user.user_id + '\nТокен: ' + (token ? token.slice(0, 10) + '...' : 'немає'));
+      if (!user.user_id) {
+        setError('Не знайдено user_id у userData!');
+        setDebugInfo('userData не містить user_id.');
+        setSaving(false);
+        return;
+      }
+      // Якщо аватарка локальна, завантажити на сервер
       if (avatar && avatar.startsWith('file')) {
+        setDebugInfo('Завантаження аватарки...');
         const formData = new FormData();
         formData.append('avatar', {
           uri: avatar,
@@ -112,51 +133,65 @@ const EditProfileScreen = ({ navigation }) => {
             body: formData,
           }, 20000);
           if (!uploadRes.ok) {
+            setDebugInfo('Помилка upload: ' + uploadRes.status);
             throw new Error('Помилка завантаження аватарки');
           }
           const uploadData = await uploadRes.json();
           avatarUrl = uploadData.avatarUrl || avatarUrl;
+          setDebugInfo('Аватарка завантажена: ' + avatarUrl);
         } catch (e) {
           setError(e.message || 'Помилка завантаження аватарки');
+          setDebugInfo('Помилка upload: ' + e.message);
           setSaving(false);
           return;
         }
       }
+      setDebugInfo('Оновлення профілю...');
+      const endpoint = `${apiUrl}/user/${user.user_id}`;
+      console.log('Endpoint:', endpoint);
       let res;
+      const bodyData = {
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        user_pfp: avatarUrl,
+        phone_number: phone,
+      };
+      setDebugInfo('Дані: ' + JSON.stringify(bodyData));
+      console.log('bodyData:', bodyData);
       try {
-        res = await fetchWithTimeout(`${apiUrl}/user/${user.user_id || user.id}`, {
+        res = await fetchWithTimeout(endpoint, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            first_name: firstName,
-            last_name: lastName,
-            email,
-            phone_number: phone,
-            user_pfp: avatarUrl,
-            ...(password ? { password } : {}),
-          }),
+          body: JSON.stringify(bodyData),
         }, 20000);
       } catch (e) {
         setError(e.message || 'Помилка збереження (таймаут або мережа)');
+        setDebugInfo('Помилка fetch: ' + e.message);
         setSaving(false);
         return;
       }
+      console.log('res.status:', res.status);
       if (!res.ok) {
         let err;
         try { err = await res.json(); } catch { err = {}; }
         setError(err.message || 'Помилка оновлення профілю');
+        setDebugInfo('Помилка профілю: ' + (err.message || res.status));
+        console.log('err:', err);
         setSaving(false);
         return;
       }
       const updatedUser = await res.json();
       await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
+      setDebugInfo('Профіль оновлено!');
       Alert.alert('Успіх', 'Профіль оновлено!');
       navigation.goBack();
     } catch (e) {
       setError(e.message || 'Помилка збереження');
+      setDebugInfo('catch: ' + e.message);
     } finally {
       setSaving(false);
     }
@@ -200,12 +235,11 @@ const EditProfileScreen = ({ navigation }) => {
         label="Телефон"
         icon="phone"
       />
-      <PasswordInput
-        value={password}
-        onChangeText={setPassword}
-      />
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={saving}>
+      {debugInfo ? (
+        <Text style={{ color: 'gray', fontSize: 12, marginTop: 8 }}>{debugInfo}</Text>
+      ) : null}
+      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <Text style={styles.saveButtonText}>{saving ? 'Збереження...' : 'Зберегти зміни'}</Text>
       </TouchableOpacity>
     </ScrollView>
