@@ -126,13 +126,17 @@ const AdDetail = ({ route, navigation }) => {
               <Text style={styles.protoMainBtnText}>Це моя річ</Text>
             </TouchableOpacity>
             <View style={styles.protoFinderBtnsRow}>
-              <TouchableOpacity style={styles.protoFinderBtn} onPress={handleEmail}>
+              {/* <TouchableOpacity style={styles.protoFinderBtn} onPress={handleEmail}>
                 <MaterialIcons name="chat" size={20} color="#5a67d8" />
                 <Text style={styles.protoFinderBtnText}>Написати</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.protoFinderBtn} onPress={handleCall}>
                 <FontAwesome name="phone" size={20} color="#5a67d8" />
                 <Text style={styles.protoFinderBtnText}>Зателефонувати</Text>
+              </TouchableOpacity> */}
+              <TouchableOpacity style={[styles.protoFinderBtn, {backgroundColor: '#2563eb'}]}>
+                <MaterialIcons name="info" size={20} color="#fff" />
+                <Text style={[styles.protoFinderBtnText, {color: '#fff'}]}>Запросити контактні дані</Text>
               </TouchableOpacity>
             </View>
           </View>

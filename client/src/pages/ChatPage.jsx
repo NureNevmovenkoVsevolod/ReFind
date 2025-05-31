@@ -12,12 +12,12 @@ const ChatPage = () => {
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
+  const [interlocutorAd, setInterlocutorAd] = useState(null);
   const userId = JSON.parse(localStorage.getItem('user'))?.id;
   const [searchParams, setSearchParams] = useSearchParams();
 
   const socket = io(process.env.REACT_APP_SERVER_URL, { withCredentials: true });
 
-  // Завантаження чатів
   useEffect(() => {
     const token = localStorage.getItem('token');
     axios.get(`${process.env.REACT_APP_SERVER_URL}/api/chat`, {
@@ -29,7 +29,6 @@ const ChatPage = () => {
       });
   }, []);
 
-  // Якщо є user в query, створити/відкрити чат (тільки після завантаження чатів)
   useEffect(() => {
     if (!chatsLoaded) return;
     const userTo = searchParams.get('user');
@@ -65,10 +64,8 @@ const ChatPage = () => {
           });
       }
     }
-    // eslint-disable-next-line
   }, [searchParams, userId, chatsLoaded]);
 
-  // Завантаження повідомлень для вибраного чату
   useEffect(() => {
     if (selectedChatId) {
       const token = localStorage.getItem('token');
@@ -87,7 +84,6 @@ const ChatPage = () => {
 
   useEffect(() => {
     socket.on('receiveMessage', (msg) => {
-      // Оновити ChatWindow, якщо це активний чат
       if (msg.chat_id === selectedChatId) {
         setMessages(prev => [
           ...prev,
@@ -98,7 +94,6 @@ const ChatPage = () => {
           }
         ]);
       }
-      // Оновити ChatList локально
       setChats(prevChats => {
         let found = false;
         const updated = prevChats.map(chat => {
@@ -128,7 +123,15 @@ const ChatPage = () => {
 
   const handleSelectChat = useCallback((id) => {
     setSelectedChatId(id);
-  }, []);
+    const chat = chats.find(c => (c.chat_id || c.id) === id);
+    if (chat && chat.advertisement_id) {
+      axios.get(`${process.env.REACT_APP_SERVER_URL}/api/advertisement/${chat.advertisement_id}`)
+        .then(res => setInterlocutorAd(res.data))
+        .catch(() => setInterlocutorAd(null));
+    } else {
+      setInterlocutorAd(null);
+    }
+  }, [chats]);
 
   const handleBack = useCallback(() => {
     setSelectedChatId(null);
@@ -162,8 +165,6 @@ const ChatPage = () => {
   const handleDeleteChat = useCallback(async (chatId) => {
     const token = localStorage.getItem('token');
     const chatToDelete = chats.find(chat => (chat.chat_id || chat.id) === chatId);
-    console.log('Видалення чату:', chatId, chatToDelete);
-    console.log('Запит на видалення чату:', `${process.env.REACT_APP_SERVER_URL}/api/chat/${chatId}`);
     try {
       await axios.delete(`${process.env.REACT_APP_SERVER_URL}/api/chat/${chatId}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -195,6 +196,7 @@ const ChatPage = () => {
               setInputValue={setInputValue}
               chatId={selectedChatId}
               userId={userId}
+              advertisement={interlocutorAd}
             />
           </>
         )}
