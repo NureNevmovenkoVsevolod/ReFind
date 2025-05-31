@@ -34,6 +34,9 @@ function AuthNavBar({ onLogout, userData }) {
   const goToCreateFound = () => {
     navigate("/found/create");
   };
+  const goToChat = () => {
+    navigate('/chat');
+  };
 
   return (
     <Navbar bg="primary" data-bs-theme="dark">
@@ -68,7 +71,7 @@ function AuthNavBar({ onLogout, userData }) {
           <Button onClick={goToBoardLost} className={styles.text}>
             {t('navbar.boardlost')}
           </Button>
-          <Button href="#chat" className={styles.text}>
+          <Button onClick={goToChat} className={styles.text}>
             {t('navbar.chat')}
           </Button>
         </Nav>

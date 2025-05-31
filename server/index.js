@@ -14,6 +14,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import jwt from "jsonwebtoken";
 import verifyToken from "./middlewares/auth.middleware.js";
+import http from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+import Message from './models/messages.model.js';
 
 const CLIENT_LINK = process.env.REACT_APP_CLIENT_URL;
 const __filename = fileURLToPath(import.meta.url);
@@ -78,18 +81,52 @@ app.get("/*path", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/build", "index.html"));
 });
 
+const server = http.createServer(app);
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: CLIENT_LINK,
+    credentials: true,
+  },
+});
+
+io.on('connection', (socket) => {
+  socket.on('joinChat', (chatId) => {
+    socket.join(`chat_${chatId}`);
+  });
+
+  socket.on('sendMessage', async (data) => {
+    // data: { chat_id, user_id, message_text }
+    try {
+      const message = await Message.create({
+        chat_id: data.chat_id,
+        user_id: data.user_id,
+        message_text: data.message_text
+      });
+      io.to(`chat_${data.chat_id}`).emit('receiveMessage', {
+        message_id: message.message_id,
+        chat_id: message.chat_id,
+        user_id: message.user_id,
+        message_text: message.message_text,
+        sent_at: message.createdAt
+      });
+    } catch (err) {
+      socket.emit('errorMessage', { error: 'Failed to save message' });
+    }
+  });
+});
+
 const startServer = async () => {
   try {
     await sequelize.authenticate();
     await sequelize.sync({ alter: true });
-    console.log("✅ З’єднання з Railway встановлено!");
+    console.log("✅ З'єднання з Railway встановлено!");
 
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}`);
     });
   } catch (error) {
     console.error("Error starting server:", error);
-    console.error("❌ Помилка з’єднання:", error);
+    console.error("❌ Помилка з'єднання:", error);
   }
 };
 
