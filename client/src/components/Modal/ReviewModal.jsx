@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Modal } from 'react-bootstrap';
 
 const ReviewModal = ({
@@ -17,35 +17,41 @@ const ReviewModal = ({
   contextText,
 }) => {
   const [isChecking, setIsChecking] = useState(false);
+  const [hasChecked, setHasChecked] = useState(false);
+
+  const checkExistingReview = useCallback(async () => {
+    if (!show || !reviewer || !reviewed || hasChecked) return;
+    
+    setIsChecking(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(
+        `${process.env.REACT_APP_SERVER_URL}/api/review/check?reviewer_id=${reviewer.id || reviewer.user_id}&reviewed_id=${reviewed.user_id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await response.json();
+      
+      if (data.exists) {
+        alert('Ви вже залишили відгук для цього користувача');
+        onClose();
+      }
+      setHasChecked(true);
+    } catch (e) {
+      console.error('Error checking review:', e);
+    } finally {
+      setIsChecking(false);
+    }
+  }, [show, reviewer, reviewed, onClose, hasChecked]);
 
   useEffect(() => {
-    const checkExistingReview = async () => {
-      if (!show || !reviewer || !reviewed) return;
-      
-      setIsChecking(true);
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(
-          `${process.env.REACT_APP_SERVER_URL}/api/review/check?reviewer_id=${reviewer.id || reviewer.user_id}&reviewed_id=${reviewed.user_id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const data = await response.json();
-        
-        if (data.exists) {
-          alert('Ви вже залишили відгук для цього користувача');
-          onClose();
-        }
-      } catch (e) {
-        console.error('Error checking review:', e);
-      } finally {
-        setIsChecking(false);
-      }
-    };
-
-    checkExistingReview();
-  }, [show, reviewer, reviewed, onClose]);
+    if (show) {
+      checkExistingReview();
+    } else {
+      setHasChecked(false);
+    }
+  }, [show, checkExistingReview]);
 
   if (isChecking) {
     return null;
