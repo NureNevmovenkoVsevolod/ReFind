@@ -10,3 +10,4 @@ npm-shrinkwrap.json
 .env.test.local
 .env.production.local
 server/.env
+mobile/src/screens/.MapScreen.js.swp
