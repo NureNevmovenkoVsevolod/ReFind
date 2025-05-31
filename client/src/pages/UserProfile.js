@@ -14,6 +14,7 @@ import SuccessModal from "../components/Modal/SuccessModal";
 import EditAdvertForm from "../components/EditAdvertForm/EditAdvertForm";
 import Loader from "../components/Loader/Loader";
 import ReviewModal from '../components/Modal/ReviewModal';
+import ReviewsModal from '../components/Modal/ReviewsModal';
 
 const getUserFromStorage = () => {
   const data = localStorage.getItem("user");
@@ -56,6 +57,7 @@ const UserProfile = () => {
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState('');
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
 
   useEffect(() => {
     setAvatar(userData?.user_pfp || userIcon);
@@ -109,17 +111,52 @@ const UserProfile = () => {
   }, [userData]);
 
   useEffect(() => {
-    // Шукаємо незавершений відгук у localStorage
+    // Перевіряємо наявність відгуку в localStorage
     const keys = Object.keys(localStorage).filter(k => k.startsWith('review_shown_'));
     if (keys.length > 0) {
       const reviewData = JSON.parse(localStorage.getItem(keys[0]));
       if (reviewData) {
-        setPendingReviewUser(reviewData.first_name || '');
-        setPendingReviewAvatar(reviewData.user_pfp || null);
-        setShowReviewModal(true);
+        setPendingReviewUser(reviewData.first_name);
+        setPendingReviewAvatar(reviewData.user_pfp);
+        checkAndShowReviewModal(reviewData.user_id);
       }
     }
   }, []);
+
+  const checkExistingReview = async (reviewerId, reviewedId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/api/review/check?reviewer_id=${reviewerId}&reviewed_id=${reviewedId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      return data.exists;
+    } catch (e) {
+      console.error('Error checking review:', e);
+      return false;
+    }
+  };
+
+  const checkAndShowReviewModal = async (reviewedId) => {
+    const reviewer = JSON.parse(localStorage.getItem('user'));
+    const reviewerId = reviewer.id || reviewer.user_id;
+
+    if (!reviewerId || !reviewedId) {
+      console.error('Missing reviewer or reviewed user ID');
+      return;
+    }
+
+    const hasReview = await checkExistingReview(reviewerId, reviewedId);
+    if (hasReview) {
+      // Якщо відгук вже існує, очищаємо localStorage
+      Object.keys(localStorage).filter(k => k.startsWith('review_shown_')).forEach(k => localStorage.removeItem(k));
+      return;
+    }
+
+    setShowReviewModal(true);
+  };
 
   const updateProfile = async (fields) => {
     try {
@@ -287,9 +324,17 @@ const UserProfile = () => {
               {[1,2,3,4,5].map(star => (
                 <svg key={star} style={{ width: 22, height: 22, fill: userRating && star <= Math.round(userRating) ? '#ffc107' : '#e0e0e0', verticalAlign: 'middle' }} viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
               ))}
-              <span className={styles.ratingValue} style={{ marginLeft: 8 }}>
+              <span 
+                className={styles.ratingValue} 
+                style={{ marginLeft: 8, cursor: userRatingCount > 0 ? 'pointer' : 'default' }}
+                onClick={() => userRatingCount > 0 && setShowReviewsModal(true)}
+              >
                 {userRating ? userRating.toFixed(2) : '—'} / 5
-                {userRatingCount > 0 && <span style={{ color: '#888', fontSize: 13, marginLeft: 6 }}>({userRatingCount})</span>}
+                {userRatingCount > 0 && (
+                  <span style={{ color: '#888', fontSize: 13, marginLeft: 6 }}>
+                    ({userRatingCount})
+                  </span>
+                )}
               </span>
             </div>
             <div className={styles.favoritesBlock}>
@@ -433,7 +478,11 @@ const UserProfile = () => {
         reviewer={JSON.parse(localStorage.getItem('user'))}
         reviewed={{
           first_name: pendingReviewUser,
-          user_pfp: pendingReviewAvatar
+          user_pfp: pendingReviewAvatar,
+          user_id: Object.keys(localStorage)
+            .filter(k => k.startsWith('review_shown_'))
+            .map(k => JSON.parse(localStorage.getItem(k)))
+            .find(data => data?.user_id)?.user_id
         }}
         advertisement={null}
         reviewText={reviewText}
@@ -455,7 +504,11 @@ const UserProfile = () => {
             const keys = Object.keys(localStorage).filter(k => k.startsWith('review_shown_'));
             if (keys.length > 0) {
               const reviewData = JSON.parse(localStorage.getItem(keys[0]));
-              reviewedId = reviewData?.user_id;
+              reviewedId = reviewData.user_id;
+            }
+            if (!reviewedId) {
+              setReviewError('Не вдалося визначити користувача для відгуку');
+              return;
             }
             const response = await fetch(process.env.REACT_APP_SERVER_URL + '/api/review', {
               method: 'POST',
@@ -479,6 +532,7 @@ const UserProfile = () => {
             setShowReviewModal(false);
             setReviewText('');
             setReviewRating(0);
+            // Очищаємо localStorage після успішного відгуку
             Object.keys(localStorage).filter(k => k.startsWith('review_shown_')).forEach(k => localStorage.removeItem(k));
           } catch (e) {
             setReviewError('Не вдалося залишити відгук. Спробуйте ще раз.');
@@ -487,7 +541,12 @@ const UserProfile = () => {
             setReviewSubmitting(false);
           }
         }}
-        contextText="Чи хочете ви залишити відгук про співрозмовника з яким ви нещодавно взаємодіяли?"
+      />
+
+      <ReviewsModal
+        show={showReviewsModal}
+        onClose={() => setShowReviewsModal(false)}
+        userId={userData?.user_id || userData?.id}
       />
     </div>
   );

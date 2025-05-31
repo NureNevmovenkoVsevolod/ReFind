@@ -36,6 +36,27 @@ const reviewController = {
       res.status(500).json({ message: 'Не вдалося отримати відгуки', error: e.message });
     }
   },
+
+  // Перевірити чи існує відгук
+  async checkExistingReview(req, res) {
+    try {
+      const { reviewer_id, reviewed_id } = req.query;
+      if (!reviewer_id || !reviewed_id) {
+        return res.status(400).json({ message: 'Відсутні необхідні параметри' });
+      }
+
+      const existingReview = await Review.findOne({
+        where: {
+          user_reviewer_id: reviewer_id,
+          user_reviewed_id: reviewed_id
+        }
+      });
+
+      res.json({ exists: !!existingReview });
+    } catch (e) {
+      res.status(500).json({ message: 'Помилка при перевірці відгуку', error: e.message });
+    }
+  },
 };
 
 export default reviewController; 
