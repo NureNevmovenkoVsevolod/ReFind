@@ -114,4 +114,91 @@
 }
 .sendBtn:hover {
   background: #0956c7;
+}
+.advertBlock {
+  background: #f7faff;
+  border-bottom: 1px solid #e0e7ef;
+  padding: 16px 20px 12px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.advertMainInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.advertTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+.advertTitle {
+  font-size: 18px;
+  font-weight: bold;
+  color: #222;
+  margin-right: 10px;
+}
+.advertId {
+  margin-left: auto;
+  font-size: 13px;
+  color: #7a8a99;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.advertImg {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 16px;
+  border: 1px solid #e0e7ef;
+}
+.advertDesc {
+  font-size: 14px;
+  color: #444;
+  margin-top: 4px;
+  max-width: 350px;
+  word-break: break-word;
+}
+.advertBlockLink {
+  display: block;
+  cursor: pointer;
+}
+.advertBlockLink:hover .advertBlock {
+  box-shadow: 0 2px 12px rgba(13,109,251,0.10);
+  background: #f0f6ff;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+.emptyChatPlaceholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: #0d6dfb;
+  background: transparent;
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+  box-shadow: none;
+}
+.emptyChatIcon {
+  margin-bottom: 18px;
+}
+.emptyChatTitle {
+  font-size: 22px;
+  font-weight: bold;
+  color: #0d6dfb;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.emptyChatText {
+  font-size: 16px;
+  color: #4a5a6a;
+  text-align: center;
+  max-width: 350px;
 } 

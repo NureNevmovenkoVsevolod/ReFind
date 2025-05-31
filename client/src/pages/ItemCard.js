@@ -169,6 +169,52 @@ function ItemCard({ isLogin, isModerator }) {
     }
   };
 
+  const handleRequestContacts = async () => {
+    if (!ad?.user_id || !ad?.advertisement_id) {
+      alert('Не вдалося визначити користувача або оголошення для чату');
+      return;
+    }
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    if (ad.user_id === currentUser?.id) {
+      alert('Ви не можете запросити свої ж контакти!');
+      return;
+    }
+    const token = localStorage.getItem('token');
+    try {
+      // 1. Отримати всі чати користувача
+      const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/chat`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const chats = res.data || [];
+      // 2. Перевірити, чи є вже чат з цим user_id_2 та цим оголошенням
+      const existingChat = chats.find(chat => {
+        const user1 = chat.User1?.user_id;
+        const user2 = chat.User2?.user_id;
+        return (
+          ((user1 === ad.user_id && user2 === currentUser.id) ||
+          (user2 === ad.user_id && user1 === currentUser.id)) &&
+          chat.advertisement_id === ad.advertisement_id
+        );
+      });
+      if (existingChat) {
+        navigate(`/chat?user=${ad.user_id}&ad=${ad.advertisement_id}`);
+        return;
+      }
+      // 3. Якщо чату немає — створити
+      await axios.post(
+        `${process.env.REACT_APP_SERVER_URL}/api/chat`,
+        {
+          user_id_2: ad.user_id,
+          advertisement_id: ad.advertisement_id
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      navigate(`/chat?user=${ad.user_id}&ad=${ad.advertisement_id}`);
+    } catch (e) {
+      alert('Не вдалося створити чат: ' + (e?.response?.data?.message || e.message));
+    }
+  };
+
   // Memoized ad fields
   const images = useMemo(() => ad?.Images?.map((img) => `${img.image_url}`) || [], [ad]);
   const locationCoordinates = useMemo(() => {
@@ -228,60 +274,14 @@ function ItemCard({ isLogin, isModerator }) {
         <div className={styles.bottom}>
           <div className={styles.contacts}>
             <h3>Contact details for communication:</h3>
-            <p>📞 {ad.phone}</p>
-            {ad.email && <p>📧 {ad.email}</p>}
-            {isLogin && !isModerator && ad.user_id !== JSON.parse(localStorage.getItem('user'))?.id && (
-              <button
-                className={styles.messageBtn}
-                onClick={async () => {
-                  console.log('ad:', ad);
-                  const currentUser = JSON.parse(localStorage.getItem('user'));
-                  if (!ad?.user_id || !ad?.advertisement_id) {
-                    alert('Не вдалося визначити користувача або оголошення для чату');
-                    return;
-                  }
-                  if (ad.user_id === currentUser?.id) {
-                    alert('Ви не можете створити чат із самим собою!');
-                    return;
-                  }
-                  const token = localStorage.getItem('token');
-                  try {
-                    // 1. Отримати всі чати користувача
-                    const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/api/chat`, {
-                      headers: { Authorization: `Bearer ${token}` }
-                    });
-                    const chats = res.data || [];
-                    // 2. Перевірити, чи є вже чат з цим user_id_2
-                    const existingChat = chats.find(chat => {
-                      const user1 = chat.User1?.user_id;
-                      const user2 = chat.User2?.user_id;
-                      return (
-                        (user1 === ad.user_id && user2 === currentUser.id) ||
-                        (user2 === ad.user_id && user1 === currentUser.id)
-                      );
-                    });
-                    if (existingChat) {
-                      navigate(`/chat?user=${ad.user_id}&ad=${ad.advertisement_id}`);
-                      return;
-                    }
-                    // 3. Якщо чату немає — створити
-                    await axios.post(
-                      `${process.env.REACT_APP_SERVER_URL}/api/chat`,
-                      {
-                        user_id_2: ad.user_id,
-                        advertisement_id: ad.advertisement_id
-                      },
-                      { headers: { Authorization: `Bearer ${token}` } }
-                    );
-                    navigate(`/chat?user=${ad.user_id}&ad=${ad.advertisement_id}`);
-                  } catch (e) {
-                    alert('Не вдалося створити чат: ' + (e?.response?.data?.message || e.message));
-                  }
-                }}
-              >
-                {t('sendMessage')}
-              </button>
-            )}
+            {/* <p>📞 {ad.phone}</p>
+            {ad.email && <p>📧 {ad.email}</p>} */}
+            <button
+              className={styles.messageBtn}
+              onClick={handleRequestContacts}
+            >
+              Запросити контактні дані
+            </button>
             <CategoryFavorite />
             {favoriteError && <div className={styles.favoriteError}>{favoriteError}</div>}
             {ad.User && (
