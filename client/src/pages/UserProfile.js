@@ -114,13 +114,10 @@ const UserProfile = () => {
     if (keys.length > 0) {
       const reviewData = JSON.parse(localStorage.getItem(keys[0]));
       if (reviewData) {
-        setPendingReviewUser((reviewData.first_name || '') + ' ' + (reviewData.last_name || ''));
+        setPendingReviewUser(reviewData.first_name || '');
         setPendingReviewAvatar(reviewData.user_pfp || null);
-      } else {
-        setPendingReviewUser('користувача');
-        setPendingReviewAvatar(null);
+        setShowReviewModal(true);
       }
-      setShowPromptReviewModal(true);
     }
   }, []);
 
@@ -427,20 +424,12 @@ const UserProfile = () => {
         </Modal.Footer>
       </Modal>
 
-      <Modal show={showPromptReviewModal} onHide={() => setShowPromptReviewModal(false)} centered>
-        <Modal.Body style={{ textAlign: 'center', padding: '40px 20px' }}>
-          {pendingReviewAvatar && (
-            <img src={pendingReviewAvatar} alt="avatar" style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', border: '1px solid #e0e7ef', marginBottom: 16 }} />
-          )}
-          <h4 style={{ fontWeight: 'bold', marginBottom: 20 }}>Чи хочете ви залишити відгук про {pendingReviewUser} з яким ви нещодавно взаємодіяли?</h4>
-          <Button variant="primary" onClick={() => { setShowPromptReviewModal(false); setShowReviewModal(true); }}>Залишити відгук</Button>
-          <Button variant="secondary" style={{ marginLeft: 16 }} onClick={() => { setShowPromptReviewModal(false); Object.keys(localStorage).filter(k => k.startsWith('review_shown_')).forEach(k => localStorage.removeItem(k)); }}>Ні, дякую</Button>
-        </Modal.Body>
-      </Modal>
-
       <ReviewModal
         show={showReviewModal}
-        onClose={() => setShowReviewModal(false)}
+        onClose={() => {
+          setShowReviewModal(false);
+          Object.keys(localStorage).filter(k => k.startsWith('review_shown_')).forEach(k => localStorage.removeItem(k));
+        }}
         reviewer={JSON.parse(localStorage.getItem('user'))}
         reviewed={{
           first_name: pendingReviewUser,
@@ -498,7 +487,7 @@ const UserProfile = () => {
             setReviewSubmitting(false);
           }
         }}
-        contextText={null}
+        contextText="Чи хочете ви залишити відгук про співрозмовника з яким ви нещодавно взаємодіяли?"
       />
     </div>
   );
