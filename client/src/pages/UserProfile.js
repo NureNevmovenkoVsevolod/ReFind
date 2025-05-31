@@ -13,6 +13,7 @@ import CreateAdvertForm from "../components/CreateAdvertForm/CreateAdvertForm";
 import SuccessModal from "../components/Modal/SuccessModal";
 import EditAdvertForm from "../components/EditAdvertForm/EditAdvertForm";
 import Loader from "../components/Loader/Loader";
+import ReviewModal from '../components/Modal/ReviewModal';
 
 const getUserFromStorage = () => {
   const data = localStorage.getItem("user");
@@ -437,72 +438,67 @@ const UserProfile = () => {
         </Modal.Body>
       </Modal>
 
-      <SuccessModal
+      <ReviewModal
         show={showReviewModal}
-        handleClose={() => setShowReviewModal(false)}
-        hideOkButton={true}
-        message={
-          <div>
-            <div style={{ fontSize: 16, margin: '12px 0 4px 0' }}>Залиште відгук про співрозмовника!</div>
-            <div style={{ fontSize: 14, color: '#888', marginBottom: 12 }}>(Це допоможе іншим користувачам)</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 10, justifyContent: 'center' }}>
-              {[1,2,3,4,5].map(star => (
-                <svg key={star} onClick={() => setReviewRating(star)} style={{ cursor: 'pointer', width: 32, height: 32, fill: star <= reviewRating ? '#ffc107' : '#e0e0e0' }} viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              ))}
-            </div>
-            <textarea
-              value={reviewText}
-              onChange={e => setReviewText(e.target.value)}
-              placeholder="Залиште коментар (необов'язково)"
-              style={{ width: '100%', minHeight: 60, borderRadius: 8, border: '1px solid #e0e7ef', padding: 8, marginBottom: 8 }}
-              disabled={reviewSubmitting}
-            />
-            {reviewError && <div style={{ color: 'red', marginBottom: 8 }}>{reviewError}</div>}
-            <button
-              onClick={async () => {
-                if (!reviewRating) { setReviewError('Оцініть співрозмовника'); return; }
-                setReviewSubmitting(true);
-                setReviewError('');
-                try {
-                  const token = localStorage.getItem('token');
-                  const reviewer = JSON.parse(localStorage.getItem('user'));
-                  const response = await fetch(process.env.REACT_APP_SERVER_URL + '/api/review', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                      review_text: reviewText,
-                      review_rating: reviewRating,
-                      user_reviewer_id: reviewer.id || reviewer.user_id,
-                      user_reviewed_id: reviewer.id || reviewer.user_id, // TODO: підставити справжній userId співрозмовника
-                    }),
-                  });
-                  const data = await response.json();
-                  if (!response.ok) {
-                    setReviewError('Помилка: ' + (data.message || 'невідома'));
-                    console.error('Review error:', data);
-                    return;
-                  }
-                  setShowReviewModal(false);
-                  setReviewText('');
-                  setReviewRating(0);
-                  Object.keys(localStorage).filter(k => k.startsWith('review_shown_')).forEach(k => localStorage.removeItem(k));
-                } catch (e) {
-                  setReviewError('Не вдалося залишити відгук. Спробуйте ще раз.');
-                  console.error('Review error:', e);
-                } finally {
-                  setReviewSubmitting(false);
-                }
-              }}
-              disabled={reviewSubmitting}
-              style={{ background: '#0d6dfb', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 28px', fontSize: 16, fontWeight: 500, cursor: 'pointer', marginTop: 4 }}
-            >
-              {reviewSubmitting ? 'Відправка...' : 'Залишити відгук'}
-            </button>
-          </div>
-        }
+        onClose={() => setShowReviewModal(false)}
+        reviewer={JSON.parse(localStorage.getItem('user'))}
+        reviewed={{
+          first_name: pendingReviewUser,
+          user_pfp: pendingReviewAvatar
+        }}
+        advertisement={null}
+        reviewText={reviewText}
+        setReviewText={setReviewText}
+        reviewRating={reviewRating}
+        setReviewRating={setReviewRating}
+        reviewSubmitting={reviewSubmitting}
+        reviewError={reviewError}
+        onSubmit={async () => {
+          if (!reviewRating) { setReviewError('Оцініть співрозмовника'); return; }
+          if (!reviewText.trim()) { setReviewError('Введіть текст відгуку'); return; }
+          setReviewSubmitting(true);
+          setReviewError('');
+          try {
+            const token = localStorage.getItem('token');
+            const reviewer = JSON.parse(localStorage.getItem('user'));
+            // Витягуємо userId співрозмовника з localStorage ключа
+            let reviewedId = null;
+            const keys = Object.keys(localStorage).filter(k => k.startsWith('review_shown_'));
+            if (keys.length > 0) {
+              const reviewData = JSON.parse(localStorage.getItem(keys[0]));
+              reviewedId = reviewData?.user_id;
+            }
+            const response = await fetch(process.env.REACT_APP_SERVER_URL + '/api/review', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                review_text: reviewText,
+                review_rating: reviewRating,
+                user_reviewer_id: reviewer.id || reviewer.user_id,
+                user_reviewed_id: reviewedId,
+              }),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+              setReviewError('Помилка: ' + (data.message || 'невідома'));
+              console.error('Review error:', data);
+              return;
+            }
+            setShowReviewModal(false);
+            setReviewText('');
+            setReviewRating(0);
+            Object.keys(localStorage).filter(k => k.startsWith('review_shown_')).forEach(k => localStorage.removeItem(k));
+          } catch (e) {
+            setReviewError('Не вдалося залишити відгук. Спробуйте ще раз.');
+            console.error('Review error:', e);
+          } finally {
+            setReviewSubmitting(false);
+          }
+        }}
+        contextText={null}
       />
     </div>
   );
