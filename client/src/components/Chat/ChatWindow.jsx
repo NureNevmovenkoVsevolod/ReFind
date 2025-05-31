@@ -85,11 +85,27 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
   }, [realTimeMessages]);
 
   useEffect(() => {
-    // Відкриваємо модалку для відгуку, якщо підтверджено отримання
+    // Відкриваємо модалку для відгуку, якщо підтверджено отримання, але тільки 1 раз
     if (confirmConfirmed && !isAdOwner) {
-      setShowReviewModal(true);
+      const reviewKey = `review_shown_${chatId}`;
+      if (!localStorage.getItem(reviewKey)) {
+        // Визначаємо співрозмовника
+        let interlocutor = null;
+        if (advertisement && advertisement.user_id && userId) {
+          // Якщо є advertisement, userId — це поточний користувач, advertisement.user_id — власник речі
+          interlocutor = {
+            user_id: advertisement.user_id,
+            first_name: advertisement.user_first_name || '',
+            last_name: advertisement.user_last_name || '',
+            user_pfp: advertisement.user_pfp || '',
+          };
+        }
+        // Зберігаємо у localStorage
+        localStorage.setItem(reviewKey, JSON.stringify(interlocutor));
+        setShowReviewModal(true);
+      }
     }
-  }, [confirmConfirmed, isAdOwner]);
+  }, [confirmConfirmed, isAdOwner, chatId, advertisement, userId]);
 
   const handleSend = useCallback((e) => {
     e.preventDefault();
@@ -188,6 +204,10 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
   const handleReviewSubmit = async () => {
     if (!reviewRating) {
       setReviewError('Оцініть співрозмовника');
+      return;
+    }
+    if (!reviewText.trim()) {
+      setReviewError('Введіть текст відгуку');
       return;
     }
     setReviewSubmitting(true);
@@ -410,44 +430,45 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
         handleClose={() => setShowReviewModal(false)}
         hideOkButton={true}
         message={
-          <div>
-            <div style={{ marginBottom: 16 }}>
-              <b>Дякуємо! Ви підтвердили отримання речі.</b>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+          <div style={{ maxWidth: 400, margin: '0 auto' }}>
+            <div style={{ fontWeight: 700, fontSize: 22, marginBottom: 10, textAlign: 'center' }}>Дякуємо! Ви підтвердили отримання речі.</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, margin: '18px 0 10px 0', justifyContent: 'center' }}>
               <img
                 src={isAdOwner ? '' : (advertisement?.user_pfp || '/user.png')}
                 alt="avatar"
-                style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', border: '1px solid #e0e7ef' }}
+                style={{ width: 54, height: 54, borderRadius: '50%', objectFit: 'cover', border: '2px solid #e0e7ef', background: '#fff' }}
               />
               <div style={{ textAlign: 'left' }}>
-                <div style={{ fontWeight: 500, fontSize: 18 }}>{isAdOwner ? '' : (advertisement?.user_name || advertisement?.user_first_name || 'Користувач')}</div>
-                <div style={{ fontSize: 14, color: '#888' }}>Ваш співрозмовник</div>
+                <div style={{ fontWeight: 600, fontSize: 18 }}>{isAdOwner ? '' : (advertisement?.user_name || advertisement?.user_first_name || 'Користувач')}</div>
+                {advertisement?.user_email && <div style={{ fontSize: 13, color: '#888' }}>{advertisement.user_email}</div>}
+                {advertisement?.user_phone && <div style={{ fontSize: 13, color: '#888' }}>{advertisement.user_phone}</div>}
+                <div style={{ fontSize: 13, color: '#888' }}>Ваш співрозмовник</div>
               </div>
             </div>
-            <div style={{ background: '#f7faff', borderRadius: 8, padding: 12, marginBottom: 12, border: '1px solid #e0e7ef' }}>
-              <div style={{ fontWeight: 500 }}>{advertisement?.title}</div>
+            <div style={{ background: '#f7faff', borderRadius: 8, padding: 12, marginBottom: 12, border: '1px solid #e0e7ef', textAlign: 'center' }}>
+              <div style={{ fontWeight: 500, fontSize: 16 }}>{advertisement?.title}</div>
               <div style={{ fontSize: 13, color: '#666', marginTop: 4 }}>{advertisement?.description}</div>
             </div>
-            <div style={{ fontSize: 16, margin: '12px 0 4px 0' }}>Залиште відгук про співрозмовника!</div>
-            <div style={{ fontSize: 14, color: '#888', marginBottom: 12 }}>(Це допоможе іншим користувачам)</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 10, justifyContent: 'center' }}>
+            <div style={{ fontWeight: 600, fontSize: 16, margin: '12px 0 4px 0', textAlign: 'center' }}>Залиште відгук про співрозмовника</div>
+            <div style={{ fontSize: 14, color: '#888', marginBottom: 12, textAlign: 'center' }}>(Це допоможе іншим користувачам)</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 16, justifyContent: 'center' }}>
               {[1,2,3,4,5].map(star => (
-                <svg key={star} onClick={() => setReviewRating(star)} style={{ cursor: 'pointer', width: 32, height: 32, fill: star <= reviewRating ? '#ffc107' : '#e0e0e0' }} viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg key={star} onClick={() => setReviewRating(star)} style={{ cursor: 'pointer', width: 36, height: 36, fill: star <= reviewRating ? '#ffc107' : '#e0e0e0', transition: 'fill 0.2s' }} viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
               ))}
             </div>
             <textarea
               value={reviewText}
               onChange={e => setReviewText(e.target.value)}
-              placeholder="Залиште коментар (необов'язково)"
-              style={{ width: '100%', minHeight: 60, borderRadius: 8, border: '1px solid #e0e7ef', padding: 8, marginBottom: 8 }}
+              placeholder="Введіть текст відгуку (обов'язково)"
+              style={{ width: '100%', minHeight: 70, borderRadius: 8, border: '1.5px solid #b3cfff', padding: 10, marginBottom: 8, fontSize: 15, resize: 'vertical', outline: reviewError ? '2px solid #e74c3c' : undefined }}
               disabled={reviewSubmitting}
+              required
             />
-            {reviewError && <div style={{ color: 'red', marginBottom: 8 }}>{reviewError}</div>}
+            {reviewError && <div style={{ color: '#e74c3c', marginBottom: 8, fontWeight: 500 }}>{reviewError}</div>}
             <button
               onClick={handleReviewSubmit}
               disabled={reviewSubmitting}
-              style={{ background: '#0d6dfb', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 28px', fontSize: 16, fontWeight: 500, cursor: 'pointer', marginTop: 4 }}
+              style={{ background: '#0d6dfb', color: '#fff', border: 'none', borderRadius: 7, padding: '12px 0', fontSize: 17, fontWeight: 600, cursor: 'pointer', marginTop: 8, width: '100%', boxShadow: '0 2px 8px rgba(13,109,251,0.08)' }}
             >
               {reviewSubmitting ? 'Відправка...' : 'Залишити відгук'}
             </button>

@@ -47,6 +47,14 @@ const UserProfile = () => {
   const [password, setPassword] = useState("");
   const [userRating, setUserRating] = useState(null);
   const [userRatingCount, setUserRatingCount] = useState(0);
+  const [pendingReviewUser, setPendingReviewUser] = useState(null);
+  const [pendingReviewAvatar, setPendingReviewAvatar] = useState(null);
+  const [showPromptReviewModal, setShowPromptReviewModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewText, setReviewText] = useState('');
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError] = useState('');
 
   useEffect(() => {
     setAvatar(userData?.user_pfp || userIcon);
@@ -98,6 +106,22 @@ const UserProfile = () => {
     };
     fetchRating();
   }, [userData]);
+
+  useEffect(() => {
+    // Шукаємо незавершений відгук у localStorage
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('review_shown_'));
+    if (keys.length > 0) {
+      const reviewData = JSON.parse(localStorage.getItem(keys[0]));
+      if (reviewData) {
+        setPendingReviewUser((reviewData.first_name || '') + ' ' + (reviewData.last_name || ''));
+        setPendingReviewAvatar(reviewData.user_pfp || null);
+      } else {
+        setPendingReviewUser('користувача');
+        setPendingReviewAvatar(null);
+      }
+      setShowPromptReviewModal(true);
+    }
+  }, []);
 
   const updateProfile = async (fields) => {
     try {
@@ -401,6 +425,85 @@ const UserProfile = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <Modal show={showPromptReviewModal} onHide={() => setShowPromptReviewModal(false)} centered>
+        <Modal.Body style={{ textAlign: 'center', padding: '40px 20px' }}>
+          {pendingReviewAvatar && (
+            <img src={pendingReviewAvatar} alt="avatar" style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', border: '1px solid #e0e7ef', marginBottom: 16 }} />
+          )}
+          <h4 style={{ fontWeight: 'bold', marginBottom: 20 }}>Чи хочете ви залишити відгук про {pendingReviewUser} з яким ви нещодавно взаємодіяли?</h4>
+          <Button variant="primary" onClick={() => { setShowPromptReviewModal(false); setShowReviewModal(true); }}>Залишити відгук</Button>
+          <Button variant="secondary" style={{ marginLeft: 16 }} onClick={() => { setShowPromptReviewModal(false); Object.keys(localStorage).filter(k => k.startsWith('review_shown_')).forEach(k => localStorage.removeItem(k)); }}>Ні, дякую</Button>
+        </Modal.Body>
+      </Modal>
+
+      <SuccessModal
+        show={showReviewModal}
+        handleClose={() => setShowReviewModal(false)}
+        hideOkButton={true}
+        message={
+          <div>
+            <div style={{ fontSize: 16, margin: '12px 0 4px 0' }}>Залиште відгук про співрозмовника!</div>
+            <div style={{ fontSize: 14, color: '#888', marginBottom: 12 }}>(Це допоможе іншим користувачам)</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 10, justifyContent: 'center' }}>
+              {[1,2,3,4,5].map(star => (
+                <svg key={star} onClick={() => setReviewRating(star)} style={{ cursor: 'pointer', width: 32, height: 32, fill: star <= reviewRating ? '#ffc107' : '#e0e0e0' }} viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              ))}
+            </div>
+            <textarea
+              value={reviewText}
+              onChange={e => setReviewText(e.target.value)}
+              placeholder="Залиште коментар (необов'язково)"
+              style={{ width: '100%', minHeight: 60, borderRadius: 8, border: '1px solid #e0e7ef', padding: 8, marginBottom: 8 }}
+              disabled={reviewSubmitting}
+            />
+            {reviewError && <div style={{ color: 'red', marginBottom: 8 }}>{reviewError}</div>}
+            <button
+              onClick={async () => {
+                if (!reviewRating) { setReviewError('Оцініть співрозмовника'); return; }
+                setReviewSubmitting(true);
+                setReviewError('');
+                try {
+                  const token = localStorage.getItem('token');
+                  const reviewer = JSON.parse(localStorage.getItem('user'));
+                  const response = await fetch(process.env.REACT_APP_SERVER_URL + '/api/review', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                      review_text: reviewText,
+                      review_rating: reviewRating,
+                      user_reviewer_id: reviewer.id || reviewer.user_id,
+                      user_reviewed_id: reviewer.id || reviewer.user_id, // TODO: підставити справжній userId співрозмовника
+                    }),
+                  });
+                  const data = await response.json();
+                  if (!response.ok) {
+                    setReviewError('Помилка: ' + (data.message || 'невідома'));
+                    console.error('Review error:', data);
+                    return;
+                  }
+                  setShowReviewModal(false);
+                  setReviewText('');
+                  setReviewRating(0);
+                  Object.keys(localStorage).filter(k => k.startsWith('review_shown_')).forEach(k => localStorage.removeItem(k));
+                } catch (e) {
+                  setReviewError('Не вдалося залишити відгук. Спробуйте ще раз.');
+                  console.error('Review error:', e);
+                } finally {
+                  setReviewSubmitting(false);
+                }
+              }}
+              disabled={reviewSubmitting}
+              style={{ background: '#0d6dfb', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 28px', fontSize: 16, fontWeight: 500, cursor: 'pointer', marginTop: 4 }}
+            >
+              {reviewSubmitting ? 'Відправка...' : 'Залишити відгук'}
+            </button>
+          </div>
+        }
+      />
     </div>
   );
 };
