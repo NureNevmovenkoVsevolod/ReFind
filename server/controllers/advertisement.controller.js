@@ -35,6 +35,12 @@ const mapAdWithCategory = (row) => {
     createdAt: ad.createdAt,
     updatedAt: ad.updatedAt,
     Images: ad.Images || [],
+    User: ad.User ? {
+      user_id: ad.User.user_id,
+      first_name: ad.User.first_name,
+      last_name: ad.User.last_name,
+      user_pfp: ad.User.user_pfp
+    } : null,
   };
 };
 
@@ -184,6 +190,7 @@ class AdvertisementController extends IAdvertisementController {
         include: [
           { model: Image, attributes: ["image_url"] },
           { model: Category, attributes: ["categorie_id", "categorie_name"] },
+          { model: User, attributes: ["user_id", "first_name", "last_name", "user_pfp"] },
         ],
         order: [["createdAt", "DESC"]],
       });

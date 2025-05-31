@@ -18,7 +18,6 @@ const EditProfileScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [debugInfo, setDebugInfo] = useState('');
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -81,22 +80,18 @@ const EditProfileScreen = ({ navigation }) => {
     console.log('handleSave called');
     if (!firstName.trim() || !lastName.trim()) {
       setError("Ім'я та прізвище обов'язкові");
-      setDebugInfo('Валідація: порожнє імʼя або прізвище');
       return;
     }
     if (!validateEmail(email)) {
       setError('Некоректний email');
-      setDebugInfo('Валідація: некоректний email');
       return;
     }
     if (phone && !validatePhone(phone)) {
       setError('Некоректний номер телефону');
-      setDebugInfo('Валідація: некоректний телефон');
       return;
     }
     setSaving(true);
     setError('');
-    setDebugInfo('Відправка запиту...');
     try {
       const token = await AsyncStorage.getItem('userToken');
       const userData = await AsyncStorage.getItem('userData');
@@ -105,18 +100,13 @@ const EditProfileScreen = ({ navigation }) => {
         user.user_id = user.id;
       }
       let avatarUrl = avatar;
-      console.log('user:', user);
-      console.log('user_id:', user.user_id);
-      setDebugInfo('user_id: ' + user.user_id + '\nТокен: ' + (token ? token.slice(0, 10) + '...' : 'немає'));
       if (!user.user_id) {
         setError('Не знайдено user_id у userData!');
-        setDebugInfo('userData не містить user_id.');
         setSaving(false);
         return;
       }
       // Якщо аватарка локальна, завантажити на сервер
       if (avatar && avatar.startsWith('file')) {
-        setDebugInfo('Завантаження аватарки...');
         const formData = new FormData();
         formData.append('avatar', {
           uri: avatar,
@@ -133,20 +123,16 @@ const EditProfileScreen = ({ navigation }) => {
             body: formData,
           }, 20000);
           if (!uploadRes.ok) {
-            setDebugInfo('Помилка upload: ' + uploadRes.status);
             throw new Error('Помилка завантаження аватарки');
           }
           const uploadData = await uploadRes.json();
           avatarUrl = uploadData.avatarUrl || avatarUrl;
-          setDebugInfo('Аватарка завантажена: ' + avatarUrl);
         } catch (e) {
           setError(e.message || 'Помилка завантаження аватарки');
-          setDebugInfo('Помилка upload: ' + e.message);
           setSaving(false);
           return;
         }
       }
-      setDebugInfo('Оновлення профілю...');
       const endpoint = `${apiUrl}/user/${user.user_id}`;
       console.log('Endpoint:', endpoint);
       let res;
@@ -157,7 +143,6 @@ const EditProfileScreen = ({ navigation }) => {
         user_pfp: avatarUrl,
         phone_number: phone,
       };
-      setDebugInfo('Дані: ' + JSON.stringify(bodyData));
       console.log('bodyData:', bodyData);
       try {
         res = await fetchWithTimeout(endpoint, {
@@ -170,7 +155,6 @@ const EditProfileScreen = ({ navigation }) => {
         }, 20000);
       } catch (e) {
         setError(e.message || 'Помилка збереження (таймаут або мережа)');
-        setDebugInfo('Помилка fetch: ' + e.message);
         setSaving(false);
         return;
       }
@@ -179,19 +163,15 @@ const EditProfileScreen = ({ navigation }) => {
         let err;
         try { err = await res.json(); } catch { err = {}; }
         setError(err.message || 'Помилка оновлення профілю');
-        setDebugInfo('Помилка профілю: ' + (err.message || res.status));
-        console.log('err:', err);
         setSaving(false);
         return;
       }
       const updatedUser = await res.json();
       await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
-      setDebugInfo('Профіль оновлено!');
       Alert.alert('Успіх', 'Профіль оновлено!');
       navigation.goBack();
     } catch (e) {
       setError(e.message || 'Помилка збереження');
-      setDebugInfo('catch: ' + e.message);
     } finally {
       setSaving(false);
     }
@@ -236,9 +216,6 @@ const EditProfileScreen = ({ navigation }) => {
         icon="phone"
       />
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      {debugInfo ? (
-        <Text style={{ color: 'gray', fontSize: 12, marginTop: 8 }}>{debugInfo}</Text>
-      ) : null}
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <Text style={styles.saveButtonText}>{saving ? 'Збереження...' : 'Зберегти зміни'}</Text>
       </TouchableOpacity>

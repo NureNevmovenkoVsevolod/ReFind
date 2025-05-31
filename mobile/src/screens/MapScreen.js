@@ -97,7 +97,6 @@ const MapScreen = ({ navigation }) => {
           return { ...ad, latitude, longitude };
         });
         setAds(parsedAds);
-        console.log('parsedAds:', parsedAds);
       } catch (e) {
         setAds([]);
       } finally {
