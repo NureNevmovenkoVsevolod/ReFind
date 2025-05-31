@@ -3,6 +3,7 @@ import styles from './ChatWindow.module.css';
 import { io } from 'socket.io-client';
 import { Modal, Button } from 'react-bootstrap';
 import { encodeId } from '../../utils/encodeId';
+import SuccessModal from '../Modal/SuccessModal';
 
 const socket = io(process.env.REACT_APP_SERVER_URL, {
   withCredentials: true
@@ -20,6 +21,17 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
   const [showAlreadyRequestedModal, setShowAlreadyRequestedModal] = useState(false);
   const [contactsShared, setContactsShared] = useState(false);
   const [contactsRequested, setContactsRequested] = useState(false);
+  const [meetingRequested, setMeetingRequested] = useState(false);
+  const [meetingConfirmed, setMeetingConfirmed] = useState(false);
+  const [showAlreadyMeetingRequestedModal, setShowAlreadyMeetingRequestedModal] = useState(false);
+  const [confirmRequested, setConfirmRequested] = useState(false);
+  const [confirmConfirmed, setConfirmConfirmed] = useState(false);
+  const [showAlreadyConfirmRequestedModal, setShowAlreadyConfirmRequestedModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewText, setReviewText] = useState('');
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError] = useState('');
 
   // Визначаємо user_id автора оголошення
   const adOwnerId = advertisement?.user_id;
@@ -58,7 +70,26 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
     // Якщо вже був запит (__REQUEST_CONTACTS__) — блокуємо повторний запит
     const alreadyRequested = realTimeMessages.some(msg => msg.text.startsWith('__REQUEST_CONTACTS__'));
     setContactsRequested(alreadyRequested);
+    // Якщо вже був запит (__REQUEST_MEETING__) — блокуємо повторний запит
+    const alreadyMeetingRequested = realTimeMessages.some(msg => msg.text.startsWith('__REQUEST_MEETING__'));
+    setMeetingRequested(alreadyMeetingRequested);
+    // Якщо вже підтверджено (__MEETING_CONFIRMED__) — показуємо статус
+    const alreadyMeetingConfirmed = realTimeMessages.some(msg => msg.text.startsWith('__MEETING_CONFIRMED__'));
+    setMeetingConfirmed(alreadyMeetingConfirmed);
+    // Якщо вже був запит (__REQUEST_CONFIRM__) — блокуємо повторний запит
+    const alreadyConfirmRequested = realTimeMessages.some(msg => msg.text.startsWith('__REQUEST_CONFIRM__'));
+    setConfirmRequested(alreadyConfirmRequested);
+    // Якщо вже підтверджено (__CONFIRM_CONFIRMED__) — показуємо статус
+    const alreadyConfirmConfirmed = realTimeMessages.some(msg => msg.text.startsWith('__CONFIRM_CONFIRMED__'));
+    setConfirmConfirmed(alreadyConfirmConfirmed);
   }, [realTimeMessages]);
+
+  useEffect(() => {
+    // Відкриваємо модалку для відгуку, якщо підтверджено отримання
+    if (confirmConfirmed && !isAdOwner) {
+      setShowReviewModal(true);
+    }
+  }, [confirmConfirmed, isAdOwner]);
 
   const handleSend = useCallback((e) => {
     e.preventDefault();
@@ -102,6 +133,98 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
     });
   };
 
+  const handleRequestMeeting = () => {
+    if (meetingRequested || meetingConfirmed) {
+      setShowAlreadyMeetingRequestedModal(true);
+      return;
+    }
+    if (!chatId || !advertisement) return;
+    const message = `__REQUEST_MEETING__:${advertisement.title}`;
+    socket.emit('sendMessage', {
+      chat_id: chatId,
+      user_id: userId,
+      message_text: message
+    });
+    setMeetingRequested(true);
+  };
+
+  const handleConfirmMeeting = () => {
+    if (!advertisement) return;
+    const message = `__MEETING_CONFIRMED__:${advertisement.title}`;
+    socket.emit('sendMessage', {
+      chat_id: chatId,
+      user_id: userId,
+      message_text: message
+    });
+    setMeetingConfirmed(true);
+  };
+
+  const handleRequestConfirm = () => {
+    if (confirmRequested || confirmConfirmed) {
+      setShowAlreadyConfirmRequestedModal(true);
+      return;
+    }
+    if (!chatId || !advertisement) return;
+    const message = `__REQUEST_CONFIRM__:${advertisement.title}`;
+    socket.emit('sendMessage', {
+      chat_id: chatId,
+      user_id: userId,
+      message_text: message
+    });
+    setConfirmRequested(true);
+  };
+
+  const handleConfirmConfirm = () => {
+    if (!advertisement) return;
+    const message = `__CONFIRM_CONFIRMED__:${advertisement.title}`;
+    socket.emit('sendMessage', {
+      chat_id: chatId,
+      user_id: userId,
+      message_text: message
+    });
+    setConfirmConfirmed(true);
+  };
+
+  const handleReviewSubmit = async () => {
+    if (!reviewRating) {
+      setReviewError('Оцініть співрозмовника');
+      return;
+    }
+    setReviewSubmitting(true);
+    setReviewError('');
+    try {
+      const token = localStorage.getItem('token');
+      const reviewer = JSON.parse(localStorage.getItem('user'));
+      const response = await fetch(process.env.REACT_APP_SERVER_URL + '/api/review', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          review_text: reviewText,
+          review_rating: reviewRating,
+          user_reviewer_id: reviewer.id || reviewer.user_id,
+          user_reviewed_id: advertisement?.user_id,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setReviewError('Помилка: ' + (data.message || 'невідома'));
+        console.error('Review error:', data);
+        return;
+      }
+      setShowReviewModal(false);
+      setReviewText('');
+      setReviewRating(0);
+    } catch (e) {
+      setReviewError('Не вдалося залишити відгук. Спробуйте ще раз.');
+      console.error('Review error:', e);
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+
   return (
     <div className={styles.chatWindow}>
       {advertisement && chatId && (
@@ -137,16 +260,22 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
       )}
       {chatId && <div style={{ height: '10px' }} />}
       {advertisement && chatId && !isAdOwner && !isModerator && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10, gap: 8 }}>
           <Button variant="primary" size="sm" onClick={handleRequestContacts} disabled={contactsShared || contactsRequested}>
             Запросити контактні дані
+          </Button>
+          <Button variant="secondary" size="sm" onClick={handleRequestConfirm} disabled={confirmRequested || confirmConfirmed}>
+            Підтвердити отримання речі
+          </Button>
+          <Button variant="outline-warning" size="sm" onClick={() => setShowReviewModal(true)}>
+            Додати відгук
           </Button>
         </div>
       )}
       {chatId && (
         <div className={styles.messages}>
           {realTimeMessages.map((msg, idx) => {
-            // Відображення службового повідомлення з кнопкою для автора
+            // Відображення службового повідомлення з кнопкою для автора (контакти)
             if (msg.text.startsWith("__REQUEST_CONTACTS__:")) {
               const title = msg.text.split(":")[1] || '';
               if (isAdOwner) {
@@ -173,6 +302,43 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
                   </div>
                 );
               }
+            }
+            // Відображення службового повідомлення з кнопкою для автора (підтвердження отримання)
+            if (msg.text.startsWith("__REQUEST_CONFIRM__:")) {
+              const title = msg.text.split(":")[1] || '';
+              if (isAdOwner) {
+                return (
+                  <div key={idx} className={styles.message} style={{ background: '#fffbe6', border: '1px solid #e6c200', padding: 16, margin: '10px 0', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontWeight: 500 }}>
+                      Користувач просить підтвердити отримання речі "{title}".
+                    </span>
+                    <Button variant="success" size="sm" style={{ marginLeft: 16 }} onClick={handleConfirmConfirm} disabled={confirmConfirmed}>
+                      Підтвердити отримання
+                    </Button>
+                  </div>
+                );
+              } else if (msg.isOwn) {
+                return (
+                  <div key={idx} className={styles.ownMessage} style={{ background: '#fffbe6', color: '#444', fontStyle: 'italic', border: '1px solid #e6c200', padding: 14, margin: '10px 0', borderRadius: 10 }}>
+                    Ви надіслали запит на підтвердження отримання речі "{title}".
+                  </div>
+                );
+              } else {
+                return (
+                  <div key={idx} className={styles.message} style={{ background: '#fffbe6', color: '#444', fontStyle: 'italic', border: '1px solid #e6c200', padding: 14, margin: '10px 0', borderRadius: 10 }}>
+                    Користувач надіслав запит на підтвердження отримання речі "{title}".
+                  </div>
+                );
+              }
+            }
+            // Відображення підтвердження отримання
+            if (msg.text.startsWith("__CONFIRM_CONFIRMED__:")) {
+              const title = msg.text.split(":")[1] || '';
+              return (
+                <div key={idx} className={styles.message} style={{ background: '#eaffea', border: '1px solid #00c853', padding: 14, margin: '10px 0', borderRadius: 10, fontWeight: 500 }}>
+                  Отримання речі "{title}" підтверджено! Дякуємо за користування сервісом.
+                </div>
+              );
             }
             // Відображення контактних даних з переносами
             if (msg.text.startsWith('Контактні дані:')) {
@@ -227,6 +393,67 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
           <Button variant="primary" onClick={() => setShowAlreadyRequestedModal(false)} style={{ minWidth: 100 }}>ОК</Button>
         </Modal.Body>
       </Modal>
+      <Modal show={showAlreadyMeetingRequestedModal} onHide={() => setShowAlreadyMeetingRequestedModal(false)} centered>
+        <Modal.Body style={{ textAlign: 'center', padding: '40px 20px' }}>
+          <h4 style={{ fontWeight: 'bold', marginBottom: 20 }}>Запит на зустріч вже був надісланий або підтверджений. Повторний запит неможливий.</h4>
+          <Button variant="primary" onClick={() => setShowAlreadyMeetingRequestedModal(false)} style={{ minWidth: 100 }}>ОК</Button>
+        </Modal.Body>
+      </Modal>
+      <Modal show={showAlreadyConfirmRequestedModal} onHide={() => setShowAlreadyConfirmRequestedModal(false)} centered>
+        <Modal.Body style={{ textAlign: 'center', padding: '40px 20px' }}>
+          <h4 style={{ fontWeight: 'bold', marginBottom: 20 }}>Запит на підтвердження отримання вже був надісланий або підтверджений. Повторний запит неможливий.</h4>
+          <Button variant="primary" onClick={() => setShowAlreadyConfirmRequestedModal(false)} style={{ minWidth: 100 }}>ОК</Button>
+        </Modal.Body>
+      </Modal>
+      <SuccessModal
+        show={showReviewModal}
+        handleClose={() => setShowReviewModal(false)}
+        hideOkButton={true}
+        message={
+          <div>
+            <div style={{ marginBottom: 16 }}>
+              <b>Дякуємо! Ви підтвердили отримання речі.</b>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+              <img
+                src={isAdOwner ? '' : (advertisement?.user_pfp || '/user.png')}
+                alt="avatar"
+                style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', border: '1px solid #e0e7ef' }}
+              />
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ fontWeight: 500, fontSize: 18 }}>{isAdOwner ? '' : (advertisement?.user_name || advertisement?.user_first_name || 'Користувач')}</div>
+                <div style={{ fontSize: 14, color: '#888' }}>Ваш співрозмовник</div>
+              </div>
+            </div>
+            <div style={{ background: '#f7faff', borderRadius: 8, padding: 12, marginBottom: 12, border: '1px solid #e0e7ef' }}>
+              <div style={{ fontWeight: 500 }}>{advertisement?.title}</div>
+              <div style={{ fontSize: 13, color: '#666', marginTop: 4 }}>{advertisement?.description}</div>
+            </div>
+            <div style={{ fontSize: 16, margin: '12px 0 4px 0' }}>Залиште відгук про співрозмовника!</div>
+            <div style={{ fontSize: 14, color: '#888', marginBottom: 12 }}>(Це допоможе іншим користувачам)</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 10, justifyContent: 'center' }}>
+              {[1,2,3,4,5].map(star => (
+                <svg key={star} onClick={() => setReviewRating(star)} style={{ cursor: 'pointer', width: 32, height: 32, fill: star <= reviewRating ? '#ffc107' : '#e0e0e0' }} viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              ))}
+            </div>
+            <textarea
+              value={reviewText}
+              onChange={e => setReviewText(e.target.value)}
+              placeholder="Залиште коментар (необов'язково)"
+              style={{ width: '100%', minHeight: 60, borderRadius: 8, border: '1px solid #e0e7ef', padding: 8, marginBottom: 8 }}
+              disabled={reviewSubmitting}
+            />
+            {reviewError && <div style={{ color: 'red', marginBottom: 8 }}>{reviewError}</div>}
+            <button
+              onClick={handleReviewSubmit}
+              disabled={reviewSubmitting}
+              style={{ background: '#0d6dfb', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 28px', fontSize: 16, fontWeight: 500, cursor: 'pointer', marginTop: 4 }}
+            >
+              {reviewSubmitting ? 'Відправка...' : 'Залишити відгук'}
+            </button>
+          </div>
+        }
+      />
     </div>
   );
 };

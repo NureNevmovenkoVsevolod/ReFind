@@ -45,6 +45,8 @@ const UserProfile = () => {
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [userRating, setUserRating] = useState(null);
+  const [userRatingCount, setUserRatingCount] = useState(0);
 
   useEffect(() => {
     setAvatar(userData?.user_pfp || userIcon);
@@ -74,6 +76,28 @@ const UserProfile = () => {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const fetchRating = async () => {
+      try {
+        const userId = userData?.user_id || userData?.id;
+        const res = await fetch(process.env.REACT_APP_SERVER_URL + `/api/review/user/${userId}`);
+        const reviews = await res.json();
+        if (Array.isArray(reviews) && reviews.length > 0) {
+          const avg = reviews.reduce((sum, r) => sum + Number(r.review_rating), 0) / reviews.length;
+          setUserRating(avg);
+          setUserRatingCount(reviews.length);
+        } else {
+          setUserRating(null);
+          setUserRatingCount(0);
+        }
+      } catch {
+        setUserRating(null);
+        setUserRatingCount(0);
+      }
+    };
+    fetchRating();
+  }, [userData]);
 
   const updateProfile = async (fields) => {
     try {
@@ -238,8 +262,13 @@ const UserProfile = () => {
             </div>
             <div className={styles.profileEmail}>{email}</div>
             <div className={styles.ratingBlock}>
-              <span className={styles.ratingStar}>★</span>
-              <span className={styles.ratingValue}>4.5/5</span>
+              {[1,2,3,4,5].map(star => (
+                <svg key={star} style={{ width: 22, height: 22, fill: userRating && star <= Math.round(userRating) ? '#ffc107' : '#e0e0e0', verticalAlign: 'middle' }} viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              ))}
+              <span className={styles.ratingValue} style={{ marginLeft: 8 }}>
+                {userRating ? userRating.toFixed(2) : '—'} / 5
+                {userRatingCount > 0 && <span style={{ color: '#888', fontSize: 13, marginLeft: 6 }}>({userRatingCount})</span>}
+              </span>
             </div>
             <div className={styles.favoritesBlock}>
               <h4>Обрані категорії:</h4>
