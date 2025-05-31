@@ -231,7 +231,31 @@ function ItemCard({ isLogin, isModerator }) {
             <p>📞 {ad.phone}</p>
             {ad.email && <p>📧 {ad.email}</p>}
             {isLogin && !isModerator && <>
-              <button className={styles.messageBtn}>{t('sendMessage')}</button>
+              <button
+                className={styles.messageBtn}
+                onClick={async () => {
+                  if (!ad?.User?.user_id || !ad?.advertisement_id) {
+                    alert('Не вдалося визначити користувача або оголошення для чату');
+                    return;
+                  }
+                  const token = localStorage.getItem('token');
+                  try {
+                    await axios.post(
+                      `${process.env.REACT_APP_SERVER_URL}/api/chat`,
+                      {
+                        user_id_2: ad.User.user_id,
+                        advertisement_id: ad.advertisement_id
+                      },
+                      { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    navigate(`/chat?user=${ad.User.user_id}`);
+                  } catch (e) {
+                    alert('Не вдалося створити чат: ' + (e?.response?.data?.message || e.message));
+                  }
+                }}
+              >
+                {t('sendMessage')}
+              </button>
               <CategoryFavorite />
             </>}
             {!isLogin && !isModerator && <CategoryFavorite />}

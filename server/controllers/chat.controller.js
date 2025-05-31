@@ -2,6 +2,7 @@ import IChatController from '../interfaces/IChatController.js';
 import Chat from '../models/chat.model.js';
 import Message from '../models/messages.model.js';
 import User from '../models/user.model.js';
+import { Op } from 'sequelize';
 
 class ChatController extends IChatController {
   async getUserChats(req, res) {
@@ -9,7 +10,7 @@ class ChatController extends IChatController {
       const userId = req.user.id;
       const chats = await Chat.findAll({
         where: {
-          [Chat.sequelize.Op.or]: [
+          [Op.or]: [
             { user_id_1: userId },
             { user_id_2: userId }
           ]

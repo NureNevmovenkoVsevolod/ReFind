@@ -1,0 +1,19 @@
+.chatPageWrapper {
+  min-height: 90vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: #f7f9fb;
+  padding: 40px 0;
+}
+
+.chatContainer {
+  display: flex;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  overflow: hidden;
+  min-width: 1000px;
+  min-height: 700px;
+  max-width: 98vw;
+} 

@@ -24,6 +24,7 @@ import UserProfile from "./pages/UserProfile";
 import ModerStats from "./pages/Moder/ModerStats";
 import PrivacyPolicy from "./components/PrivacyPolicy/PrivacyPolicy";
 import notificationService from './services/notificationService';
+import ChatPage from "./pages/ChatPage";
 
 
 axios.interceptors.response.use(
@@ -158,6 +159,7 @@ function App() {
         />
         <Route path="/privacy" element={<PrivacyPolicy />}/>
         <Route path="/profile" element={<UserProfile />} />
+        <Route path="/chat" element={isLogin ? <ChatPage /> : <Navigate to="/login" />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />

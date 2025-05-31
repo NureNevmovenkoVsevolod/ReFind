@@ -58,16 +58,20 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Routes
+console.log('--- SERVER START ---');
+console.log('PORT:', PORT);
+console.log('CLIENT_LINK:', CLIENT_LINK);
 
+// Routes
 app.use("/auth", authRouter);
 app.use("/api", indexRouter);
+console.log('API router connected at /api');
+
 app.use("/api/advertisement", advertisementRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/payment", paymentRouter);
 
 // Token verification endpoint
-
 app.get("/auth/verify", verifyToken, (req, res) => {
   res.status(200).json({ user: req.user });
 });
@@ -77,7 +81,9 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: "Something went wrong!" });
 });
+
 app.get("/*path", (req, res) => {
+  console.log('Fallback route triggered for', req.originalUrl);
   res.sendFile(path.join(__dirname, "../client/build", "index.html"));
 });
 
