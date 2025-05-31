@@ -7,6 +7,7 @@ import { useSearchParams } from 'react-router-dom';
 
 const ChatPage = () => {
   const [chats, setChats] = useState([]);
+  const [chatsLoaded, setChatsLoaded] = useState(false);
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
@@ -21,27 +22,48 @@ const ChatPage = () => {
     })
       .then(res => {
         setChats(res.data || []);
+        setChatsLoaded(true);
       });
   }, []);
 
-  // Якщо є user в query, створити/відкрити чат
+  // Якщо є user в query, створити/відкрити чат (тільки після завантаження чатів)
   useEffect(() => {
+    if (!chatsLoaded) return;
     const userTo = searchParams.get('user');
-    if (userTo && userTo !== String(userId)) {
-      const token = localStorage.getItem('token');
-      axios.post(`${process.env.REACT_APP_SERVER_URL}/api/chat`, { userId: userTo }, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => {
-          // Додаємо чат у список, якщо його ще немає
-          setChats(prev => {
-            const exists = prev.some(chat => chat.id === res.data.id);
-            return exists ? prev : [...prev, res.data];
+    const advertisementId = searchParams.get('ad');
+    if (userTo) {
+      const currentUserId = userId;
+      const existingChat = chats.find(chat => {
+        const user1 = chat.User1?.user_id;
+        const user2 = chat.User2?.user_id;
+        return (
+          (user1 === Number(userTo) && user2 === currentUserId) ||
+          (user2 === Number(userTo) && user1 === currentUserId)
+        );
+      });
+      if (existingChat) {
+        setSelectedChatId(existingChat.chat_id || existingChat.id);
+        return;
+      }
+      if (advertisementId) {
+        const token = localStorage.getItem('token');
+        axios.post(`${process.env.REACT_APP_SERVER_URL}/api/chat`, {
+          user_id_2: userTo,
+          advertisement_id: advertisementId
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+          .then(res => {
+            setChats(prev => {
+              const exists = prev.some(chat => chat.id === res.data.id);
+              return exists ? prev : [...prev, res.data];
+            });
+            setSelectedChatId(res.data.id);
           });
-          setSelectedChatId(res.data.id);
-        });
+      }
     }
-  }, [searchParams, userId]);
+    // eslint-disable-next-line
+  }, [searchParams, userId, chatsLoaded]);
 
   // Завантаження повідомлень для вибраного чату
   useEffect(() => {
@@ -67,6 +89,19 @@ const ChatPage = () => {
     setMessages([...messages, { text: msg, isOwn: true }]);
   };
 
+  const handleDeleteChat = async (chatId) => {
+    const token = localStorage.getItem('token');
+    try {
+      await axios.delete(`${process.env.REACT_APP_SERVER_URL}/api/chat/${chatId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setChats(prev => prev.filter(chat => (chat.chat_id || chat.id) !== chatId));
+      if (selectedChatId === chatId) setSelectedChatId(null);
+    } catch (e) {
+      alert('Не вдалося видалити чат: ' + (e?.response?.data?.message || e.message));
+    }
+  };
+
   return (
     <div className={styles.chatPageWrapper}>
       <div className={styles.chatContainer}>
@@ -76,7 +111,7 @@ const ChatPage = () => {
           </div>
         ) : (
           <>
-            <ChatList chats={chats} onSelectChat={handleSelectChat} selectedChatId={selectedChatId} />
+            <ChatList chats={chats} onSelectChat={handleSelectChat} selectedChatId={selectedChatId} onDeleteChat={handleDeleteChat} />
             <ChatWindow
               messages={messages}
               onSendMessage={handleSendMessage}
