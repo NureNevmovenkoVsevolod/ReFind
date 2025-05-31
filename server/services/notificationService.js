@@ -25,7 +25,8 @@ class NotificationService {
           model: User,
           attributes: ['user_id', 'fcm_token'],
           where: {
-            fcm_token: { [Op.ne]: null }
+            fcm_token: { [Op.ne]: null },
+            user_id: { [Op.ne]: advertisement.user_id }
           }
         }],
         logging: console.log // Додаємо логування SQL запиту
