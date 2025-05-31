@@ -12,6 +12,7 @@ import axios from "axios";
 import Toast from "../components/Toast/Toast";
 import { t, getLanguage } from "../utils/i18n";
 import ComplaintModal from "../components/Modal/ComplaintModal";
+import reportFlag from '../assets/report-flag.svg';
 
 function ItemCard({ isLogin, isModerator }) {
   const { id: encodedId } = useParams();
@@ -169,14 +170,14 @@ function ItemCard({ isLogin, isModerator }) {
     }
   };
 
-  const handleRequestContacts = async () => {
+  const handleWriteMessage = async () => {
     if (!ad?.user_id || !ad?.advertisement_id) {
       alert('Не вдалося визначити користувача або оголошення для чату');
       return;
     }
     const currentUser = JSON.parse(localStorage.getItem('user'));
     if (ad.user_id === currentUser?.id) {
-      alert('Ви не можете запросити свої ж контакти!');
+      alert('Ви не можете почати чат із самим собою!');
       return;
     }
     const token = localStorage.getItem('token');
@@ -269,21 +270,12 @@ function ItemCard({ isLogin, isModerator }) {
               {Number.parseFloat(ad.reward) === 0.0 ? null : <p>💰 Reward: {ad.reward}₴</p>}
             </div>
             <p className={styles.shortDesc}>{ad.description}</p>
+            <CategoryFavorite />
+            {favoriteError && <div className={styles.favoriteError}>{favoriteError}</div>}
           </div>
         </div>
         <div className={styles.bottom}>
           <div className={styles.contacts}>
-            <h3>Contact details for communication:</h3>
-            {/* <p>📞 {ad.phone}</p>
-            {ad.email && <p>📧 {ad.email}</p>} */}
-            <button
-              className={styles.messageBtn}
-              onClick={handleRequestContacts}
-            >
-              Запросити контактні дані
-            </button>
-            <CategoryFavorite />
-            {favoriteError && <div className={styles.favoriteError}>{favoriteError}</div>}
             {ad.User && (
               <div className={styles.userInfoBlock}>
                 <div className={styles.userAvatarWrapper}>
@@ -293,19 +285,35 @@ function ItemCard({ isLogin, isModerator }) {
                   />
                 </div>
                 <div className={styles.userName}>{ad.User.first_name || "User"}</div>
+                {isLogin && !isModerator && (() => {
+                  const currentUser = JSON.parse(localStorage.getItem('user'));
+                  if (ad.User.user_id === currentUser?.id) return null;
+                  return (
+                    <img
+                      src={reportFlag}
+                      alt="Поскаржитись"
+                      title="Поскаржитись"
+                      style={{ width: 28, height: 28, marginLeft: 10, cursor: 'pointer', filter: 'invert(18%) sepia(99%) saturate(7482%) hue-rotate(357deg) brightness(97%) contrast(119%)' }}
+                      onClick={() => setShowComplaintModal(true)}
+                    />
+                  );
+                })()}
               </div>
             )}
-            {isLogin && !isModerator && ad.User && (() => {
+            {(() => {
               const currentUser = JSON.parse(localStorage.getItem('user'));
-              return ad.User.user_id !== currentUser?.id;
-            })() && 
-               <button 
-               className={styles.complaintBtn}
-               onClick={() => setShowComplaintModal(true)}
-             >
-               Залишити скаргу
-             </button>
-            }
+              if (ad?.user_id && currentUser?.id && ad.user_id === currentUser.id) {
+                return null;
+              }
+              return (
+                <button
+                  className={styles.messageBtn}
+                  onClick={handleWriteMessage}
+                >
+                  Написати повідомлення
+                </button>
+              );
+            })()}
             {isModerator && !ad.mod_check && (
               <div className={styles.moderationButtons}>
                 <button className={`${styles.modButton} ${styles.approveButton}`} onClick={() => handleModeration(true)} disabled={moderationStatus !== null}>Схвалити</button>

@@ -5,7 +5,9 @@
   flex-direction: column;
   border-radius: 6px;
   padding: 20px;
-  min-width: 400px;
+  min-width: 900px;
+  width: 900px;
+  max-width: 900px;
   min-height: 500px;
   max-height: 850px;
   height: 850px;

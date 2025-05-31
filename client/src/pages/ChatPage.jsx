@@ -121,6 +121,18 @@ const ChatPage = () => {
     };
   }, [userId, selectedChatId]);
 
+  useEffect(() => {
+    if (!selectedChatId || !chats.length) return;
+    const chat = chats.find(c => (c.chat_id || c.id) === selectedChatId);
+    if (chat && chat.advertisement_id) {
+      axios.get(`${process.env.REACT_APP_SERVER_URL}/api/advertisement/${chat.advertisement_id}`)
+        .then(res => setInterlocutorAd(res.data))
+        .catch(() => setInterlocutorAd(null));
+    } else {
+      setInterlocutorAd(null);
+    }
+  }, [selectedChatId, chats]);
+
   const handleSelectChat = useCallback((id) => {
     setSelectedChatId(id);
     const chat = chats.find(c => (c.chat_id || c.id) === id);
