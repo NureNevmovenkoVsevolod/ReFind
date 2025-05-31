@@ -75,7 +75,8 @@ const ChatPage = () => {
         .then(res => {
           setMessages(res.data.map(msg => ({
             text: msg.message_text,
-            isOwn: msg.user_id === userId
+            isOwn: msg.user_id === userId,
+            time: msg.sent_at || msg.createdAt
           })));
         });
     }
@@ -85,18 +86,29 @@ const ChatPage = () => {
     setSelectedChatId(id);
   };
 
+  const handleBack = () => {
+    setSelectedChatId(null);
+    window.history.replaceState({}, document.title, '/chat');
+  };
+
   const handleSendMessage = (msg) => {
     setMessages([...messages, { text: msg, isOwn: true }]);
   };
 
   const handleDeleteChat = async (chatId) => {
     const token = localStorage.getItem('token');
+    const chatToDelete = chats.find(chat => (chat.chat_id || chat.id) === chatId);
+    console.log('Видалення чату:', chatId, chatToDelete);
+    console.log('Запит на видалення чату:', `${process.env.REACT_APP_SERVER_URL}/api/chat/${chatId}`);
     try {
       await axios.delete(`${process.env.REACT_APP_SERVER_URL}/api/chat/${chatId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setChats(prev => prev.filter(chat => (chat.chat_id || chat.id) !== chatId));
-      if (selectedChatId === chatId) setSelectedChatId(null);
+      if (selectedChatId === chatId) {
+        setSelectedChatId(null);
+        window.history.replaceState({}, document.title, '/chat');
+      }
     } catch (e) {
       alert('Не вдалося видалити чат: ' + (e?.response?.data?.message || e.message));
     }
@@ -111,7 +123,7 @@ const ChatPage = () => {
           </div>
         ) : (
           <>
-            <ChatList chats={chats} onSelectChat={handleSelectChat} selectedChatId={selectedChatId} onDeleteChat={handleDeleteChat} />
+            <ChatList chats={chats} onSelectChat={handleSelectChat} selectedChatId={selectedChatId} onDeleteChat={handleDeleteChat} onBack={handleBack} />
             <ChatWindow
               messages={messages}
               onSendMessage={handleSendMessage}

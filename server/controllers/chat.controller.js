@@ -60,6 +60,19 @@ class ChatController extends IChatController {
       res.status(500).json({ message: 'Failed to send message', error: err.message });
     }
   }
+
+  async deleteChat(req, res) {
+    try {
+      const { chatId } = req.params;
+      const deleted = await Chat.destroy({ where: { chat_id: chatId } });
+      if (deleted) {
+        return res.status(200).json({ message: 'Chat deleted' });
+      }
+      return res.status(404).json({ message: 'Chat not found' });
+    } catch (error) {
+      return res.status(500).json({ message: 'Server error', error });
+    }
+  }
 }
 
 export default new ChatController(); 

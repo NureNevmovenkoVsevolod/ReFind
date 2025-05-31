@@ -22,7 +22,8 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
     socket.on('receiveMessage', (msg) => {
       setRealTimeMessages(prev => [...prev, {
         text: msg.message_text,
-        isOwn: msg.user_id === userId
+        isOwn: msg.user_id === userId,
+        time: msg.sent_at || msg.createdAt || new Date().toISOString()
       }]);
     });
     return () => {
@@ -54,8 +55,12 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
           <div
             key={idx}
             className={msg.isOwn ? styles.ownMessage : styles.message}
+            style={{ position: 'relative' }}
           >
             {msg.text}
+            <div style={{ fontSize: 12, color: '#888', marginTop: 6, textAlign: 'right' }}>
+              {msg.time ? new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : ''}
+            </div>
           </div>
         ))}
         <div ref={messagesEndRef} />
@@ -69,7 +74,7 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
           className={styles.input}
         />
         <button type="submit" className={styles.sendBtn}>
-          <span>&#9654;</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 4 19 12 5 20 5 4"/></svg>
         </button>
       </form>
     </div>

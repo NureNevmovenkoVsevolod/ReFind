@@ -13,5 +13,6 @@ router.get('/', verifyToken, chatController.getUserChats);
 router.get('/:chatId/messages', verifyToken, chatController.getChatMessages);
 router.post('/', verifyToken, chatController.createChat);
 router.post('/message', verifyToken, chatController.sendMessage);
+router.delete('/:chatId', verifyToken, chatController.deleteChat);
 
 export default router; 
