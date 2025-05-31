@@ -17,10 +17,14 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
   const [realTimeMessages, setRealTimeMessages] = useState(messages);
   const messagesEndRef = useRef(null);
   const [showNoChatModal, setShowNoChatModal] = useState(false);
+  const [showAlreadyRequestedModal, setShowAlreadyRequestedModal] = useState(false);
+  const [contactsShared, setContactsShared] = useState(false);
+  const [contactsRequested, setContactsRequested] = useState(false);
 
   // Визначаємо user_id автора оголошення
   const adOwnerId = advertisement?.user_id;
   const isAdOwner = userId === adOwnerId;
+  const isModerator = JSON.parse(localStorage.getItem('user'))?.role === 'moder';
 
   useEffect(() => {
     socket.emit('joinChat', chatId);
@@ -47,6 +51,15 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [realTimeMessages]);
 
+  useEffect(() => {
+    // Якщо у повідомленнях є контактні дані — блокуємо повторний запит
+    const alreadyShared = realTimeMessages.some(msg => msg.text.startsWith('Контактні дані:'));
+    setContactsShared(alreadyShared);
+    // Якщо вже був запит (__REQUEST_CONTACTS__) — блокуємо повторний запит
+    const alreadyRequested = realTimeMessages.some(msg => msg.text.startsWith('__REQUEST_CONTACTS__'));
+    setContactsRequested(alreadyRequested);
+  }, [realTimeMessages]);
+
   const handleSend = useCallback((e) => {
     e.preventDefault();
     if (!chatId) {
@@ -64,6 +77,10 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
   }, [inputValue, chatId, userId, setInputValue]);
 
   const handleRequestContacts = () => {
+    if (contactsShared || contactsRequested) {
+      setShowAlreadyRequestedModal(true);
+      return;
+    }
     if (!chatId || !advertisement) return;
     const message = `__REQUEST_CONTACTS__:${advertisement.title}`;
     socket.emit('sendMessage', {
@@ -71,13 +88,13 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
       user_id: userId,
       message_text: message
     });
+    setContactsRequested(true);
   };
 
   const handleShareContacts = () => {
     if (!advertisement) return;
     const user = JSON.parse(localStorage.getItem('user'));
-    const contactMsg = `Контактні дані:
-Ім'я: ${user.first_name} ${user.last_name}\nEmail: ${user.email}\nТелефон: ${user.phone_number || 'не вказано'}`;
+    const contactMsg = `Контактні дані:<br/>Ім'я: ${user.first_name} ${user.last_name}<br/>Email: ${user.email}<br/>Телефон: ${user.phone_number || 'не вказано'}`;
     socket.emit('sendMessage', {
       chat_id: chatId,
       user_id: userId,
@@ -119,9 +136,9 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
         </div>
       )}
       {chatId && <div style={{ height: '10px' }} />}
-      {advertisement && chatId && !isAdOwner && (
+      {advertisement && chatId && !isAdOwner && !isModerator && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
-          <Button variant="primary" size="sm" onClick={handleRequestContacts}>
+          <Button variant="primary" size="sm" onClick={handleRequestContacts} disabled={contactsShared || contactsRequested}>
             Запросити контактні дані
           </Button>
         </div>
@@ -130,15 +147,42 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
         <div className={styles.messages}>
           {realTimeMessages.map((msg, idx) => {
             // Відображення службового повідомлення з кнопкою для автора
-            if (msg.text.startsWith("__REQUEST_CONTACTS__:") && isAdOwner) {
+            if (msg.text.startsWith("__REQUEST_CONTACTS__:")) {
               const title = msg.text.split(":")[1] || '';
+              if (isAdOwner) {
+                return (
+                  <div key={idx} className={styles.message} style={{ background: '#eaf3ff', border: '1px solid #0d6dfb', padding: 16, margin: '10px 0', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontWeight: 500 }}>
+                      Користувач просить ваші контактні дані для оголошення "{title}".
+                    </span>
+                    <Button variant="success" size="sm" style={{ marginLeft: 16 }} onClick={handleShareContacts} disabled={contactsShared}>
+                      Підтвердити
+                    </Button>
+                  </div>
+                );
+              } else if (msg.isOwn) {
+                return (
+                  <div key={idx} className={styles.ownMessage} style={{ background: '#f7f7f7', color: '#444', fontStyle: 'italic', border: '1px solid #b3b3b3', padding: 14, margin: '10px 0', borderRadius: 10 }}>
+                    Ви надіслали запит на отримання контактних даних для оголошення "{title}".
+                  </div>
+                );
+              } else {
+                return (
+                  <div key={idx} className={styles.message} style={{ background: '#f7f7f7', color: '#444', fontStyle: 'italic', border: '1px solid #b3b3b3', padding: 14, margin: '10px 0', borderRadius: 10 }}>
+                    Користувач надіслав запит на отримання контактних даних для оголошення "{title}".
+                  </div>
+                );
+              }
+            }
+            // Відображення контактних даних з переносами
+            if (msg.text.startsWith('Контактні дані:')) {
               return (
-                <div key={idx} className={styles.message} style={{ background: '#eaf3ff', border: '1px solid #0d6dfb' }}>
-                  Користувач просить ваші контактні дані для оголошення "{title}".
-                  <Button variant="success" size="sm" style={{ marginLeft: 10 }} onClick={handleShareContacts}>
-                    Підтвердити
-                  </Button>
-                </div>
+                <div
+                  key={idx}
+                  className={msg.isOwn ? styles.ownMessage : styles.message}
+                  style={{ position: 'relative', whiteSpace: 'pre-line' }}
+                  dangerouslySetInnerHTML={{ __html: msg.text }}
+                />
               );
             }
             // Відображення звичайних повідомлень
@@ -175,6 +219,12 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
         <Modal.Body style={{ textAlign: 'center', padding: '40px 20px' }}>
           <h4 style={{ fontWeight: 'bold', marginBottom: 20 }}>Оберіть чат, щоб надіслати повідомлення</h4>
           <Button variant="primary" onClick={() => setShowNoChatModal(false)} style={{ minWidth: 100 }}>ОК</Button>
+        </Modal.Body>
+      </Modal>
+      <Modal show={showAlreadyRequestedModal} onHide={() => setShowAlreadyRequestedModal(false)} centered>
+        <Modal.Body style={{ textAlign: 'center', padding: '40px 20px' }}>
+          <h4 style={{ fontWeight: 'bold', marginBottom: 20 }}>Контактні дані вже були запитані або надані. Повторний запит неможливий.</h4>
+          <Button variant="primary" onClick={() => setShowAlreadyRequestedModal(false)} style={{ minWidth: 100 }}>ОК</Button>
         </Modal.Body>
       </Modal>
     </div>
