@@ -230,7 +230,7 @@ function ItemCard({ isLogin, isModerator }) {
             <h3>Contact details for communication:</h3>
             <p>📞 {ad.phone}</p>
             {ad.email && <p>📧 {ad.email}</p>}
-            {isLogin && !isModerator && <>
+            {isLogin && !isModerator && ad.user_id !== JSON.parse(localStorage.getItem('user'))?.id && (
               <button
                 className={styles.messageBtn}
                 onClick={async () => {
@@ -281,9 +281,8 @@ function ItemCard({ isLogin, isModerator }) {
               >
                 {t('sendMessage')}
               </button>
-              <CategoryFavorite />
-            </>}
-            {!isLogin && !isModerator && <CategoryFavorite />}
+            )}
+            <CategoryFavorite />
             {favoriteError && <div className={styles.favoriteError}>{favoriteError}</div>}
             {ad.User && (
               <div className={styles.userInfoBlock}>

@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import styles from './ChatList.module.css';
 import userPfp from '../../assets/user.png';
 import { Modal, Button } from 'react-bootstrap';
 
-const ChatList = ({ chats, onSelectChat, selectedChatId, onDeleteChat, onBack }) => {
+const ChatList = memo(({ chats, onSelectChat, selectedChatId, onDeleteChat, onBack }) => {
   const currentUserId = JSON.parse(localStorage.getItem('user'))?.id;
   const [showConfirm, setShowConfirm] = useState(false);
   const [chatToDelete, setChatToDelete] = useState(null);
@@ -34,6 +34,10 @@ const ChatList = ({ chats, onSelectChat, selectedChatId, onDeleteChat, onBack })
         {chats.map(chat => {
           const chatId = chat.chat_id || chat.id;
           const interlocutor = chat.User1?.user_id === currentUserId ? chat.User2 : chat.User1;
+          const lastMessage = chat.Messages && chat.Messages[0];
+          const lastMsgAuthor = lastMessage?.User?.first_name || (lastMessage?.user_id === currentUserId ? 'Ви' : 'Користувач');
+          const lastMsgText = lastMessage?.message_text || '';
+          const lastMsgTime = lastMessage?.createdAt ? new Date(lastMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
           return (
             <div
               key={chatId}
@@ -45,15 +49,28 @@ const ChatList = ({ chats, onSelectChat, selectedChatId, onDeleteChat, onBack })
                 <img
                   src={interlocutor?.user_pfp || userPfp}
                   alt={interlocutor?.first_name || 'User'}
-                  style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }}
+                  width={40}
+                  height={40}
+                  style={{ borderRadius: '50%', objectFit: 'cover' }}
                 />
               </div>
               <div className={styles.info}>
                 <div className={styles.name}>{interlocutor?.first_name || 'User'}</div>
+                <div className={styles.lastMessage}>
+                  {lastMessage ? (
+                    <>
+                      <span className={styles.lastMessageAuthor}>{lastMsgAuthor}:</span>
+                      <span> {lastMsgText}</span>
+                      <span className={styles.lastMessageTime}>{lastMsgTime}</span>
+                    </>
+                  ) : (
+                    <span className={styles.noMessages}>Немає повідомлень</span>
+                  )}
+                </div>
               </div>
               <button
                 className={styles.deleteBtn}
-                style={{ position: 'absolute', top: 8, right: 8, zIndex: 2, padding: '2px 8px', fontSize: 13 }}
+                style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
                 onClick={e => handleDeleteClick(e, chatId)}
                 title="Видалити чат"
               >
@@ -74,6 +91,6 @@ const ChatList = ({ chats, onSelectChat, selectedChatId, onDeleteChat, onBack })
       </Modal>
     </div>
   );
-};
+});
 
 export default ChatList; 

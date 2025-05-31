@@ -1,14 +1,21 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import styles from './ChatWindow.module.css';
 import { io } from 'socket.io-client';
+import { Modal, Button } from 'react-bootstrap';
 
 const socket = io(process.env.REACT_APP_SERVER_URL, {
   withCredentials: true
 });
 
+function formatTime(dateString) {
+  if (!dateString) return '';
+  return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
 const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId, userId }) => {
   const [realTimeMessages, setRealTimeMessages] = useState(messages);
   const messagesEndRef = useRef(null);
+  const [showNoChatModal, setShowNoChatModal] = useState(false);
 
   useEffect(() => {
     socket.emit('joinChat', chatId);
@@ -35,18 +42,21 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [realTimeMessages]);
 
-  const handleSend = (e) => {
+  const handleSend = useCallback((e) => {
     e.preventDefault();
+    if (!chatId) {
+      setShowNoChatModal(true);
+      return;
+    }
     if (inputValue.trim()) {
-      const msg = {
+      socket.emit('sendMessage', {
         chat_id: chatId,
         user_id: userId,
         message_text: inputValue
-      };
-      socket.emit('sendMessage', msg);
+      });
       setInputValue('');
     }
-  };
+  }, [inputValue, chatId, userId, setInputValue]);
 
   return (
     <div className={styles.chatWindow}>
@@ -58,9 +68,7 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
             style={{ position: 'relative' }}
           >
             {msg.text}
-            <div style={{ fontSize: 12, color: '#888', marginTop: 6, textAlign: 'right' }}>
-              {msg.time ? new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : ''}
-            </div>
+            <div className={styles.msgTime}>{formatTime(msg.time)}</div>
           </div>
         ))}
         <div ref={messagesEndRef} />
@@ -72,11 +80,18 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
           value={inputValue}
           onChange={e => setInputValue(e.target.value)}
           className={styles.input}
+          disabled={!chatId}
         />
-        <button type="submit" className={styles.sendBtn}>
+        <button type="submit" className={styles.sendBtn} disabled={!chatId || !inputValue.trim()}>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 4 19 12 5 20 5 4"/></svg>
         </button>
       </form>
+      <Modal show={showNoChatModal} onHide={() => setShowNoChatModal(false)} centered>
+        <Modal.Body style={{ textAlign: 'center', padding: '40px 20px' }}>
+          <h4 style={{ fontWeight: 'bold', marginBottom: 20 }}>Оберіть чат, щоб надіслати повідомлення</h4>
+          <Button variant="primary" onClick={() => setShowNoChatModal(false)} style={{ minWidth: 100 }}>ОК</Button>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

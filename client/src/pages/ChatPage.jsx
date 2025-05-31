@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ChatList from '../components/Chat/ChatList';
 import ChatWindow from '../components/Chat/ChatWindow';
 import styles from './ChatPage.module.css';
 import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
+import { io } from 'socket.io-client';
 
 const ChatPage = () => {
   const [chats, setChats] = useState([]);
@@ -13,6 +14,8 @@ const ChatPage = () => {
   const [inputValue, setInputValue] = useState('');
   const userId = JSON.parse(localStorage.getItem('user'))?.id;
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const socket = io(process.env.REACT_APP_SERVER_URL, { withCredentials: true });
 
   // Завантаження чатів
   useEffect(() => {
@@ -82,20 +85,81 @@ const ChatPage = () => {
     }
   }, [selectedChatId, userId]);
 
-  const handleSelectChat = (id) => {
-    setSelectedChatId(id);
-  };
+  useEffect(() => {
+    socket.on('receiveMessage', (msg) => {
+      // Оновити ChatWindow, якщо це активний чат
+      if (msg.chat_id === selectedChatId) {
+        setMessages(prev => [
+          ...prev,
+          {
+            text: msg.message_text,
+            isOwn: msg.user_id === userId,
+            time: msg.sent_at || msg.createdAt,
+          }
+        ]);
+      }
+      // Оновити ChatList локально
+      setChats(prevChats => {
+        let found = false;
+        const updated = prevChats.map(chat => {
+          const chatId = chat.chat_id || chat.id;
+          if (chatId === msg.chat_id) {
+            found = true;
+            return {
+              ...chat,
+              Messages: [{
+                ...msg,
+                User: msg.User || (msg.user_id === userId ? { user_id: userId, first_name: 'Ви' } : (chat.User1?.user_id === msg.user_id ? chat.User1 : chat.User2))
+              }],
+              updatedAt: msg.sent_at || msg.createdAt || new Date().toISOString()
+            };
+          }
+          return chat;
+        });
+        if (!found) return prevChats;
+        updated.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+        return updated;
+      });
+    });
+    return () => {
+      socket.off('receiveMessage');
+    };
+  }, [userId, selectedChatId]);
 
-  const handleBack = () => {
+  const handleSelectChat = useCallback((id) => {
+    setSelectedChatId(id);
+  }, []);
+
+  const handleBack = useCallback(() => {
     setSelectedChatId(null);
     window.history.replaceState({}, document.title, '/chat');
-  };
+  }, []);
 
-  const handleSendMessage = (msg) => {
-    setMessages([...messages, { text: msg, isOwn: true }]);
-  };
+  const handleSendMessage = useCallback((msg) => {
+    setMessages(prev => [...prev, { text: msg, isOwn: true }]);
+    setChats(prevChats => {
+      const updated = prevChats.map(chat => {
+        const chatId = chat.chat_id || chat.id;
+        if (chatId === selectedChatId) {
+          return {
+            ...chat,
+            Messages: [{
+              message_text: msg,
+              user_id: userId,
+              User: { user_id: userId, first_name: 'Ви' },
+              createdAt: new Date().toISOString()
+            }],
+            updatedAt: new Date().toISOString()
+          };
+        }
+        return chat;
+      });
+      updated.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      return updated;
+    });
+  }, [selectedChatId, userId]);
 
-  const handleDeleteChat = async (chatId) => {
+  const handleDeleteChat = useCallback(async (chatId) => {
     const token = localStorage.getItem('token');
     const chatToDelete = chats.find(chat => (chat.chat_id || chat.id) === chatId);
     console.log('Видалення чату:', chatId, chatToDelete);
@@ -112,7 +176,7 @@ const ChatPage = () => {
     } catch (e) {
       alert('Не вдалося видалити чат: ' + (e?.response?.data?.message || e.message));
     }
-  };
+  }, [chats, selectedChatId]);
 
   return (
     <div className={styles.chatPageWrapper}>

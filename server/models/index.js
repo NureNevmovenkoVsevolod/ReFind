@@ -67,7 +67,7 @@ User.hasMany(Chat, { as: "ChatsAsUser2", foreignKey: "user_id_2" });
 
 // 9. Chat - Message
 // Один чат може містити багато повідомлень, кожне з яких належить своєму чату
-Chat.hasMany(Message, { foreignKey: "chat_id" });
+Chat.hasMany(Message, { foreignKey: "chat_id", as: 'Messages' });
 Message.belongsTo(Chat, { foreignKey: "chat_id" });
 
 // Також можна зв'язати повідомлення з користувачем, який його відправив

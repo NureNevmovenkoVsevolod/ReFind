@@ -2,7 +2,7 @@ import IChatController from '../interfaces/IChatController.js';
 import Chat from '../models/chat.model.js';
 import Message from '../models/messages.model.js';
 import User from '../models/user.model.js';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 
 class ChatController extends IChatController {
   async getUserChats(req, res) {
@@ -17,8 +17,17 @@ class ChatController extends IChatController {
         },
         include: [
           { model: User, as: 'User1', attributes: ['user_id', 'first_name', 'last_name', 'user_pfp'] },
-          { model: User, as: 'User2', attributes: ['user_id', 'first_name', 'last_name', 'user_pfp'] }
-        ]
+          { model: User, as: 'User2', attributes: ['user_id', 'first_name', 'last_name', 'user_pfp'] },
+          {
+            model: Message,
+            as: 'Messages',
+            separate: true,
+            limit: 1,
+            order: [['createdAt', 'DESC']],
+            include: [{ model: User, attributes: ['user_id', 'first_name', 'last_name', 'user_pfp'] }]
+          }
+        ],
+        order: [['updatedAt', 'DESC']]
       });
       res.json(chats);
     } catch (err) {
@@ -29,9 +38,12 @@ class ChatController extends IChatController {
   async getChatMessages(req, res) {
     try {
       const { chatId } = req.params;
+      const { limit = 30, offset = 0 } = req.query;
       const messages = await Message.findAll({
         where: { chat_id: chatId },
-        order: [['createdAt', 'ASC']]
+        order: [['createdAt', 'ASC']],
+        limit: Number(limit),
+        offset: Number(offset)
       });
       res.json(messages);
     } catch (err) {

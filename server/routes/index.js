@@ -18,7 +18,6 @@ router.use("/moder", moderRouter);
 router.use("/stats", statsRouter);
 router.use("/complaints", complaintsRouter);
 router.use('/fcm', fcmRoutes);
-console.log('Connecting chatRouter at /chat');
 router.use('/chat', chatRouter);
 
 export default router;

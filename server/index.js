@@ -17,6 +17,7 @@ import verifyToken from "./middlewares/auth.middleware.js";
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import Message from './models/messages.model.js';
+import User from './models/user.model.js';
 
 const CLIENT_LINK = process.env.REACT_APP_CLIENT_URL;
 const __filename = fileURLToPath(import.meta.url);
@@ -57,10 +58,6 @@ app.use(
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
-
-console.log('--- SERVER START ---');
-console.log('PORT:', PORT);
-console.log('CLIENT_LINK:', CLIENT_LINK);
 
 // Routes
 app.use("/auth", authRouter);
@@ -108,12 +105,18 @@ io.on('connection', (socket) => {
         user_id: data.user_id,
         message_text: data.message_text
       });
+      // Підтягнути користувача
+      const user = await User.findOne({
+        where: { user_id: message.user_id },
+        attributes: ['user_id', 'first_name', 'last_name', 'user_pfp']
+      });
       io.to(`chat_${data.chat_id}`).emit('receiveMessage', {
         message_id: message.message_id,
         chat_id: message.chat_id,
         user_id: message.user_id,
         message_text: message.message_text,
-        sent_at: message.createdAt
+        sent_at: message.createdAt,
+        User: user
       });
     } catch (err) {
       socket.emit('errorMessage', { error: 'Failed to save message' });
