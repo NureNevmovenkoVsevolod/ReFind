@@ -14,7 +14,7 @@ class StatsController {
     }
     async getCountAllAds(req, res) {
         try {
-            res.json({ count: await Advertisement.count() });
+            res.json({ count: await Advertisement.count({ where: { status: 'active', mod_check: true } }) });
         } catch {
             res.status(500).json({ message: "Failed to getCountAllAds" });
         }

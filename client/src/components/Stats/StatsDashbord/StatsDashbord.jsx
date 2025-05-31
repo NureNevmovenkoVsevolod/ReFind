@@ -46,7 +46,7 @@ function StatsDashbord() {
   return (
     <div className={style.maincontent}>
       <div className={style.statsgrid}>
-        <StatsCard label="Всього оголошень" value={stats.ads} icon={docum} gradientFrom="#2563eb" gradientTo="#1e40af" />
+        <StatsCard label="Всього активних оголошень" value={stats.ads} icon={docum} gradientFrom="#2563eb" gradientTo="#1e40af" />
         <StatsCard label="Оголошення на розгляді" value={stats.pending} icon={clock} gradientFrom="#f59e0b" gradientTo="#b45309" />
         <StatsCard label="Активні скарги" value={stats.complaints} icon={warning} gradientFrom="#ef4444" gradientTo="#991b1b" />
         <StatsCard label="Всього користувачів" value={stats.users} icon={team} gradientFrom="#06b6d4" gradientTo="#0e7490" />
