@@ -103,10 +103,30 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
         }
         // Зберігаємо у localStorage
         localStorage.setItem(reviewKey, JSON.stringify(interlocutor));
-        setShowReviewModal(true);
+        checkAndShowReviewModal(interlocutor.user_id);
       }
     }
   }, [confirmConfirmed, isAdOwner, chatId, advertisement, userId]);
+
+  const checkAndShowReviewModal = async (reviewedId) => {
+    const reviewer = JSON.parse(localStorage.getItem('user'));
+    const reviewerId = reviewer.id || reviewer.user_id;
+
+    if (!reviewerId || !reviewedId) {
+      console.error('Missing reviewer or reviewed user ID');
+      return;
+    }
+
+    const hasReview = await checkExistingReview(reviewerId, reviewedId);
+    if (hasReview) {
+      // Якщо відгук вже існує, очищаємо localStorage
+      const reviewKey = `review_shown_${chatId}`;
+      localStorage.removeItem(reviewKey);
+      return;
+    }
+
+    setShowReviewModal(true);
+  };
 
   const handleSend = useCallback((e) => {
     e.preventDefault();
@@ -246,6 +266,41 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
     }
   };
 
+  const checkExistingReview = async (reviewerId, reviewedId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/api/review/check?reviewer_id=${reviewerId}&reviewed_id=${reviewedId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      return data.exists;
+    } catch (e) {
+      console.error('Error checking review:', e);
+      return false;
+    }
+  };
+
+  const handleReviewClick = async () => {
+    const reviewer = JSON.parse(localStorage.getItem('user'));
+    const reviewerId = reviewer.id || reviewer.user_id;
+    const reviewedId = advertisement?.user_id;
+
+    if (!reviewerId || !reviewedId) {
+      console.error('Missing reviewer or reviewed user ID');
+      return;
+    }
+
+    const hasReview = await checkExistingReview(reviewerId, reviewedId);
+    if (hasReview) {
+      alert('Ви вже залишили відгук для цього користувача');
+      return;
+    }
+
+    setShowReviewModal(true);
+  };
+
   return (
     <div className={styles.chatWindow}>
       {advertisement && chatId && (
@@ -288,7 +343,7 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
           <Button variant="secondary" size="sm" onClick={handleRequestConfirm} disabled={confirmRequested || confirmConfirmed}>
             Підтвердити отримання речі
           </Button>
-          <Button variant="outline-warning" size="sm" onClick={() => setShowReviewModal(true)}>
+          <Button variant="outline-warning" size="sm" onClick={handleReviewClick}>
             Додати відгук
           </Button>
         </div>

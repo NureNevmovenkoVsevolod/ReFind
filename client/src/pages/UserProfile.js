@@ -109,17 +109,52 @@ const UserProfile = () => {
   }, [userData]);
 
   useEffect(() => {
-    // Шукаємо незавершений відгук у localStorage
+    // Перевіряємо наявність відгуку в localStorage
     const keys = Object.keys(localStorage).filter(k => k.startsWith('review_shown_'));
     if (keys.length > 0) {
       const reviewData = JSON.parse(localStorage.getItem(keys[0]));
       if (reviewData) {
-        setPendingReviewUser(reviewData.first_name || '');
-        setPendingReviewAvatar(reviewData.user_pfp || null);
-        setShowReviewModal(true);
+        setPendingReviewUser(reviewData.first_name);
+        setPendingReviewAvatar(reviewData.user_pfp);
+        checkAndShowReviewModal(reviewData.user_id);
       }
     }
   }, []);
+
+  const checkExistingReview = async (reviewerId, reviewedId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/api/review/check?reviewer_id=${reviewerId}&reviewed_id=${reviewedId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      return data.exists;
+    } catch (e) {
+      console.error('Error checking review:', e);
+      return false;
+    }
+  };
+
+  const checkAndShowReviewModal = async (reviewedId) => {
+    const reviewer = JSON.parse(localStorage.getItem('user'));
+    const reviewerId = reviewer.id || reviewer.user_id;
+
+    if (!reviewerId || !reviewedId) {
+      console.error('Missing reviewer or reviewed user ID');
+      return;
+    }
+
+    const hasReview = await checkExistingReview(reviewerId, reviewedId);
+    if (hasReview) {
+      // Якщо відгук вже існує, очищаємо localStorage
+      Object.keys(localStorage).filter(k => k.startsWith('review_shown_')).forEach(k => localStorage.removeItem(k));
+      return;
+    }
+
+    setShowReviewModal(true);
+  };
 
   const updateProfile = async (fields) => {
     try {
@@ -433,7 +468,11 @@ const UserProfile = () => {
         reviewer={JSON.parse(localStorage.getItem('user'))}
         reviewed={{
           first_name: pendingReviewUser,
-          user_pfp: pendingReviewAvatar
+          user_pfp: pendingReviewAvatar,
+          user_id: Object.keys(localStorage)
+            .filter(k => k.startsWith('review_shown_'))
+            .map(k => JSON.parse(localStorage.getItem(k)))
+            .find(data => data?.user_id)?.user_id
         }}
         advertisement={null}
         reviewText={reviewText}
@@ -455,7 +494,11 @@ const UserProfile = () => {
             const keys = Object.keys(localStorage).filter(k => k.startsWith('review_shown_'));
             if (keys.length > 0) {
               const reviewData = JSON.parse(localStorage.getItem(keys[0]));
-              reviewedId = reviewData?.user_id;
+              reviewedId = reviewData.user_id;
+            }
+            if (!reviewedId) {
+              setReviewError('Не вдалося визначити користувача для відгуку');
+              return;
             }
             const response = await fetch(process.env.REACT_APP_SERVER_URL + '/api/review', {
               method: 'POST',
@@ -479,6 +522,7 @@ const UserProfile = () => {
             setShowReviewModal(false);
             setReviewText('');
             setReviewRating(0);
+            // Очищаємо localStorage після успішного відгуку
             Object.keys(localStorage).filter(k => k.startsWith('review_shown_')).forEach(k => localStorage.removeItem(k));
           } catch (e) {
             setReviewError('Не вдалося залишити відгук. Спробуйте ще раз.');
@@ -487,7 +531,6 @@ const UserProfile = () => {
             setReviewSubmitting(false);
           }
         }}
-        contextText="Чи хочете ви залишити відгук про співрозмовника з яким ви нещодавно взаємодіяли?"
       />
     </div>
   );

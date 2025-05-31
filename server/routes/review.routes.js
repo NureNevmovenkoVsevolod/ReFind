@@ -8,5 +8,7 @@ const router = express.Router();
 router.post('/', verifyToken, reviewController.createReview);
 // Отримати всі відгуки для користувача
 router.get('/user/:userId', reviewController.getUserReviews);
+// Перевірити чи існує відгук
+router.get('/check', verifyToken, reviewController.checkExistingReview);
 
 export default router; 
