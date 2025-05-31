@@ -29,11 +29,8 @@ class NotificationService {
             user_id: { [Op.ne]: advertisement.user_id }
           }
         }],
-        logging: console.log // Додаємо логування SQL запиту
       });
 
-      console.log('Found subscriptions with FCM tokens:', subscriptions.length);
-      console.log('Subscriptions details:', JSON.stringify(subscriptions, null, 2));
 
       if (subscriptions.length === 0) {
         console.log('No subscribers found for category:', advertisement.categorie_id);
@@ -43,9 +40,6 @@ class NotificationService {
       const tokens = subscriptions
         .map(sub => sub.User?.fcm_token)
         .filter(token => token);
-
-      console.log('Valid FCM tokens:', tokens.length);
-      console.log('Tokens:', tokens);
 
       if (tokens.length === 0) {
         console.log('No valid FCM tokens found');

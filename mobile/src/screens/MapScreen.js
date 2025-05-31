@@ -26,8 +26,19 @@ const leafletHtml = (adsJson) => `
     var ads = ${adsJson};
     ads.forEach(function(ad) {
       if (ad.latitude && ad.longitude) {
-        var marker = L.marker([ad.latitude, ad.longitude]).addTo(map);
+        var markerColor = ad.type === 'lost' ? 'red' : 'green';
+        var markerIcon = L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-' + markerColor + '.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
+        
+        var marker = L.marker([ad.latitude, ad.longitude], {icon: markerIcon}).addTo(map);
         var typeText = ad.type === 'lost' ? 'Загублено' : 'Знайдено';
+        var typeColor = ad.type === 'lost' ? '#ff0000' : '#00ff00';
         var imgUrl = '';
         if (ad.Images && ad.Images.length > 0 && ad.Images[0].image_url) {
           imgUrl = ad.Images[0].image_url;
@@ -42,7 +53,7 @@ const leafletHtml = (adsJson) => `
           '<div style="text-align:center;">' +
             '<img src="' + imgUrl + '" alt="Фото" style="width:100px;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px;" />' +
             '<div style="font-weight:bold;font-size:16px;margin-bottom:4px;">' + (ad.title || '') + '</div>' +
-            '<div style="color:#5a67d8;font-size:14px;">' + typeText + '</div>' +
+            '<div style="color:' + typeColor + ';font-size:14px;font-weight:bold;">' + typeText + '</div>' +
             rewardBlock +
             '<button id="details-btn-' + ad.advertisement_id + '" style="margin-top:8px;padding:6px 16px;background:#5a67d8;color:#fff;border:none;border-radius:5px;cursor:pointer;">Детальніше</button>' +
           '</div>';
@@ -74,17 +85,27 @@ const MapScreen = ({ navigation }) => {
       setLoading(true);
       try {
         const token = await AsyncStorage.getItem('userToken');
-        const res = await fetch(`${apiUrl}/advertisement/all`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        // Якщо бекенд повертає { items: [...] }
-        const items = Array.isArray(data) ? data : data.items || [];
-        const parsedAds = items.map(ad => {
+        let allAds = [];
+        let currentPage = 1;
+        let hasMore = true;
+
+        while (hasMore) {
+          const res = await fetch(`${apiUrl}/advertisement/all?page=${currentPage}&limit=8`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = await res.json();
+          
+          const items = Array.isArray(data) ? data : data.items || [];
+          allAds = [...allAds, ...items];
+          
+          hasMore = data.hasMore;
+          currentPage++;
+        }
+
+        const parsedAds = allAds.map(ad => {
           let latitude = null, longitude = null;
           if (ad.location_coordinates) {
             try {
-              // location_coordinates може бути подвійно закодований JSON
               let coords = ad.location_coordinates;
               if (typeof coords === 'string') {
                 coords = JSON.parse(coords);
@@ -96,8 +117,10 @@ const MapScreen = ({ navigation }) => {
           }
           return { ...ad, latitude, longitude };
         });
+        
         setAds(parsedAds);
       } catch (e) {
+        console.error('Помилка при завантаженні оголошень:', e);
         setAds([]);
       } finally {
         setLoading(false);
