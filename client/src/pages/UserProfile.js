@@ -14,6 +14,7 @@ import SuccessModal from "../components/Modal/SuccessModal";
 import EditAdvertForm from "../components/EditAdvertForm/EditAdvertForm";
 import Loader from "../components/Loader/Loader";
 import ReviewModal from '../components/Modal/ReviewModal';
+import ReviewsModal from '../components/Modal/ReviewsModal';
 
 const getUserFromStorage = () => {
   const data = localStorage.getItem("user");
@@ -56,6 +57,7 @@ const UserProfile = () => {
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState('');
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
 
   useEffect(() => {
     setAvatar(userData?.user_pfp || userIcon);
@@ -322,9 +324,17 @@ const UserProfile = () => {
               {[1,2,3,4,5].map(star => (
                 <svg key={star} style={{ width: 22, height: 22, fill: userRating && star <= Math.round(userRating) ? '#ffc107' : '#e0e0e0', verticalAlign: 'middle' }} viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
               ))}
-              <span className={styles.ratingValue} style={{ marginLeft: 8 }}>
+              <span 
+                className={styles.ratingValue} 
+                style={{ marginLeft: 8, cursor: userRatingCount > 0 ? 'pointer' : 'default' }}
+                onClick={() => userRatingCount > 0 && setShowReviewsModal(true)}
+              >
                 {userRating ? userRating.toFixed(2) : '—'} / 5
-                {userRatingCount > 0 && <span style={{ color: '#888', fontSize: 13, marginLeft: 6 }}>({userRatingCount})</span>}
+                {userRatingCount > 0 && (
+                  <span style={{ color: '#888', fontSize: 13, marginLeft: 6 }}>
+                    ({userRatingCount})
+                  </span>
+                )}
               </span>
             </div>
             <div className={styles.favoritesBlock}>
@@ -531,6 +541,12 @@ const UserProfile = () => {
             setReviewSubmitting(false);
           }
         }}
+      />
+
+      <ReviewsModal
+        show={showReviewsModal}
+        onClose={() => setShowReviewsModal(false)}
+        userId={userData?.user_id || userData?.id}
       />
     </div>
   );
