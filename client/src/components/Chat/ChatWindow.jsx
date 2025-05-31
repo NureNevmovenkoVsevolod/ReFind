@@ -33,6 +33,7 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState('');
+  const [hasExistingReview, setHasExistingReview] = useState(false);
 
   // Визначаємо user_id автора оголошення
   const adOwnerId = advertisement?.user_id;
@@ -107,6 +108,28 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
       }
     }
   }, [confirmConfirmed, isAdOwner, chatId, advertisement, userId]);
+
+  useEffect(() => {
+    const checkForExistingReview = async () => {
+      if (!advertisement?.user_id || !userId) return;
+      
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(
+          `${process.env.REACT_APP_SERVER_URL}/api/review/check?reviewer_id=${userId}&reviewed_id=${advertisement.user_id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const data = await response.json();
+        setHasExistingReview(data.exists);
+      } catch (e) {
+        console.error('Error checking review:', e);
+      }
+    };
+
+    checkForExistingReview();
+  }, [advertisement?.user_id, userId]);
 
   const checkAndShowReviewModal = async (reviewedId) => {
     const reviewer = JSON.parse(localStorage.getItem('user'));
@@ -343,9 +366,11 @@ const ChatWindow = ({ messages, onSendMessage, inputValue, setInputValue, chatId
           <Button variant="secondary" size="sm" onClick={handleRequestConfirm} disabled={confirmRequested || confirmConfirmed}>
             Підтвердити отримання речі
           </Button>
-          <Button variant="outline-warning" size="sm" onClick={handleReviewClick}>
-            Додати відгук
-          </Button>
+          {!hasExistingReview && (
+            <Button variant="outline-warning" size="sm" onClick={handleReviewClick}>
+              Додати відгук
+            </Button>
+          )}
         </div>
       )}
       {chatId && (
