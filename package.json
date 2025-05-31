@@ -14,6 +14,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@react-native-community/datetimepicker": "^8.4.1",
     "expo-image-picker": "~16.1.4"
   }
 }

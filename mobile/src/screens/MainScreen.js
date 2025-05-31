@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, ActivityIndicator, FlatList, Text, TouchableOpacity } from "react-native";
 import { useRoute } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
 import CategoryFilter from '../components/CategoryFilter';
@@ -65,6 +65,16 @@ function MainScreen({ navigation }) {
         onAdvertisementPress={handleAdvertisementPress}
       />
       
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        style={styles.createButton}
+        onPress={() => {
+          navigation.navigate('CreateAdvertisement', { type: 'find' }); // Навігація на екран створення оголошення для знайдених речей
+        }}
+      >
+        <Text style={styles.createButtonText}>+</Text>
+      </TouchableOpacity>
+      
       <BottomNavBar activeScreen={activeScreen} navigation={navigation} />
     </View>
   );
@@ -82,6 +92,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e9ecef',
+  },
+  createButton: {
+    position: 'absolute',
+    bottom: 110,
+    right: 20,
+    backgroundColor: '#5a67d8',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  createButtonText: {
+    color: '#fff',
+    fontSize: 30,
+    lineHeight: 30,
   },
 });
 

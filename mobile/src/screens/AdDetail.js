@@ -56,7 +56,7 @@ const AdDetail = ({ route, navigation }) => {
               key={idx}
               source={{ uri: img }}
               style={styles.protoGalleryImage}
-              resizeMode="cover"
+              resizeMode="contain"
             />
           ))}
         </ScrollView>
@@ -107,7 +107,7 @@ const AdDetail = ({ route, navigation }) => {
           </View>
           {/* Інформація про того, хто знайшов */}
           <View style={styles.protoFinderBlock}>
-            <Text style={styles.protoFinderTitle}>Інформація про того, хто знайшов</Text>
+            <Text style={styles.protoFinderTitle}>Інформація про того, хто {item.type === 'lost' ? 'загубив' : "знайшов"}</Text>
             <View style={styles.protoFinderRow}>
               <Image
                 source={{ uri: (item.User && item.User.user_pfp) || 'https://randomuser.me/api/portraits/men/32.jpg' }}
@@ -126,17 +126,15 @@ const AdDetail = ({ route, navigation }) => {
               <Text style={styles.protoMainBtnText}>Це моя річ</Text>
             </TouchableOpacity>
             <View style={styles.protoFinderBtnsRow}>
-              {/* <TouchableOpacity style={styles.protoFinderBtn} onPress={handleEmail}>
+              {item.email && 
+              <TouchableOpacity style={styles.protoFinderBtn} onPress={handleEmail}>
                 <MaterialIcons name="chat" size={20} color="#5a67d8" />
                 <Text style={styles.protoFinderBtnText}>Написати</Text>
               </TouchableOpacity>
+              }
               <TouchableOpacity style={styles.protoFinderBtn} onPress={handleCall}>
                 <FontAwesome name="phone" size={20} color="#5a67d8" />
                 <Text style={styles.protoFinderBtnText}>Зателефонувати</Text>
-              </TouchableOpacity> */}
-              <TouchableOpacity style={[styles.protoFinderBtn, {backgroundColor: '#2563eb'}]}>
-                <MaterialIcons name="info" size={20} color="#fff" />
-                <Text style={[styles.protoFinderBtnText, {color: '#fff'}]}>Запросити контактні дані</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -151,6 +149,7 @@ const styles = StyleSheet.create({
   protoContainer: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+    marginBlock:15
   },
   protoHeader: {
     flexDirection: 'row',
@@ -189,10 +188,11 @@ const styles = StyleSheet.create({
   },
   protoGalleryImage: {
     width: Dimensions.get('window').width - 48,
-    height: 180,
+    height: 250,
     borderRadius: 12,
     marginHorizontal: 8,
     backgroundColor: '#eaeaea',
+    resizeMode: 'contain',
   },
   protoGalleryIndicator: {
     flexDirection: 'row',
